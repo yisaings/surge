@@ -12,7 +12,7 @@ try {
     data.isNewUserProtect = false;
     data.showType = false;
 
-    // 清空广告数据
+    // 清空广告数组
     if (Array.isArray(data.ads)) {
       data.ads.forEach(ad => {
         ad.isOpen = false;
@@ -26,6 +26,15 @@ try {
         space.isOpen = false;
       });
       data.adsSpace = [];
+    }
+
+    // 屏蔽 normalBannerConfig 中的 banner
+    if (data.normalBannerConfig && typeof data.normalBannerConfig === 'object') {
+      for (let key in data.normalBannerConfig) {
+        if (data.normalBannerConfig[key]?.bannerConfigList) {
+          data.normalBannerConfig[key].bannerConfigList = [];
+        }
+      }
     }
   }
 
