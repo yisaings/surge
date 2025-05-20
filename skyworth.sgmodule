@@ -1,0 +1,8 @@
+#!name=创维智慧云去广告
+#!desc=屏蔽创维智慧云开屏
+
+[Script]
+http-response ^https:\/\/app\.skyworthdigitaliot\.com\/.* requires-body=1,script-path=https://raw.githubusercontent.com/yisaings/surge/main/skyworth-adblock.js,tag=Skyworth AdBlock
+
+[MITM]
+hostname = %APPEND% app.skyworthdigitaliot.com
