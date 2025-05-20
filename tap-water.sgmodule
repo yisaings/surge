@@ -1,0 +1,8 @@
+#!name=指尖水务去广告
+#!desc=屏蔽指尖水务开屏
+
+[URL Rewrite]
+^https:\/\/wl\.tap-water\.cn\/product\/getOnlineSlide\?type=ad&areaName=.*$ reject
+
+[MITM]
+hostname = %APPEND% wl.tap-water.cn
