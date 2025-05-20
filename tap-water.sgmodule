@@ -2,7 +2,12 @@
 #!desc=屏蔽指尖水务开屏
 
 [URL Rewrite]
-^https:\/\/wl\.tap-water\.cn\/product\/getOnlineSlide\?type=ad&areaName=.*$ reject
+^https:\/\/wl\.tap-water\.cn\/product\/getOnlineSlide reject-json={}
+# 如果希望返回特定结构（如错误码）：
+# ^https:\/\/wl\.tap-water\.cn\/product\/getOnlineSlide reject-json={"code": -1, "message": "Blocked by Surge"}
+
+# 拦截备用广告源（mis.tap-water.cn）
+^https:\/\/mis\.tap-water\.cn\/.*(slides|ad).* reject
 
 [MITM]
-hostname = %APPEND% wl.tap-water.cn
+hostname = %APPEND% wl.tap-water.cn, mis.tap-water.cn
