@@ -1,13 +1,6 @@
-#!name=小米音箱广告屏蔽
-#!desc=屏蔽小米音箱中的 QQ 音乐会员、推荐卡片、横幅、技能推荐等广告内容
-[URL Rewrite]
-^https?:\/\/info\.mina\.xiaoaisound\.com\/payGuide\/memberGuideBar.*$ reject
-^https?:\/\/info\.mina\.xiaoaisound\.com\/advertise\/bindPopup.*$ reject
-^https?:\/\/info\.mina\.xiaoaisound\.com\/advertise\/banner.*$ reject
-^https?:\/\/info\.mina\.xiaoaisound\.com\/advertise\/guideBar.*$ reject
-^https?:\/\/info\.mina\.xiaoaisound\.com\/advertise\/recommendCard.*$ reject
-^https?:\/\/pandora\.xiaomi\.com\/openplatform\/app\/list.*$ reject
-^https?:\/\/pandora\.xiaomi\.com\/openplatform\/hotSkill\/list.*$ reject
+[Script]
+小米音箱会员栏拦截 = type=http-response,pattern=https:\/\/info\.mina\.xiaoaisound\.com\/payGuide\/memberGuideBar\?cpCode=qqMusic.*,requires-body=true,max-size=0,script-path=https://raw.githubusercontent.com/yisaings/surge/main/xiaomi.js,script-update-interval=86400
+小米音箱广告弹窗拦截 = type=http-response,pattern=https:\/\/info\.mina\.xiaoaisound\.com\/advertise\/bindPopup\?cpCode=qqMusic.*,requires-body=true,max-size=0,script-path=https://raw.githubusercontent.com/yisaings/surge/main/xiaomi.js,script-update-interval=86400
 
 [MITM]
-hostname = info.mina.xiaoaisound.com, pandora.xiaomi.com
+hostname = info.mina.xiaoaisound.com
