@@ -3,7 +3,6 @@
 
 
 [Script]
-小米音箱会员栏拦截 = type=http-response,pattern=^https:\/\/coreapi\.mina\.xiaoaisound\.com\/apphomepage\/station\/tab_list\/v2\?requestId=[a-zA-Z0-9_-]+$,requires-body=true,max-size=0,script-path=https://raw.githubusercontent.com/yisaings/surge/main/empty.js,script-update-interval=86400
 小米音箱广告弹窗拦截 = type=http-response,pattern=https:\/\/info\.mina\.xiaoaisound\.com\/advertise\/bindPopup\?cpCode=qqMusic.*,requires-body=true,max-size=0,script-path=https://raw.githubusercontent.com/yisaings/surge/main/xmyx.js,script-update-interval=86400
 
 清空banner推荐 = type=http-response,pattern=https?://info\.mina\.xiaoaisound\.com/advertise/banner\?aiAppId=(\d+)&requestId=([^&]+)&timestamp=(\d+),requires-body=true,max-size=0,script-path=https://raw.githubusercontent.com/yisaings/surge/main/empty.js,script-update-interval=86400
