@@ -1,43 +1,42 @@
 let body = JSON.parse($response.body);
 
-// 定义关键词列表，凡是匹配这些关键词的字段都会被清空或关闭
-const adKeywords = ['ad', 'ads', 'advertisement', 'banner', 'banners', 'recommend', 'module', 'popup', 'promotion'];
+// 定义关键词：凡是字段名中包含这些关键词的，统一处理
+const adKeys = ['ad', 'ads', 'advert', 'banner', 'recommend', 'module', 'promotion', 'popup', 'feed'];
 
-// 递归清理函数
-function deepClean(obj) {
+// 清除内容 + 设置隐藏标志
+function clean(obj) {
   if (!obj || typeof obj !== 'object') return;
 
-  for (const key in obj) {
+  for (let key in obj) {
     if (!obj.hasOwnProperty(key)) continue;
 
+    const lowerKey = key.toLowerCase();
     const value = obj[key];
-    const keyLower = key.toLowerCase();
 
-    // 关键词匹配
-    if (adKeywords.some(k => keyLower.includes(k))) {
-      if (Array.isArray(value)) {
-        obj[key] = []; // 清空数组
-      } else if (typeof value === 'object') {
-        obj[key] = null; // 设为 null
-      } else if (typeof value === 'boolean') {
-        obj[key] = false; // 关闭开关
-      } else {
-        obj[key] = ''; // 设为空字符串
-      }
+    // 匹配到广告类字段
+    if (adKeys.some(k => lowerKey.includes(k))) {
+      if (Array.isArray(value)) obj[key] = [];
+      else if (typeof value === 'object') obj[key] = null;
+      else if (typeof value === 'boolean') obj[key] = false;
+      else obj[key] = '';
     }
 
-    // 如果字段是 boolean 类型且名字中含 show/visible，关闭它
-    if (/show|visible/i.test(keyLower) && typeof value === 'boolean') {
+    // 如果字段控制可视性，统一关闭
+    if (/show|visible|display/i.test(lowerKey) && typeof value === 'boolean') {
       obj[key] = false;
     }
 
-    // 递归处理嵌套字段
-    if (typeof value === 'object' && value !== null) {
-      deepClean(value);
+    // 如果字段是 height、size、layout，设为 0
+    if (/height|size|layout/i.test(lowerKey) && typeof value === 'number') {
+      obj[key] = 0;
+    }
+
+    // 递归处理嵌套结构
+    if (typeof value === 'object') {
+      clean(value);
     }
   }
 }
 
-deepClean(body);
-
+clean(body);
 $done({ body: JSON.stringify(body) });
