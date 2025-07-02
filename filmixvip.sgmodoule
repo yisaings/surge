@@ -1,0 +1,5 @@
+[Script]
+filmix_vip = type=http-response,pattern=https:\/\/appv3\.filmix\.com\.cn\/api\/v1\/user\/user,requires-body=true,max-size=100p0,script-path=https://raw.githubusercontent.com/yisaings/surge/main/filmixvip.js,timeout=10
+
+[MITM]
+hostname = appv3.filmix.com.cn
