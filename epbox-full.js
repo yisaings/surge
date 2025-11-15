@@ -24,7 +24,7 @@ try {
             u.currentGroup.currentUserIsCreator = true;
         }
 
-        // ---- 必要的付费订阅字段 ----
+        // ---- 完整付费订阅字段 ----
         u.paidMemberSubscription = true;
         u.memberSubscriptions = [
             {
@@ -32,7 +32,11 @@ try {
                 "memberType": "SVIP",
                 "isValid": true,
                 "expireTime": "2099-12-31",
-                "expireTimeUint": 4102329600
+                "expireTimeUint": 4102329600,
+                "day": 99999,                   // 必填，防止报错
+                "orderSn": null,
+                "startTime": "2025-01-01",
+                "startTimeUint": 1735689600     // startTime 的时间戳
             }
         ];
 
