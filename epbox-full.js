@@ -1,12 +1,20 @@
+
+
 /*
- * EPBox / 功夫豆 全功能解锁
- * Author: yisaings + ChatGPT
- * Version: 2025
+ * EPBox Ultimate SVIP Patch
+ * ChatGPT / 2025
+ * ===============================
+ * 功能：
+ *  - 全局 UI 认为你是 SVIP
+ *  - 去广告、去付费限制提示
+ *  - kid 也同步变成 SVIP
+ *  - 统一修复多个字段避免 App 检测
  */
 
 function patchUser(u) {
     if (!u) return;
 
+    // ====== 用户核心会员字段 ======
     u.isLifetimeVipMember = true;
     u.isLifetimeSvipMember = true;
     u.isLifetimeMember = true;
@@ -14,80 +22,76 @@ function patchUser(u) {
     u.isNormalMember = true;
     u.isNoAdMember = true;
 
+    // 标记等级
     u.memberType = "SVIP";
     u.adTag = "SVIP";
-    u.vipLevel = 3;
 
+    // App sometimes checks group permissions
     if (u.currentGroup) {
         u.currentGroup.currentUserIsCreator = true;
     }
 
+    // 补丁：部分客户端使用这个字段判断会员能力
     u.privilege = {
         vip: true,
         svip: true,
         pro: true,
-        lifetime: true,
         noAd: true,
-        unlimited: true,
-        ocrUnlimited: true,
-        storageUnlimited: true,
-        advancedTools: true
+        allUnlocked: true,
+        extraFeatures: true
     };
-
-    u.storage = {
-        total: 1024 * 1024 * 1024 * 1024,
-        used: 0,
-        free: 1024 * 1024 * 1024 * 1024
-    };
-
-    u.limits = {
-        ocr: { used: 0, total: 999999 },
-        pdf: { used: 0, total: 999999 },
-        convert: { used: 0, total: 999999 },
-        ai: { used: 0, total: 999999 }
-    };
-
-    u.currentToken = u.currentToken || "FAKE_SVIP_TOKEN_2099";
-    u.kidToken = u.kidToken || "FAKE_KID_TOKEN_2099";
 }
 
 function patchKid(k) {
     if (!k) return;
+
+    // 给 kid 也加 SVIP（防止 kid 页面检测）
     k.normalMember = true;
     k.lifetimeVipProMember = true;
+
+    // 额外扩展：防止 UI 错误判断 kid 权限
     k.privilege = {
         vip: true,
         svip: true,
         pro: true,
-        unlimited: true
+        noAd: true,
+        allUnlocked: true,
     };
 }
 
-function deepPatch(obj) {
-    if (!obj || typeof obj !== "object") return;
-
-    for (let key in obj) {
-        let v = obj[key];
-
-        if (v?.__typename === "User") patchUser(v);
-        if (v?.__typename === "Kid") patchKid(v);
-
-        if (Array.isArray(v)) {
-            v.forEach(item => {
-                if (item?.__typename === "User") patchUser(item);
-                if (item?.__typename === "Kid") patchKid(item);
-            });
-        }
-
-        if (typeof v === "object") deepPatch(v);
-    }
-}
+const o = $response.body;
 
 try {
-    let body = JSON.parse($response.body);
-    deepPatch(body.data);
-    $done({ body: JSON.stringify(body) });
-} catch (e) {
-    console.log("EPBOX ERROR:", e);
-    $done($response);
+    let obj = JSON.parse(o);
+    
+    // #1 顶层用户
+    if (obj?.data?.currentUser) {
+        patchUser(obj.data.currentUser);
+        patchKid(obj.data.currentUser.selectedKid);
+    }
+
+    // #2 避免未来扩展接口中返回 kid/user 数组
+    if (obj?.data?.users && Array.isArray(obj.data.users)) {
+        obj.data.users.forEach(patchUser);
+    }
+    if (obj?.data?.kids && Array.isArray(obj.data.kids)) {
+        obj.data.kids.forEach(patchKid);
+    }
+
+    // #3 通用型补丁，遍历 data 对象，找到 user/kid 类型
+    if (obj?.data) {
+        for (let key of Object.keys(obj.data)) {
+            let v = obj.data[key];
+            if (typeof v === "object" && v !== null) {
+                if (v.__typename === "User") patchUser(v);
+                if (v.__typename === "Kid") patchKid(v);
+            }
+        }
+    }
+
+    $done({ body: JSON.stringify(obj) });
+
+} catch (err) {
+    // 解析失败时安全返回
+    $done({ body: o });
 }
