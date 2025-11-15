@@ -9,7 +9,7 @@ try {
         // ---- 强制 SVIP ----
         u.isLifetimeVipMember = false;
         u.isLifetimeSvipMember = true;
-        u.isLifetimeVipProMember = false;
+        u.isLifetimeVipProMember = true;
         u.isNormalMember = true;
 
         // ---- 去广告 ----
