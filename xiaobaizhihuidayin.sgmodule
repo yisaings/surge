@@ -1,0 +1,10 @@
+#!name=小白智慧打印
+#!desc=EPBox / 功夫豆 全功能解锁（SVIP、无广告、无限制）
+#!version=1.0
+#!author=yisaings
+
+[Script]
+EPBox_FullUnlock = type=http-response,requires-body=1,max-size=0,pattern=^https:\/\/epbox\.gongfudou\.com\/graphql$,script-path=https://raw.githubusercontent.com/yisaings/surge/main/epbox-full.js
+
+[MITM]
+hostname = %APPEND% epbox.gongfudou.com
