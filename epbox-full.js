@@ -16,19 +16,30 @@ try {
         u.isNoAdMember = true;
         u.adTag = "SVIP";
 
-        // 部分界面可能查看这个字段
+        // ---- UI显示 ----
         u.memberType = "SVIP";
 
-        // 若 UI 判断 group 权限
+        // ---- group权限 ----
         if (u.currentGroup) {
             u.currentGroup.currentUserIsCreator = true;
         }
+
+        // ---- 必要的付费订阅字段 ----
+        u.paidMemberSubscription = true;
+        u.memberSubscriptions = [
+            {
+                "__typename": "MemberSubscription",
+                "memberType": "SVIP",
+                "isValid": true,
+                "expireTime": "2099-12-31",
+                "expireTimeUint": 4102329600
+            }
+        ];
 
         $done({ body: JSON.stringify(obj) });
     } else {
         $done({ body: resBody });
     }
 } catch (e) {
-    // 避免因解析失败导致接口出错
     $done({ body: resBody });
 }
