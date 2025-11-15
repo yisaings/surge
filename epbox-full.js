@@ -33,15 +33,20 @@ try {
                 "isValid": true,
                 "expireTime": "2099-12-31",
                 "expireTimeUint": 4102329600,
-                "day": 99999,                   // 必填，防止报错
+                "day": 99999,
                 "orderSn": null,
                 "startTime": "2025-01-01",
-                "startTimeUint": 1735689600     // startTime 的时间戳
+                "startTimeUint": 1735689600
             }
         ];
 
         // ---- 修改今日可打印张数 ----
         u.todayPrintPaperLeftCount = 999;
+
+        // ---- 让所有资源免费 ----
+        if (obj.data.libResource) {
+            obj.data.libResource.free = true;
+        }
 
         $done({ body: JSON.stringify(obj) });
     } else {
