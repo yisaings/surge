@@ -40,6 +40,9 @@ try {
             }
         ];
 
+        // ---- 修改今日可打印张数 ----
+        u.todayPrintPaperLeftCount = 999;
+
         $done({ body: JSON.stringify(obj) });
     } else {
         $done({ body: resBody });
