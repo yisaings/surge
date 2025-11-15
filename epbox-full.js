@@ -7,9 +7,9 @@ try {
         let u = obj.data.currentUser;
 
         // ---- 强制 SVIP ----
-        u.isLifetimeVipMember = true;
+        u.isLifetimeVipMember = false;
         u.isLifetimeSvipMember = true;
-        u.isLifetimeVipProMember = true;
+        u.isLifetimeVipProMember = false;
         u.isNormalMember = true;
 
         // ---- 去广告 ----
