@@ -6,20 +6,6 @@
 [Script]
 EPBox_FullUnlock = type=http-response,requires-body=1,max-size=0,pattern=^https:\/\/epbox\.gongfudou\.com\/graphql$,script-path=https://raw.githubusercontent.com/yisaings/surge/main/epbox-full.js
 
-[URL Rewrite]
-# sm.cn 开屏广告
-^https?:\/\/(content-understand-strategy|huichuan-mc)\.sm\.cn\/.*\.(jpg|jpeg|png|webp) - reject
-
-# adintl CDN 广告
-^https?:\/\/oss\.cdn\.adintl\.cn\/.*\.(jpg|jpeg|png|webp) - reject
-
-# baertt 广告素材
-^https?:\/\/res-kdshop\.baertt\.com\/.*\.(jpg|jpeg|png|webp) - reject
 
 [MITM]
-hostname = %APPEND%
-epbox.gongfudou.com,
-content-understand-strategy.sm.cn,
-huichuan-mc.sm.cn,
-oss.cdn.adintl.cn,
-res-kdshop.baertt.com
+hostname = %APPEND% epbox.gongfudou.com
