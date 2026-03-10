@@ -1,0 +1,15 @@
+#!name=Bilibili共享会员
+#!desc=支持iPhone+iPad自动识别播放接口，填写AU和UA即可
+#!author=custom
+#!version=2.0
+
+#!arguments=AU="",UA="",BUVID=""
+
+[Script]
+
+Bili-iOS = type=http-request,pattern=^https?:\/\/(grpc\.biliapi\.net|app\.bilibili\.com)\/bilibili\.app\.playerunite\.v1\.Player\/PlayViewUnite(\?.+)?$,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/bilibiliVIP.js,argument=AU={{{AU}}}&UA={{{UA}}}&BUVID={{{BUVID}}}
+
+Bili-iPad = type=http-request,pattern=^https?:\/\/(grpc\.biliapi\.net|app\.bilibili\.com)\/bilibili\.pgc\.gateway\.player\.v2\.PlayURL\/PlayView$,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/bilibiliVIP.js,argument=AU={{{AU}}}&UA={{{UA}}}&BUVID={{{BUVID}}}
+
+[MITM]
+hostname = grpc.biliapi.net, app.bilibili.com
