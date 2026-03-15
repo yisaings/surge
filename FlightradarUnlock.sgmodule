@@ -1,8 +1,0 @@
-#!name=Flightradar24 Gold 解锁
-#!desc=解锁 Flightradar24 的 Gold 权限和高级功能，屏蔽广告
-
-[Script]
-http-response ^https?:\/\/mobile\.flightradar24\.com\/mobile\/user-session(\?.*)?$ requires-body=1,script-path=https://github.com/ddgksf2013/dev/raw/main/flightradar24.js,tag=Flightradar24 Gold 解锁
-
-[MITM]
-hostname = %APPEND% mobile.flightradar24.com
