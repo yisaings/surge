@@ -1,10 +1,10 @@
 #EXTM3U
 
-#EXTINF:-1,青岛西海岸vs河南
-http://gslbmgsplive.miguvideo.com/migu/sports/50zhenyhvivid25/51/20221109/index.m3u8?msisdn=0315559f-ddde-44cf-a6a9-8640faac9492&mdspid=&spid=800033&netType=0&sid=7510472535&pid=2028597139&timestamp=20260422195058&Channel_ID=0132_10010001005&ProgramID=964238336&ParentNodeID=-99&assertID=7510472535&client_ip=183.216.141.42&SecurityKey=20260422195058&promotionId=&mvid=7510235933&mcid=500020&mpid=120000569763&playurlVersion=WX-A1-9.3.2-RELEASE&userid=&jmhm=&videocodec=h264&appCode=miguvideo_www&bean=mgspwww&tid=www&conFee=0&puData=9b1cee7ac5aac72c5296d8bf8189402b&ddCalcu=b92ba01a4cb9ea8e178afcb58ada6c97225c_s002&sv=10011
+#EXTINF:-1,成都蓉城VS浙江
+https://hls.yjjcfw.com/live/964336007.m3u8?hwSecret=9e332d7972cb9f24d85401fe37bc611322b62f3f02fe3a287374bc7219a12dd8&hwTime=69EC963C
 
-#EXTINF:-1,辽宁铁人vs大连英博
+#EXTINF:-1,北京国安VS天津津门虎
 https://hls.yjjcfw.com/live/964238251.m3u8?hwSecret=3be4650d4992f0c601ba1f333c815dcdd34fd47aebd28a89a8354d597d4215f8&hwTime=69E8B69C
 
-#EXTINF:-1,上海申花vs青岛海牛
+#EXTINF:-1,上海海港vs武汉三镇
 https://hls.yjjcfw.com/live/964238378.m3u8?hwSecret=fbbb603626f413344791e96fdcaf40cef4909086e5efaadec6845bdac81ab8a5&hwTime=69E8B8DF
