@@ -12,11 +12,11 @@ http://gslbmgsplive.miguvideo.com/
 #EXTINF:-1 tvg-logo="http://aip.acgf.vip:15644/api/public/dl/IgIQwitx?inline=true",20:00 云南玉昆 vs 北京国安
 https://hls.yjjcfw.com/live/
 
-#EXTINF:-1 tvg-id="CCTV5" tvg-logo="http://aip.acgf.vip:15644/api/public/dl/bh6af8oI?inline=true",CCTV-5
+#EXTINF:-1 tvg-id="CCTV5" tvg-logo="http://aip.acgf.vip:15644/api/public/dl/bh6af8oI?inline=true",CCTV5
 http://live12.xiazhix1.top/live/38260737.m3u8
 
-#EXTINF:-1 tvg-id="CCTV5+" tvg-logo="http://aip.acgf.vip:15644/api/public/dl/2xCgPmtu?inline=true",CCTV-5+
+#EXTINF:-1 tvg-id="CCTV5+" tvg-logo="http://aip.acgf.vip:15644/api/public/dl/2xCgPmtu?inline=true",CCTV5+
 http://118.122.144.115:8888/newlive/live/hls/16/live.m3u8
 
-#EXTINF:-1 tvg-id="CCTV16" tvg-logo="http://aip.acgf.vip:15644/api/public/dl/w9ydOYry?inline=true",CCTV-16
+#EXTINF:-1 tvg-id="CCTV16" tvg-logo="http://aip.acgf.vip:15644/api/public/dl/w9ydOYry?inline=true",CCTV16
 http://43.175.97.11/hlslive-tx-cdn.ysp.cctv.cn/ysp/2027249303_dlna.m3u8
