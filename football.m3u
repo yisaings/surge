@@ -3,17 +3,20 @@
 #EXTINF:-1 tvg-logo="http://aip.acgf.vip:15644/api/public/dl/Lvr2wfAS?inline=true",免责公告
 http://aip.acgf.vip:15644/api/public/dl/BRjhUvPV?inline=true
 
-#EXTINF:-1 tvg-logo="http://aip.acgf.vip:15644/api/public/dl/JLNA3D0W?inline=true",19:00 大连英博 vs 重庆铜梁龙
-https://hls.yjjcfw.com/live/964476264.m3u8?hwSecret=54a1d8ce6e4e78dd296f2ed79feff7b5f9cb7c10443c9be59a4e462c78e8eb1a&hwTime=69F48771
+#EXTINF:-1 tvg-logo="http://aip.acgf.vip:15644/api/public/dl/JLNA3D0W?inline=true",19:00 青岛海牛 vs 上海海港
+https://hls.yjjcfw.com/live/
 
-#EXTINF:-1 tvg-logo="http://aip.acgf.vip:15644/api/public/dl/lyOTZmm8?inline=true",19:00 河南俱乐部 vs 辽宁铁人
-http://gslbmgsplive.miguvideo.com/migu/sports/50zhenyhvivid25/51/20221109/index.m3u8?msisdn=0315559f-ddde-44cf-a6a9-8640faac9492&mdspid=&spid=800033&netType=0&sid=7510477145&pid=2028597139&timestamp=20260501184556&Channel_ID=0132_10010001005&ProgramID=964476187&ParentNodeID=-99&assertID=7510477145&client_ip=183.228.244.85&SecurityKey=20260501184556&promotionId=&mvid=7510238238&mcid=500020&mpid=120000569753&playurlVersion=WX-A1-9.4.2-RELEASE&userid=&jmhm=&videocodec=h264&appCode=miguvideo_www&bean=mgspwww&tid=www&conFee=0&puData=b9dbc05e5546d0a3a43b8838d783bd4b&ddCalcu=bb49addabbb3ca8075de85358486bd304aa3_s002&sv=10011
+#EXTINF:-1 tvg-logo="http://aip.acgf.vip:15644/api/public/dl/lyOTZmm8?inline=true",19:35 浙江 vs 深圳新鹏城
+http://gslbmgsplive.miguvideo.com/
 
-#EXTINF:-1 tvg-logo="http://aip.acgf.vip:15644/api/public/dl/IgIQwitx?inline=true",19:35 天津津门虎 vs 武汉三镇
-https://hls.yjjcfw.com/live/964476341.m3u8?hwSecret=c676c8d75d040a7ebed1f9e16cdd14b4b7d113594e816f2495577df8cc108249&hwTime=69F48FB6
+#EXTINF:-1 tvg-logo="http://aip.acgf.vip:15644/api/public/dl/IgIQwitx?inline=true",20:00 云南玉昆 vs 北京国安
+https://hls.yjjcfw.com/live/
 
 #EXTINF:-1 tvg-logo="http://aip.acgf.vip:15644/api/public/dl/pYgWMPg6?inline=true",19:35 山东泰山 vs 青岛西海岸
 https://hls.yjjcfw.com/live/964476377.m3u8?hwSecret=0b85801427682fe8f703efa38e954cef0f57d1bd7ea0142c5a4d1e1f6a0ab161&hwTime=69F49004
 
 #EXTINF:-1 tvg-logo="http://aip.acgf.vip:15644/api/public/dl/bqLFU52u?inline=true",20:00 上海申花 vs 成都蓉城
 https://hls.yjjcfw.com/live/964476494.m3u8?hwSecret=4004e8a8774ecded2dda9ff9fdf8df3fc8e08b6cdea4936a83838dca7e7c2006&hwTime=69F494C9
+
+#EXTINF:-1 tvg-logo="http://aip.acgf.vip:15644/api/public/dl/bh6af8oI?inline=true",CCTV-5
+http://live12.xiazhix1.top/live/38260737.m3u8
