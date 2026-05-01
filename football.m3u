@@ -1,14 +1,16 @@
 #EXTM3U
 
-#EXTINF:-1,青岛海牛 vs 山东泰山
-http://gslbmgsplive.miguvideo.com/migu/sports/50zhenyhvivid21/51/20221109/index.m3u8?msisdn=0315559f-ddde-44cf-a6a9-8640faac9492&mdspid=&spid=800033&netType=0&sid=7510473869&pid=2028597139&timestamp=20260426161605&Channel_ID=0132_10010001005&ProgramID=964336164&ParentNodeID=-99&assertID=7510473869&client_ip=223.96.180.0&SecurityKey=20260426161605&promotionId=&mvid=7510236600&mcid=500020&mpid=120000569756&playurlVersion=WX-A1-9.3.2-RELEASE&userid=&jmhm=&videocodec=h264&appCode=miguvideo_www&bean=mgspwww&tid=www&conFee=0&puData=fb00d520c3360f62659fad28f5efae64&ddCalcu=4f6bae0aa0bfdae552f08c23d3a6f09f5662_s002&sv=10011
+#EXTINF:-1,19:00 大连英博 vs 重庆铜梁龙
+dalian_vs_chongqing
 
-#EXTINF:-1,重庆铜梁龙 vs 青岛西海岸
-http://gslbmgsplive.miguvideo.com/migu/sports/50zhenyhvivid25/51/20221109/index.m3u8?msisdn=0315559f-ddde-44cf-a6a9-8640faac9492&mdspid=&spid=800033&netType=0&sid=7510473881&pid=2028597139&timestamp=20260426182606&Channel_ID=0132_10010001005&ProgramID=964336252&ParentNodeID=-99&assertID=7510473881&client_ip=115.54.134.170&SecurityKey=20260426182606&promotionId=&mvid=7510236606&mcid=500020&mpid=120000569757&playurlVersion=WX-A1-9.3.2-RELEASE&userid=&jmhm=&videocodec=h264&appCode=miguvideo_www&bean=mgspwww&tid=www&conFee=0&puData=67851738143109485198ebc2f2b3acd9&ddCalcu=96d7ac8aa5b31ab723f821c4b3e180991458_s002&sv=10011
+#EXTINF:-1,19:00 河南俱乐部 vs 辽宁铁人
+henan_vs_liaoning
 
-#EXTINF:-1,深圳新鹏城 vs 辽宁铁人
-http://gslbmgsplive.miguvideo.com/migu/sports/20230301/pcstation61/51/index.m3u8?msisdn=0315559f-ddde-44cf-a6a9-8640faac9492&mdspid=&spid=800033&netType=0&sid=7510473875&pid=2028597139&timestamp=20260426182616&Channel_ID=0132_10010001005&ProgramID=964336200&ParentNodeID=-99&assertID=7510473875&client_ip=183.199.236.250&SecurityKey=20260426182616&promotionId=&mvid=7510236603&mcid=500020&mpid=120000569758&playurlVersion=WX-A1-9.3.2-RELEASE&userid=&jmhm=&videocodec=h264&appCode=miguvideo_www&bean=mgspwww&tid=www&conFee=0&puData=b8aff35f6917be9c0f3e5e3acb6d87e3&ddCalcu=3be8a7aa8fbdfa63b5cfa639e157eb3ef90c_s002&sv=10011
+#EXTINF:-1,19:35 天津津门虎 vs 武汉三镇
+tianjin_vs_wuhan
 
-#EXTINF:-1,大连英博海发 vs 云南玉昆
+#EXTINF:-1,19:35 山东泰山 vs 青岛西海岸
+shandong_vs_qingdao
 
-#EXTINF:-1,河南俱乐部彩陶坊 vs 上海申花
+#EXTINF:-1,20:00 上海申花 vs 成都蓉城
+shanghai_vs_chengdu
