@@ -1,6 +1,6 @@
 #EXTM3U
 
-#EXTINF:-1,免责公告
+#EXTINF:-1 tvg-logo="http://aip.acgf.vip:15644/api/public/dl/Lvr2wfAS?inline=true",免责公告
 http://aip.acgf.vip:15644/api/public/dl/BRjhUvPV?inline=true
 
 #EXTINF:-1 tvg-logo="http://aip.acgf.vip:15644/api/public/dl/JLNA3D0W?inline=true",19:00 大连英博 vs 重庆铜梁龙
