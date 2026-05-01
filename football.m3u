@@ -17,3 +17,6 @@ http://live12.xiazhix1.top/live/38260737.m3u8
 
 #EXTINF:-1 tvg-logo="http://aip.acgf.vip:15644/api/public/dl/2xCgPmtu?inline=true",CCTV-5+
 http://118.122.144.115:8888/newlive/live/hls/16/live.m3u8
+
+#EXTINF:-1 tvg-logo="http://aip.acgf.vip:15644/api/public/dl/w9ydOYry?inline=true",CCTV-16
+http://43.175.97.11/hlslive-tx-cdn.ysp.cctv.cn/ysp/2027249303_dlna.m3u8
