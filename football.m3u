@@ -1,22 +1,22 @@
 #EXTM3U url-tvg"http://epg.51zmt.top:8000/e.xml.gz"
 
-#EXTINF:-1 tvg-logo="http://aip.acgf.vip:15644/api/public/dl/Lvr2wfAS?inline=true",免责公告
+#EXTINF:-1 group-title="公告" tvg-logo="http://aip.acgf.vip:15644/api/public/dl/Lvr2wfAS?inline=true",免责公告
 http://aip.acgf.vip:15644/api/public/dl/BRjhUvPV?inline=true
 
-#EXTINF:-1 tvg-logo="http://aip.acgf.vip:15644/api/public/dl/JLNA3D0W?inline=true",19:00 青岛海牛 vs 上海海港
+#EXTINF:-1 group-title="中超" tvg-logo="http://aip.acgf.vip:15644/api/public/dl/JLNA3D0W?inline=true",19:00 青岛海牛 vs 上海海港
 https://hls.yjjcfw.com/live/
 
-#EXTINF:-1 tvg-logo="http://aip.acgf.vip:15644/api/public/dl/lyOTZmm8?inline=true",19:35 浙江 vs 深圳新鹏城
+#EXTINF:-1 group-title="中超" tvg-logo="http://aip.acgf.vip:15644/api/public/dl/lyOTZmm8?inline=true",19:35 浙江 vs 深圳新鹏城
 http://gslbmgsplive.miguvideo.com/
 
-#EXTINF:-1 tvg-logo="http://aip.acgf.vip:15644/api/public/dl/IgIQwitx?inline=true",20:00 云南玉昆 vs 北京国安
+#EXTINF:-1 group-title="中超" tvg-logo="http://aip.acgf.vip:15644/api/public/dl/IgIQwitx?inline=true",20:00 云南玉昆 vs 北京国安
 https://hls.yjjcfw.com/live/
 
-#EXTINF:-1 tvg-id="CCTV5" tvg-logo="http://aip.acgf.vip:15644/api/public/dl/bh6af8oI?inline=true",CCTV5
+#EXTINF:-1 group-title="央视" tvg-id="CCTV5" tvg-logo="http://aip.acgf.vip:15644/api/public/dl/bh6af8oI?inline=true",CCTV5
 http://live12.xiazhix1.top/live/38260737.m3u8
 
-#EXTINF:-1 tvg-id="CCTV5+" tvg-logo="http://aip.acgf.vip:15644/api/public/dl/2xCgPmtu?inline=true",CCTV5+
+#EXTINF:-1 group-title="央视" tvg-id="CCTV5+" tvg-logo="http://aip.acgf.vip:15644/api/public/dl/2xCgPmtu?inline=true",CCTV5+
 http://118.122.144.115:8888/newlive/live/hls/16/live.m3u8
 
-#EXTINF:-1 tvg-id="CCTV16" tvg-logo="http://aip.acgf.vip:15644/api/public/dl/w9ydOYry?inline=true",CCTV16
+#EXTINF:-1 group-title="央视" tvg-id="CCTV16" tvg-logo="http://aip.acgf.vip:15644/api/public/dl/w9ydOYry?inline=true",CCTV16
 http://43.175.97.11/hlslive-tx-cdn.ysp.cctv.cn/ysp/2027249303_dlna.m3u8
