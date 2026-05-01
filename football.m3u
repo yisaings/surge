@@ -12,8 +12,8 @@ http://gslbmgsplive.miguvideo.com/
 #EXTINF:-1 tvg-logo="http://aip.acgf.vip:15644/api/public/dl/IgIQwitx?inline=true",20:00 云南玉昆 vs 北京国安
 https://hls.yjjcfw.com/live/
 
-#EXTINF:-1 tvg-logo="http://aip.acgf.vip:15644/api/public/dl/bqLFU52u?inline=true",20:00 上海申花 vs 成都蓉城
-https://hls.yjjcfw.com/live/964476494.m3u8?hwSecret=4004e8a8774ecded2dda9ff9fdf8df3fc8e08b6cdea4936a83838dca7e7c2006&hwTime=69F494C9
-
 #EXTINF:-1 tvg-logo="http://aip.acgf.vip:15644/api/public/dl/bh6af8oI?inline=true",CCTV-5
 http://live12.xiazhix1.top/live/38260737.m3u8
+
+#EXTINF:-1 tvg-logo="http://aip.acgf.vip:15644/api/public/dl/2xCgPmtu?inline=true",CCTV-5+
+http://74.91.26.218:82/live/cctv5p.m3u8
