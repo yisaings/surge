@@ -3,8 +3,8 @@
 #EXTINF:-1 group-title="公告" tvg-logo="http://aip.acgf.vip:15644/api/public/dl/Lvr2wfAS?inline=true",免责公告
 http://aip.acgf.vip:15644/api/public/dl/BRjhUvPV?inline=true
 
-#EXTINF:-1 group-title="中超" tvg-logo="http://aip.acgf.vip:15644/api/public/dl/JLNA3D0W?inline=true",19:00 青岛海牛 vs 上海海港
-https://hls.yjjcfw.com/live/
+#EXTINF:-1 group-title="中超",19:00 青岛海牛 vs 上海海港
+https://hls.yjjcfw.com/live/964476618.m3u8?hwSecret=19d0b5dc8de06ad9ef73dbf67f91be69856276d767d74654b233fb6cbe666775&hwTime=69F5E128
 
 #EXTINF:-1 group-title="中超" tvg-logo="http://aip.acgf.vip:15644/api/public/dl/lyOTZmm8?inline=true",19:35 浙江 vs 深圳新鹏城
 http://gslbmgsplive.miguvideo.com/
