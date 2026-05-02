@@ -9,8 +9,8 @@ https://hls.livelivelive.space/live/4498834.m3u8?txSecret=54407f9a5f80713473981e
 #EXTINF:-1 group-title="中超",19:35 浙江 vs 深圳新鹏城
 https://hls.livelivelive.space/live/4498835.m3u8?txSecret=1f20fa55f63673637f367c449ec3be05&txTime=1777721735
 
-#EXTINF:-1 group-title="中超" tvg-logo="http://aip.acgf.vip:15644/api/public/dl/IgIQwitx?inline=true",20:00 云南玉昆 vs 北京国安
-https://hls.yjjcfw.com/live/
+#EXTINF:-1 group-title="中超",20:00 云南玉昆 vs 北京国安
+https://play2.u5rq.com/live/11613851690_3400580106_1080p.m3u8?txSecret=4f7980d48f89117516520d5807f95717&txTime=69F5F8FA&t=1777724138482
 
 #EXTINF:-1 group-title="央视" tvg-id="CCTV5" tvg-logo="http://aip.acgf.vip:15644/api/public/dl/bh6af8oI?inline=true",CCTV5
 http://live12.xiazhix1.top/live/38260737.m3u8
