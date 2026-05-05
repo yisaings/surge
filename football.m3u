@@ -3,14 +3,17 @@
 #EXTINF:-1 group-title="公告" tvg-logo="http://aip.acgf.vip:15644/api/public/dl/Lvr2wfAS?inline=true",免责公告
 http://aip.acgf.vip:15644/api/public/dl/BRjhUvPV?inline=true
 
-#EXTINF:-1 group-title="中超",19:00 青岛海牛 vs 上海海港
-https://hls.livelivelive.space/live/4498834.m3u8?txSecret=54407f9a5f80713473981eab79456176&txTime=1777721786
+#EXTINF:-1 group-title="中超",19:00 青岛西海岸vs天津津门虎
+https://hls.
 
-#EXTINF:-1 group-title="中超",19:35 浙江 vs 深圳新鹏城
-https://hls.livelivelive.space/live/4498835.m3u8?txSecret=1f20fa55f63673637f367c449ec3be05&txTime=1777721735
+#EXTINF:-1 group-title="中超",19:35 山东泰山vs上海申花
+https://hls.
 
-#EXTINF:-1 group-title="中超",20:00 云南玉昆 vs 北京国安
-https://play2.u5rq.com/live/11613851690_3400580106_1080p.m3u8?txSecret=4f7980d48f89117516520d5807f95717&txTime=69F5F8FA&t=1777724138482
+#EXTINF:-1 group-title="中超",19:35 辽宁铁人vs成都蓉城
+https://play2.
+
+#EXTINF:-1 group-title="中超",20:00 重庆铜梁龙vs河南
+https://play2.
 
 #EXTINF:-1 group-title="央视" tvg-id="CCTV5" tvg-logo="http://aip.acgf.vip:15644/api/public/dl/bh6af8oI?inline=true",CCTV5
 http://live12.xiazhix1.top/live/38260737.m3u8
