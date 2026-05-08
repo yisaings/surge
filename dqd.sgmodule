@@ -10,7 +10,7 @@ DOMAIN,dab.dongdianqiu.com,REJECT-DROP
 DOMAIN,ap.dongdianqiu.com,REJECT-DROP
 DOMAIN,dsp-creative.ubixioe.com,REJECT-TINYGIF
 DOMAIN,v6-adashx.ut.amap.com,REJECT
-
+DOMAIN,zc.dongdianqiu.com,REJECT-DROP
 [Script]
 懂球帝广告配置 = type=http-response,pattern=^https:\/\/voc\.dongdianqiu\.com\/app\/adconfig$,requires-body=1,max-size=262144,script-path=https://raw.githubusercontent.com/yisaings/surge/main/dongqiudi.js
 
