@@ -1,0 +1,18 @@
+#!name=懂球帝净化
+#!desc=去开屏、延后广告插入、降低广告频率
+#!author=ChatGPT
+
+[Rule]
+DOMAIN-SUFFIX,voc.dongdianqiu.com,DIRECT
+DOMAIN-SUFFIX,api.dongdianqiu.com,DIRECT
+DOMAIN-KEYWORD,bridgeoos.com,REJECT-DROP
+DOMAIN-KEYWORD,beizi.biz,REJECT-DROP
+DOMAIN-KEYWORD,zhangyuyidong.cn,REJECT-DROP
+DOMAIN-KEYWORD,dab.dongdianqiu.com,REJECT-DROP
+DOMAIN-KEYWORD,ap.dongdianqiu.com,REJECT-DROP
+DOMAIN,dsp-creative.ubixioe.com,REJECT-TINYGIF
+[Script]
+懂球帝广告配置 = type=http-response,pattern=https:\/\/voc\.dongdianqiu\.com\/app\/adconfig,requires-body=1,max-size=0,script-path=https://raw.githubusercontent.com/yisaings/surge/main/dongqiudi.js
+
+[MITM]
+hostname = voc.dongdianqiu.com
