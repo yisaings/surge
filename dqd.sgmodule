@@ -3,16 +3,16 @@
 #!author=ChatGPT
 
 [Rule]
-DOMAIN,bridgeoos.com,REJECT-DROP
-DOMAIN,beizi.biz,REJECT-DROP
-DOMAIN,zhangyuyidong.cn,REJECT-DROP
+DOMAIN-SUFFIX,bridgeoos.com,REJECT-DROP
+DOMAIN-SUFFIX,beizi.biz,REJECT-DROP
+DOMAIN-SUFFIX,zhangyuyidong.cn,REJECT-DROP
 DOMAIN,dab.dongdianqiu.com,REJECT-DROP
 DOMAIN,ap.dongdianqiu.com,REJECT-DROP
 DOMAIN,dsp-creative.ubixioe.com,REJECT-TINYGIF
 DOMAIN,v6-adashx.ut.amap.com,REJECT
 
 [Script]
-懂球帝广告配置 = type=http-response,pattern=https:\/\/voc\.dongdianqiu\.com\/app\/adconfig,requires-body=1,max-size=0,script-path=https://raw.githubusercontent.com/yisaings/surge/main/dongqiudi.js
+懂球帝广告配置 = type=http-response,pattern=^https:\/\/voc\.dongdianqiu\.com\/app\/adconfig$,requires-body=1,max-size=262144,script-path=https://raw.githubusercontent.com/yisaings/surge/main/dongqiudi.js
 
 [MITM]
-hostname = voc.dongdianqiu.com
+hostname = %APPEND% voc.dongdianqiu.com
