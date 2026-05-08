@@ -3,13 +3,11 @@
 #!author=ChatGPT
 
 [Rule]
-DOMAIN-SUFFIX,voc.dongdianqiu.com,DIRECT
-DOMAIN-SUFFIX,api.dongdianqiu.com,DIRECT
-DOMAIN-KEYWORD,bridgeoos.com,REJECT-DROP
-DOMAIN-KEYWORD,beizi.biz,REJECT-DROP
-DOMAIN-KEYWORD,zhangyuyidong.cn,REJECT-DROP
-DOMAIN-KEYWORD,dab.dongdianqiu.com,REJECT-DROP
-DOMAIN-KEYWORD,ap.dongdianqiu.com,REJECT-DROP
+DOMAIN,bridgeoos.com,REJECT-DROP
+DOMAIN,beizi.biz,REJECT-DROP
+DOMAIN,zhangyuyidong.cn,REJECT-DROP
+DOMAIN,dab.dongdianqiu.com,REJECT-DROP
+DOMAIN,ap.dongdianqiu.com,REJECT-DROP
 DOMAIN,dsp-creative.ubixioe.com,REJECT-TINYGIF
 DOMAIN,v6-adashx.ut.amap.com,REJECT
 
