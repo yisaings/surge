@@ -1,147 +1,102 @@
-// ==================== 1. 配置与状态初始化 ====================
+// Surge 传入参数解析 (对应你的 sgmodule 里的参数)
 let mode = 'popular';
-let upmasterName = '';
-let active = true;
-
-// 解析 Surge 面板传入的参数
 if (typeof $argument !== 'undefined') {
-    const args = Object.fromEntries($argument.split('&').map(item => item.split('=')));
-    if (args.mode) mode = args.mode;
-    if (args.upmaster_name) upmasterName = decodeURIComponent(args.upmaster_name);
+    let match = $argument.match(/mode=([a-z]+)/);
+    if (match) mode = match[1];
 }
 
-// 读取持久化存储的视频池和去重记录
+// 借用 Surge 的持久化存储当做视频缓存池
 let videoPool = JSON.parse($persistentStore.read('fj_video_pool') || '[]');
-let shownBvidsArray = JSON.parse($persistentStore.read('fj_shown_bvids') || '[]');
-let shownBvids = new Set(shownBvidsArray);
-let poolBvids = new Set(videoPool.map(v => v.bvid));
+let shownBvids = new Set(JSON.parse($persistentStore.read('fj_shown_bvids') || '[]'));
 
-// ==================== 2. 基础请求封装 (替代 fetch) ====================
-async function fetchSurge(url, options = {}) {
-    return new Promise((resolve, reject) => {
-        let reqOpts = { url: url };
-        if (options.headers) reqOpts.headers = options.headers;
-        
-        $httpClient.get(reqOpts, (error, response, data) => {
-            if (error) {
-                reject(error);
+// --- 封装 Surge 的网络请求 ---
+function fetchSurge(url) {
+    return new Promise((resolve) => {
+        $httpClient.get(url, (error, response, data) => {
+            if (!error && data) {
+                try { resolve(JSON.parse(data)); } catch (e) { resolve(null); }
             } else {
-                try {
-                    resolve(JSON.parse(data));
-                } catch (e) {
-                    reject(e);
-                }
+                resolve(null);
             }
         });
     });
 }
 
-// ==================== 3. 粘贴原项目的纯逻辑函数 ====================
-
-// TODO: 将原项目 content.js 中的以下函数原封不动粘贴到这里：
-// 1. md5hex(str)
-// 2. getWbiKeys()
-// 3. mixinKey(orig)
-// 4. wbiSign(params)
-// 5. pushVideo(v) (注意：需要稍微修改里面的全局变量引用，或者直接用本脚本里的 poolBvids)
-// 6. fillPopular(), fillUpmaster(), fillCrossRegion(), fillNiche(), fillFresh(), fillWeekly()
-// 7. buildFeedItem(video)
-
-// *注意*：在粘贴的 fill 系列函数中，把里面的 `fetch(...).then(r => r.json())` 
-// 全部替换为 `fetchSurge(...)` 即可。
-
-// ==================== 4. 核心调度与拦截 ====================
-
+// --- 去 B 站拉取热门视频填充池子 ---
 async function fillPool() {
-    let added = 0;
-    try {
-        switch (mode) {
-            case 'upmaster': added = await fillUpmaster(); break;
-            case 'crossregion': added = await fillCrossRegion(); break;
-            case 'niche': added = await fillNiche(); break;
-            case 'weekly': added = await fillWeekly(); break;
-            case 'fresh': added = await fillFresh(); break;
-            default: added = await fillPopular(); break;
-        }
-        console.log(`[Fuck茧房] [${mode}] 视频池已填充: ${videoPool.length} 个 (+${added})`);
-        // 持久化保存
-        $persistentStore.write(JSON.stringify(videoPool), 'fj_video_pool');
-    } catch (e) {
-        console.log('[Fuck茧房] 填充视频池失败:', e);
-    }
-}
-
-function getVideoFromPool() {
-    let candidates = videoPool.filter(v => !shownBvids.has(v.bvid));
-
-    if (candidates.length === 0) {
-        console.log('[Fuck茧房] 去重记录已清空，重新开始');
-        shownBvids.clear();
-        candidates = videoPool; 
-    }
-
-    if (candidates.length === 0) return null;
-
-    const idx = Math.floor(Math.random() * candidates.length);
-    const video = candidates[idx];
-    videoPool.splice(videoPool.indexOf(video), 1);
-    poolBvids.delete(video.bvid);
-    shownBvids.add(video.bvid);
-
-    // 触发异步补充视频池
-    if (videoPool.length < 20) fillPool();
-
-    // 持久化去重记录
-    $persistentStore.write(JSON.stringify(Array.from(shownBvids)), 'fj_shown_bvids');
-    $persistentStore.write(JSON.stringify(videoPool), 'fj_video_pool');
-
-    return video;
-}
-
-function replaceFeedItems(items) {
-    if (!items || !items.length) return items;
-    const result = [];
-    items.forEach(item => {
-        if (item.goto === 'av') {
-            const video = getVideoFromPool();
-            if (video) {
-                result.push(buildFeedItem(video)); // 依赖原项目 buildFeedItem 函数
-            } else {
-                result.push(item);
+    let startPage = Math.floor(Math.random() * 3) + 1;
+    let url = `https://api.bilibili.com/x/web-interface/popular?ps=20&pn=${startPage}`;
+    let res = await fetchSurge(url);
+    
+    if (res && res.code === 0 && res.data && res.data.list) {
+        res.data.list.forEach(v => {
+            // 如果没展示过，就塞进池子里
+            if (!shownBvids.has(v.bvid)) {
+                videoPool.push(v);
             }
-        } else {
-            result.push(item);
-        }
-    });
-    return result;
+        });
+        console.log(`[Fuck茧房] 视频池已补充，当前余量: ${videoPool.length}`);
+    }
 }
 
-// ==================== 5. Surge 入口点 ====================
+// --- 构造 B 站推荐流认得的数据结构 ---
+function buildFeedItem(video) {
+    return {
+        id: video.aid, bvid: video.bvid, cid: video.cid, goto: 'av',
+        uri: 'https://www.bilibili.com/video/' + video.bvid,
+        pic: video.pic, pic_4_3: video.pic, title: video.title,
+        duration: video.duration, pubdate: video.pubdate,
+        owner: video.owner, stat: video.stat,
+        rcmd_reason: { reason_type: 1, content: "打破茧房" }, // 加个小标记
+        show_info: 1, pos: 0, is_stock: 0, enable_vt: 0
+    };
+}
+
+// ================= 主逻辑 (使用你熟悉的 try-catch 风格) =================
 async function main() {
     let body = $response.body;
-    if (!body || !active) return $done({});
-    
+    if (!body) return $done({});
+
     try {
-        let data = JSON.parse(body);
-        if (data && data.code === 0 && data.data && data.data.item) {
-            
-            // 如果池子是空的，等待一次同步填充
-            if (videoPool.length === 0) {
-                await fillPool();
+        let obj = JSON.parse(body);
+
+        // 判断是否是我们要拦截的推荐流
+        if (obj?.code === 0 && obj?.data?.item) {
+            console.log("[Fuck茧房] 开始替换推荐流...");
+
+            // 1. 如果池子快空了，异步去拉取新视频
+            if (videoPool.length < 5) {
+                await fillPool(); 
             }
 
-            // 执行替换
-            data.data.item = replaceFeedItems(data.data.item);
-            
-            // 返回修改后的 JSON
-            $done({ body: JSON.stringify(data) });
-        } else {
-            $done({ body });
+            // 2. 循环替换原有的推荐流
+            let items = obj.data.item;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].goto === 'av' && videoPool.length > 0) {
+                    // 从池子里拿出一个视频
+                    let newVideo = videoPool.shift(); 
+                    // 标记为已展示
+                    shownBvids.add(newVideo.bvid);
+                    // 替换原位
+                    items[i] = buildFeedItem(newVideo); 
+                }
+            }
+
+            // 3. 把剩余的池子和已展示记录存入 Surge，下次接着用
+            $persistentStore.write(JSON.stringify(videoPool), 'fj_video_pool');
+            $persistentStore.write(JSON.stringify(Array.from(shownBvids).slice(-100)), 'fj_shown_bvids'); // 只存最近100个防止内存爆满
+
+            // 4. 打包回 JSON
+            body = JSON.stringify(obj);
+            console.log("[Fuck茧房] 替换完成！");
         }
     } catch (e) {
-        console.log(`[Fuck茧房] 执行报错: ${e}`);
-        $done({ body });
+        console.log("Fuck茧房 JSON Parse Error: " + e);
     }
+    
+    // 最后统一吐出数据 (Surge 规定如果是 async 函数，必须显式调用 $done)
+    $done({ body });
 }
 
+// 启动！
 main();
