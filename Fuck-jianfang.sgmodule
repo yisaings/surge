@@ -1,0 +1,18 @@
+#!name=Fuck茧房 🍃
+#!desc=在数据源头替换 B 站首页推荐流，把首页推荐流换成跨分区热门视频池，打破信息茧房，零卡顿。
+#!system=ios, macos
+#!category=Bilibili
+#!author=lixing23
+
+[Argument]
+mode = select, "popular", "upmaster", "crossregion", "niche", "weekly", "fresh", default="popular", desc="内容模式：热门池/UP主画像/跨分区/冷门优质/每周必看/新号"
+upmaster_name = string, default="", desc="【UP主画像】模式专用，填入 UP 主名称（如：老番茄）"
+
+[Script]
+# 拦截 B 站推荐流 API 接口
+# 注意：请将 script-path 后面的链接替换为你自己在 GitHub 上的 Raw 链接
+Fuck-jianfang-core = type=http-response, pattern=^https:\/\/api\.bilibili\.com\/x\/web-interface\/(index\/top\/feed\/rcmd|rcmd), requires-body=1, max-size=3145728, script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/Fuck-jianfang.js, timeout=10
+
+[MITM]
+# 开启 B 站 API 的 HTTPS 解密
+hostname = %APPEND% api.bilibili.com
