@@ -1,12 +1,11 @@
 #!name=Fuck茧房
-#!desc=替换B站首页推荐流，打破信息茧房
-
-[Argument]
-mode = select, popular, upmaster, crossregion, niche, weekly, fresh, default=popular
-upmaster_name = string, default=
+#!desc=替换B站首页推荐流，打破信息茧房。长按模块可调整运行模式。
+#!arguments=运行模式:popular,UP主名称:老番茄
+#!arguments-desc=运行模式输入对应英文：\npopular (热门池)\ncrossregion (跨分区)\nniche (冷门优质)\nweekly (每周必看)\nfresh (新号模式)\nupmaster (UP主画像)\n\n只有当运行模式填 upmaster 时，下方的UP主名称才会生效。
 
 [Script]
-http-response ^https:\/\/api\.bilibili\.com\/x\/web-interface\/(index\/top\/feed\/rcmd|rcmd) requires-body=1,script-path=https://raw.githubusercontent.com/yisaings/surge/main/Fuck-jianfang.js,tag=Fuck茧房
+# 注意这里的 argument=mode={{{运行模式}}}&up={{{UP主名称}}} 就是把你面板里填的值传给 JS 脚本
+http-response ^https:\/\/(app|api)\.bilibili\.com\/x\/(v2\/feed\/index|web-interface\/(index\/top\/feed\/rcmd|rcmd)) requires-body=1,script-path=https://raw.githubusercontent.com/yisaings/surge/main/Fuck-jianfang.js,argument=mode={{{运行模式}}}&upmaster_name={{{UP主名称}}},tag=Fuck茧房
 
 [MITM]
-hostname = %APPEND% api.bilibili.com
+hostname = %APPEND% api.bilibili.com, app.bilibili.com
