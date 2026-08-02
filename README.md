@@ -10,12 +10,14 @@
 
 ### 1. 哔哩哔哩推荐流替换 (Fuck 茧房 🍃)
 🔗 **模块链接**：`https://raw.githubusercontent.com/yisaings/surge/main/Fuck-jianfang.sgmodule`
+💡 **来源致谢**：核心逻辑移植与启发自 [lixing23/Fuck-jianfang](https://github.com/lixing23/Fuck-jianfang)
 
 打破 B 站信息茧房，将首页无聊的同质化推荐强制接管并替换为**全站热门**或**新号探索**内容。
 * **多端适配**：完美兼容 Web 端、iPhone (Pegasus) 以及 iPad (Pad 专有大卡片) 端。
 * **原生 UI**：支持 Surge 模块参数面板（`arguments`），长按模块即可无代码切换运行模式。
 * **极限防卡死**：内置动态水位计算、高并发批量进货（单次 80 视频），保证 0 毫秒极速刷新。
 * **防风控机制**：独立沙盒请求免 Cookie，内置 150 个视频的本地离线备用粮仓，彻底解决拉取频繁导致的 B 站风控死锁。
+
 
 ### 2. 小白智慧打印 部分功能解锁
 🔗 **模块链接**：`https://raw.githubusercontent.com/yisaings/surge/main/xiaobaizhihuidayin.sgmodule`
