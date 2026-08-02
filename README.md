@@ -18,20 +18,20 @@
 * **防风控机制**：独立沙盒请求免 Cookie，内置 150 个视频的本地离线备用粮仓，彻底解决拉取频繁导致的 B 站风控死锁。
 
 ### 2. 小白智慧打印 部分功能解锁
-🔗 **模块链接**：`https://raw.githubusercontent.com/yisaings/surge/main/epbox-full.sgmodule`
+🔗 **模块链接**：`https://raw.githubusercontent.com/yisaings/surge/main/xiaobaizhihuidayin.sgmodule`
 
 小白智慧打印 App 的普通VIP解锁。
 * **特性**：强解 VIP 身份、破除使用限制，实现高效打印体验。
 
 ### 3. 中国联通 App 极简版
-🔗 **模块链接**：`https://raw.githubusercontent.com/yisaings/surge/main/10010.sgmodule`
+🔗 **模块链接**：`https://raw.githubusercontent.com/yisaings/surge/main/10010NoAds.sgmodule`
 
 彻底净化中国联通客户端的臃肿 UI 与广告。
 * **规则拦截**：精准屏蔽开屏广告请求。
 * **UI 精简 (JQ Rewrite)**：无痕剔除首页“通通”、“签到”、浮窗广告，以及发现页和搜索页的热词展示，还你一个干净的营业厅。
 
 ### 4. 懂球帝 去广告
-🔗 **模块链接**：`https://raw.githubusercontent.com/yisaings/surge/main/dongqiudi.sgmodule`
+🔗 **模块链接**：`https://raw.githubusercontent.com/yisaings/surge/main/dongqiudi.list`
 
 * **特性**：基于 Domain 规则的网络层拦截。精准屏蔽懂球帝内置的第三方广告联盟（如 ubixioe、beizi）、开屏广告分发器及追踪域名。
 
