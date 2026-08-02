@@ -10,6 +10,7 @@
 
 ### 1. 哔哩哔哩推荐流替换 (Fuck 茧房 🍃)
 🔗 **模块链接**：`https://raw.githubusercontent.com/yisaings/surge/main/Fuck-jianfang.sgmodule`
+
 💡 **来源致谢**：核心逻辑移植与启发自 [lixing23/Fuck-jianfang](https://github.com/lixing23/Fuck-jianfang)
 
 打破 B 站信息茧房，将首页无聊的同质化推荐强制接管并替换为**全站热门**或**新号探索**内容。
