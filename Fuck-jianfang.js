@@ -1,4 +1,4 @@
-// ==================== [Fuck茧房] 极速防卡死版 (Web + iPhone + iPad) ====================
+// ==================== [Fuck茧房] 满血丝滑稳定版 (Web + iPhone + iPad) ====================
 
 let mode = 'popular';
 if (typeof $argument !== 'undefined') {
@@ -10,12 +10,12 @@ let videoPool = JSON.parse($persistentStore.read('fj_video_pool') || '[]');
 let shownBvidsCache = JSON.parse($persistentStore.read('fj_shown_bvids') || '[]');
 let shownBvids = new Set(shownBvidsCache);
 
-// 极速网络请求（底层设置 2 秒超时）
+// 极速网络请求（超时放宽至 3 秒，保证一定能拉到数据）
 function fetchSurge(url) {
     return new Promise((resolve) => {
         $httpClient.get({
             url: url,
-            timeout: 2, 
+            timeout: 3, 
             headers: {
                 "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
             }
@@ -29,43 +29,58 @@ function fetchSurge(url) {
     });
 }
 
-// 并发拉取热门（一次性拉取 3 页，共 60 个视频）
+// 批量进货：热门模式（一次性并发拉取 4 页，共 80 个视频）
 async function fillPopular() {
-    let startPage = Math.floor(Math.random() * 12) + 1;
-    let urls = [0, 1, 2].map(i => `https://api.bilibili.com/x/web-interface/popular?ps=20&pn=${startPage + i}`);
+    let startPage = Math.floor(Math.random() * 8) + 1;
+    let urls = [0, 1, 2, 3].map(i => `https://api.bilibili.com/x/web-interface/popular?ps=20&pn=${startPage + i}`);
     let results = await Promise.all(urls.map(url => fetchSurge(url)));
     
+    // 获取当前池子里的 bvid 防止内部重复
+    let poolBvids = new Set(videoPool.map(v => v.bvid));
     let added = 0;
+    
     results.forEach(res => {
         if (res && res.code === 0 && res.data && res.data.list) {
             res.data.list.forEach(v => {
-                if (!shownBvids.has(v.bvid)) {
+                if (!shownBvids.has(v.bvid) && !poolBvids.has(v.bvid)) {
                     videoPool.push(v);
+                    poolBvids.add(v.bvid);
                     added++;
                 }
             });
         }
     });
 
+    // 触底反弹：如果过滤后一个都不剩，说明记忆太满，清空记忆强制装填
     if (added === 0) {
+        console.log("[Fuck茧房] 触发去重死锁，清空记忆强行补货！");
         shownBvids.clear();
         results.forEach(res => {
-            if (res?.data?.list) res.data.list.forEach(v => videoPool.push(v));
+            if (res?.data?.list) {
+                res.data.list.forEach(v => {
+                    if (!poolBvids.has(v.bvid)) {
+                        videoPool.push(v);
+                        poolBvids.add(v.bvid);
+                    }
+                });
+            }
         });
     }
 }
 
-// 并发拉取新号模式
+// 批量进货：新号模式
 async function fillFresh() {
     let baseIdx = Math.floor(Math.random() * 8) + 1; 
-    let urls = [0, 1, 2].map(i => `https://api.bilibili.com/x/web-interface/index/top/feed/rcmd?ps=20&fresh_idx=${baseIdx + i}&fresh_type=4`);
+    let urls = [0, 1, 2, 3].map(i => `https://api.bilibili.com/x/web-interface/index/top/feed/rcmd?ps=20&fresh_idx=${baseIdx + i}&fresh_type=4`);
     let results = await Promise.all(urls.map(url => fetchSurge(url)));
     
+    let poolBvids = new Set(videoPool.map(v => v.bvid));
     let added = 0;
+    
     results.forEach(res => {
         if (res && res.code === 0 && res.data && res.data.item) {
             res.data.item.forEach(item => {
-                if (item.goto === 'av' && item.bvid && !shownBvids.has(item.bvid)) {
+                if (item.goto === 'av' && item.bvid && !shownBvids.has(item.bvid) && !poolBvids.has(item.bvid)) {
                     videoPool.push({
                         bvid: item.bvid, aid: item.id, cid: item.cid, title: item.title,
                         pic: (item.pic || '').replace('http://', 'https://'),
@@ -73,11 +88,13 @@ async function fillFresh() {
                         stat: { view: item.stat?.view || 0, danmaku: item.stat?.danmaku || 0 },
                         duration: item.duration, pubdate: item.pubdate
                     });
+                    poolBvids.add(item.bvid);
                     added++;
                 }
             });
         }
     });
+    
     if (added === 0) shownBvids.clear();
 }
 
@@ -86,6 +103,7 @@ async function fillPool() {
     else await fillPopular();
 }
 
+// 构造 Web 卡片
 function buildFeedItem(video) {
     return {
         id: video.aid, bvid: video.bvid, cid: video.cid, goto: 'av',
@@ -98,6 +116,7 @@ function buildFeedItem(video) {
     };
 }
 
+// 构造 App/iPad 卡片
 function buildAppFeedItem(video, isPad) {
     let upName = video.owner?.name || video.up || "打破茧房";
     let viewCount = video.stat?.view || video.view || 0;
@@ -143,17 +162,14 @@ async function main() {
 
         if (obj?.code === 0 && targetList) {
             
-            // 动态水位计算：本次刷新需要多少个视频？
+            // 动态水位计算：算一算当前这次刷新到底需要多少个视频
             let needCount = targetList.filter(card => card.goto === 'av').length;
             
-            // 核心防穿帮：如果库存不够满足本次需求 + 20个备用，立刻进货
-            if (videoPool.length < needCount + 20) {
-                console.log(`[Fuck茧房] 库存预警 (${videoPool.length})，开始并发进货...`);
-                // 1.5 秒极限防卡死：网络再差也不允许阻挡 App 刷新
-                await Promise.race([
-                    fillPool(),
-                    new Promise(resolve => setTimeout(resolve, 1500))
-                ]);
+            // 如果池子里的库存 < 需要量 + 30 个备用，立刻进货！
+            if (videoPool.length < needCount + 30) {
+                console.log(`[Fuck茧房] 触发进货机制 | 当前库存: ${videoPool.length} | 本次需消耗: ${needCount}`);
+                // 移除会卡死池子的 race 机制，强制保证数据获取完毕才放行
+                await fillPool(); 
             }
 
             let replacedCount = 0;
@@ -167,9 +183,9 @@ async function main() {
                 }
             }
 
-            // 保存状态
+            // 保存状态，将去重记忆缩减至 150 条（防止将热门榜全部屏蔽导致无限拉不到新货）
             $persistentStore.write(JSON.stringify(videoPool), 'fj_video_pool');
-            $persistentStore.write(JSON.stringify(Array.from(shownBvids).slice(-400)), 'fj_shown_bvids');
+            $persistentStore.write(JSON.stringify(Array.from(shownBvids).slice(-150)), 'fj_shown_bvids');
 
             body = JSON.stringify(obj);
         }
