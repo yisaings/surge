@@ -1,4 +1,4 @@
-// ==================== [Fuck茧房] 高并发防卡顿版 (Web + iPhone + iPad) ====================
+// ==================== [Fuck茧房] 极速防卡死版 (Web + iPhone + iPad) ====================
 
 let mode = 'popular';
 if (typeof $argument !== 'undefined') {
@@ -10,12 +10,12 @@ let videoPool = JSON.parse($persistentStore.read('fj_video_pool') || '[]');
 let shownBvidsCache = JSON.parse($persistentStore.read('fj_shown_bvids') || '[]');
 let shownBvids = new Set(shownBvidsCache);
 
-// 封装 Surge 网络请求（增加 3 秒超时限制，防止卡死 App）
+// 极速网络请求（底层设置 2 秒超时）
 function fetchSurge(url) {
     return new Promise((resolve) => {
         $httpClient.get({
             url: url,
-            timeout: 3, 
+            timeout: 2, 
             headers: {
                 "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
             }
@@ -29,10 +29,9 @@ function fetchSurge(url) {
     });
 }
 
-// 批量拉取热门（一次拉 3 页，确保池子深不见底）
+// 并发拉取热门（一次性拉取 3 页，共 60 个视频）
 async function fillPopular() {
-    let startPage = Math.floor(Math.random() * 10) + 1;
-    // 使用 Promise.all 并发请求 3 页数据（60个视频），速度跟请求 1 页一样快
+    let startPage = Math.floor(Math.random() * 12) + 1;
     let urls = [0, 1, 2].map(i => `https://api.bilibili.com/x/web-interface/popular?ps=20&pn=${startPage + i}`);
     let results = await Promise.all(urls.map(url => fetchSurge(url)));
     
@@ -49,12 +48,14 @@ async function fillPopular() {
     });
 
     if (added === 0) {
-        shownBvids.clear(); // 全看过了就清空记忆
-        console.log("[Fuck茧房] 去重记录已清空");
+        shownBvids.clear();
+        results.forEach(res => {
+            if (res?.data?.list) res.data.list.forEach(v => videoPool.push(v));
+        });
     }
 }
 
-// 批量拉取新号（一次拉 3 页）
+// 并发拉取新号模式
 async function fillFresh() {
     let baseIdx = Math.floor(Math.random() * 8) + 1; 
     let urls = [0, 1, 2].map(i => `https://api.bilibili.com/x/web-interface/index/top/feed/rcmd?ps=20&fresh_idx=${baseIdx + i}&fresh_type=4`);
@@ -85,7 +86,6 @@ async function fillPool() {
     else await fillPopular();
 }
 
-// 构造 Web 卡片
 function buildFeedItem(video) {
     return {
         id: video.aid, bvid: video.bvid, cid: video.cid, goto: 'av',
@@ -98,7 +98,6 @@ function buildFeedItem(video) {
     };
 }
 
-// 构造 App/iPad 卡片
 function buildAppFeedItem(video, isPad) {
     let upName = video.owner?.name || video.up || "打破茧房";
     let viewCount = video.stat?.view || video.view || 0;
@@ -116,12 +115,10 @@ function buildAppFeedItem(video, isPad) {
         cover_left_text_1: String(viewCount), 
         cover_left_text_2: danmakuCount, 
         cover_left_icon_1: 1, cover_left_icon_2: 3,
-        rcmd_reason: mode === 'fresh' ? "新号模式" : "打破茧房",
-        rcmd_reason_style: { text: mode === 'fresh' ? "新号模式" : "打破茧房", text_color: "#FF6633", bg_color: "#FFF1ED", border_color: "#FFF1ED", bg_style: 1 },
+        rcmd_reason: mode === 'fresh' ? "新号探索" : "打破茧房",
+        rcmd_reason_style: { text: mode === 'fresh' ? "新号探索" : "打破茧房", text_color: "#FF6633", bg_color: "#FFF1ED", border_color: "#FFF1ED", bg_style: 1 },
         player_args: { aid: video.aid, cid: video.cid, duration: video.duration, type: "av" },
-        three_point_v2: [
-            { title: "添加至稍后再看", type: "watch_later" }
-        ]
+        three_point_v2: [{ title: "添加至稍后再看", type: "watch_later" }]
     };
 
     if (isPad) {
@@ -146,20 +143,31 @@ async function main() {
 
         if (obj?.code === 0 && targetList) {
             
-            // iPad 一次刷新的卡片很多，所以只要池子少于 30 个就立刻并发进货！
-            if (videoPool.length < 30) {
-                await fillPool(); 
+            // 动态水位计算：本次刷新需要多少个视频？
+            let needCount = targetList.filter(card => card.goto === 'av').length;
+            
+            // 核心防穿帮：如果库存不够满足本次需求 + 20个备用，立刻进货
+            if (videoPool.length < needCount + 20) {
+                console.log(`[Fuck茧房] 库存预警 (${videoPool.length})，开始并发进货...`);
+                // 1.5 秒极限防卡死：网络再差也不允许阻挡 App 刷新
+                await Promise.race([
+                    fillPool(),
+                    new Promise(resolve => setTimeout(resolve, 1500))
+                ]);
             }
 
+            let replacedCount = 0;
             for (let i = 0; i < targetList.length; i++) {
                 if (targetList[i].goto === 'av' && videoPool.length > 0) {
                     let newVideo = videoPool.shift(); 
                     shownBvids.add(newVideo.bvid);
                     if (targetList[i].ad_info) delete targetList[i].ad_info; 
                     targetList[i] = isApp ? buildAppFeedItem(newVideo, isPad) : buildFeedItem(newVideo); 
+                    replacedCount++;
                 }
             }
 
+            // 保存状态
             $persistentStore.write(JSON.stringify(videoPool), 'fj_video_pool');
             $persistentStore.write(JSON.stringify(Array.from(shownBvids).slice(-400)), 'fj_shown_bvids');
 
