@@ -1,28 +1,12 @@
-// ==================== 1. 自动依赖管理 (免手动安装 DmYY) ====================
-async function checkAndDownloadDmYY() {
-  const fm = FileManager[module.filename.includes('Documents/iCloud~') ? 'iCloud' : 'local']();
-  const dmyyPath = fm.joinPath(fm.documentsDirectory(), 'DmYY.js');
-  
-  if (!fm.fileExists(dmyyPath)) {
-    console.log("正在下载 DmYY 基础框架组件...");
-    const url = "https://raw.githubusercontent.com/dompling/Scriptable/master/Scripts/DmYY.js";
-    try {
-      const req = new Request(url);
-      const content = await req.loadString();
-      fm.writeString(dmyyPath, content);
-      console.log("DmYY 框架下载完成！");
-    } catch (e) {
-      console.error("DmYY 依赖下载失败，请检查网络: " + e);
-    }
-  }
-}
-
-await checkAndDownloadDmYY();
+/*
+ * @name: CDT Monitor (Glass Multi-Server Edition)
+ * @description: 阿里云/多平台 CDT 流量监控小组件
+ * @version: 2.5.2
+*/
 
 if (typeof require === 'undefined') require = importModule;
 const { DmYY, Runing } = require('./DmYY');
 
-// ==================== 2. CDT Monitor 业务逻辑 ====================
 class Widget extends DmYY {
   constructor(arg) {
     super(arg);
@@ -31,7 +15,7 @@ class Widget extends DmYY {
     this.Run();
   }
 
-  version = '2.5.0';
+  version = '2.5.2';
   baseUrl = '';
   apiKey = '';
   refreshInterval = 10;
@@ -52,7 +36,7 @@ class Widget extends DmYY {
     cost: "0.00",
     balance: "0.00",
     cdtUsed: 0.00,
-    cdtLimit: 0,
+    cdtLimit: 200,
     usedPercent: "0.00",
     threshold: 95
   };
@@ -83,7 +67,6 @@ class Widget extends DmYY {
     let rawData = null;
     let useCache = false;
 
-    // 缓存过期检测
     if (fm.fileExists(cachePath)) {
       const modified = fm.modificationDate(cachePath);
       const diffMinutes = (new Date() - modified) / (1000 * 60);
@@ -95,7 +78,6 @@ class Widget extends DmYY {
       }
     }
 
-    // 在线拉取
     if (!useCache) {
       const url = `${this.baseUrl}/api/v1/widget/summary`;
       try {
@@ -122,43 +104,57 @@ class Widget extends DmYY {
       }
     }
 
-    // 解析装载真实数据
     if (rawData) {
-      const summary = rawData.summary || rawData;
+      // 打印完整原始结构方便调试排查
+      console.log("📦 后端原始返回数据:", JSON.stringify(rawData));
+
+      const summary = rawData.summary || rawData.data?.summary || rawData;
       
-      // 全版本数据字段自适应兼容
-      let list = rawData.accounts || rawData.data || rawData.items || rawData.managed_instances || (rawData.instance ? [rawData.instance] : []);
+      // 兼容所有可能的实例数组键名
+      let list = rawData.accounts || rawData.data?.accounts || rawData.data || rawData.items || rawData.instances || rawData.managed_instances || (rawData.instance ? [rawData.instance] : []);
       if (!Array.isArray(list)) list = [];
 
       this.serverList = list.map(item => {
-        const used = Number(item.cdt_used_gb ?? item.traffic_used ?? item.flow_used ?? summary.cdt_used_gb ?? 0.00);
-        const limit = Number(item.cdt_limit_gb ?? item.traffic_limit ?? item.flow_total ?? summary.cdt_limit_gb ?? 0);
-        const pct = limit > 0 ? (used / limit) * 100 : (item.percentageOfUse ? Number(item.percentageOfUse) : 0);
-        
-        let costVal = "0.00";
-        if (item.month_cost !== undefined) costVal = String(item.month_cost);
-        else if (item.cost?.monthly_cost !== undefined) costVal = String(item.cost.monthly_cost);
-        else if (summary.month_cost !== undefined) costVal = String(summary.month_cost);
+        // 深度提取已用流量 (GB)
+        let used = item.cdt_used_gb ?? item.traffic_used_gb ?? item.traffic_used ?? item.flow_used ?? item.used_traffic ?? item.traffic?.used_gb ?? item.traffic?.used ?? summary.cdt_used_gb ?? summary.total_traffic_gb ?? 0;
+        used = Number(used);
+
+        // 深度提取总配额 (GB)，若未设置默认设为 200 GB
+        let limit = item.cdt_limit_gb ?? item.traffic_limit_gb ?? item.traffic_limit ?? item.flow_total ?? item.total_traffic ?? item.traffic?.limit_gb ?? item.traffic?.total ?? summary.cdt_limit_gb ?? 200;
+        limit = Number(limit) || 200;
+
+        // 提取使用百分比
+        let pct = item.percentageOfUse ?? item.used_percent ?? item.percent ?? (limit > 0 ? (used / limit) * 100 : 0);
+        pct = Number(pct);
+
+        // 提取费用与余额
+        let costVal = item.month_cost ?? item.cost?.monthly_cost ?? item.cost ?? summary.month_cost ?? "0.00";
+        let balVal = item.balance ?? item.account_balance ?? summary.balance ?? "0.00";
 
         return {
-          name: item.name || item.account_name || item.instance_name || "未命名节点",
+          name: item.name || item.account_name || item.instance_name || item.instance_id || "LTAI5tE***",
           region: item.region || item.location || item.regionName || "中国香港",
           status: item.status || item.instanceStatus || "运行中",
-          cost: costVal,
-          balance: item.balance ?? item.account_balance ?? summary.balance ?? "0.00",
-          cdtUsed: used,
+          cost: String(costVal),
+          balance: String(balVal),
+          cdtUsed: used >= 1 ? used.toFixed(2) : (used > 0 ? used.toFixed(3) : "0.00"),
           cdtLimit: limit,
           usedPercent: pct.toFixed(2),
           threshold: item.threshold ?? 95
         };
       });
 
-      // 智能动态计算总数，杜绝显示 0 台
       const runningCount = this.serverList.filter(i => String(i.status).includes("运行") || String(i.status).toLowerCase().includes("run")).length;
       
       this.summaryData.totalInstances = summary.total_instances ?? summary.instances_total ?? summary.instances ?? this.serverList.length;
       this.summaryData.runningInstances = summary.running_instances ?? summary.instances_running ?? summary.running ?? runningCount;
-      this.summaryData.totalTraffic = summary.total_traffic_gb ?? summary.total_traffic ?? summary.accumulated_traffic ?? this.serverList.reduce((acc, cur) => acc + (cur.cdtUsed || 0), 0).toFixed(1);
+      
+      // 累计总流量
+      let sumTraffic = summary.total_traffic_gb ?? summary.total_traffic ?? summary.accumulated_traffic;
+      if (sumTraffic === undefined) {
+        sumTraffic = this.serverList.reduce((acc, cur) => acc + Number(cur.cdtUsed || 0), 0);
+      }
+      this.summaryData.totalTraffic = Number(sumTraffic).toFixed(1);
       this.summaryData.alerts = summary.alerts ?? summary.alert_count ?? 0;
     }
   }
