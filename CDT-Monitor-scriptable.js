@@ -1,7 +1,7 @@
 /*
  * @name: CDT Monitor
  * @description: 阿里云CDT 流量监控小组件
- * @version: 3.3.4
+ * @version: 3.3.5
  * @author: 以撒 (yisaings)
  * @update: 2026/09/01
 */
@@ -56,7 +56,7 @@ class Widget extends DmYY {
     this.Run();
   }
 
-  version = '3.3.4';
+  version = '3.3.5';
   baseUrl = '';
   apiKey = '';
 
