@@ -1,29 +1,39 @@
 /*
  * @name: CDT Monitor (Glass Multi-Server Edition)
  * @description: 阿里云/多平台 CDT 流量监控小组件
- * @version: 2.6.4
+ * @version: 2.6.5
 */
 
-// ==================== 1. 快速依赖管理 ====================
-function checkAndDownloadDmYY() {
+// ==================== 1. 自动依赖管理 (修复异步等待与 CDN 加速) ====================
+async function checkAndDownloadDmYY() {
   const fm = FileManager[module.filename.includes('Documents/iCloud~') ? 'iCloud' : 'local']();
   const dmyyPath = fm.joinPath(fm.documentsDirectory(), 'DmYY.js');
   
   if (!fm.fileExists(dmyyPath)) {
-    console.log("正在下载 DmYY 基础框架依赖...");
-    const url = "https://raw.githubusercontent.com/dompling/Scriptable/master/Scripts/DmYY.js";
-    try {
-      const req = new Request(url);
-      req.timeoutInterval = 5;
-      const content = req.loadString();
-      fm.writeString(dmyyPath, content);
-    } catch (e) {
-      console.error("DmYY 依赖下载失败: " + e);
+    console.log("正在自动下载 DmYY 基础框架依赖...");
+    const urls = [
+      "https://testingcf.jsdelivr.net/gh/dompling/Scriptable@master/Scripts/DmYY.js",
+      "https://raw.githubusercontent.com/dompling/Scriptable/master/Scripts/DmYY.js"
+    ];
+
+    for (const url of urls) {
+      try {
+        const req = new Request(url);
+        req.timeoutInterval = 6;
+        const content = await req.loadString(); // 必须 await 获取纯文本字符串
+        if (content && content.includes("class DmYY")) {
+          fm.writeString(dmyyPath, String(content));
+          console.log("DmYY 依赖下载完成！");
+          break;
+        }
+      } catch (e) {
+        console.warn(`节点 [${url}] 获取失败，尝试下一个...`);
+      }
     }
   }
 }
 
-checkAndDownloadDmYY();
+await checkAndDownloadDmYY();
 
 if (typeof require === 'undefined') require = importModule;
 const { DmYY, Runing } = require('./DmYY');
@@ -37,7 +47,7 @@ class Widget extends DmYY {
     this.Run();
   }
 
-  version = '2.6.4';
+  version = '2.6.5';
   baseUrl = '';
   apiKey = '';
   refreshInterval = 10;
@@ -105,7 +115,7 @@ class Widget extends DmYY {
       try {
         const req = new Request(url);
         req.method = "GET";
-        req.timeoutInterval = 4; // 严格限制 4 秒超时
+        req.timeoutInterval = 4;
         req.headers = {
           "Authorization": `Bearer ${this.apiKey}`,
           "Content-Type": "application/json"
@@ -117,7 +127,6 @@ class Widget extends DmYY {
           fm.writeString(cachePath, JSON.stringify(rawData));
         }
       } catch (e) {
-        // 网络超时或失败，立即降级使用历史缓存
         if (fm.fileExists(cachePath)) {
           try {
             rawData = JSON.parse(fm.readString(cachePath));
