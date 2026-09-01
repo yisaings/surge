@@ -1,14 +1,11 @@
 /*
  * @name: CDT Monitor (Glass Multi-Server Edition)
- * @description: 阿里云/多平台 CDT 流量监控小组件 (小号组件精致丰满版)
- * @version: 2.9.0
+ * @description: 阿里云/多平台 CDT 流量监控小组件 (GitHub API 实时无缓存更新版)
+ * @version: 2.9.1
 */
 
-// ==================== 0. 脚本精准更新源 ====================
-const SCRIPT_REPO_URLS = [
-  "https://raw.githubusercontent.com/yisaings/surge/main/CDT-Monitor-scriptable.js",
-  "https://testingcf.jsdelivr.net/gh/yisaings/surge@main/CDT-Monitor-scriptable.js"
-];
+// ==================== 0. 脚本仓库路径配置 ====================
+const GITHUB_REPO_PATH = "repos/yisaings/surge/contents/CDT-Monitor-scriptable.js";
 // ==========================================================
 
 // ==================== 1. 自动依赖管理 ====================
@@ -54,7 +51,7 @@ class Widget extends DmYY {
     this.Run();
   }
 
-  version = '2.9.0';
+  version = '2.9.1';
   baseUrl = '';
   apiKey = '';
   refreshInterval = 10;
@@ -79,23 +76,46 @@ class Widget extends DmYY {
     await this.getData();
   };
 
-  // 在线检查并覆盖更新自身脚本（带时间戳穿透 CDN 强缓存）
+  // 走 GitHub REST API 实时穿透获取最新代码
   async checkUpdateSelf() {
     const fm = FileManager[module.filename.includes('Documents/iCloud~') ? 'iCloud' : 'local']();
     let newCode = null;
-    const now = Date.now();
 
-    for (const rawUrl of SCRIPT_REPO_URLS) {
-      try {
-        const noCacheUrl = rawUrl.includes('?') ? `${rawUrl}&_t=${now}` : `${rawUrl}?_t=${now}`;
-        const req = new Request(noCacheUrl);
-        req.timeoutInterval = 6;
-        const content = await req.loadString();
-        if (content && content.includes("@name: CDT Monitor")) {
-          newCode = content;
-          break;
-        }
-      } catch (e) {}
+    // 1. 优先请求 GitHub 官方 API（秒级实时，不走 Raw 静态文件缓存）
+    const apiUrl = `https://api.github.com/${GITHUB_REPO_PATH}?ref=main&_t=${Date.now()}`;
+    
+    try {
+      const req = new Request(apiUrl);
+      req.timeoutInterval = 6;
+      req.headers = {
+        'Accept': 'application/vnd.github.v3.raw',
+        'User-Agent': 'Scriptable-CDT-Updater'
+      };
+      const content = await req.loadString();
+      if (content && content.includes("@name: CDT Monitor")) {
+        newCode = content;
+      }
+    } catch (e) {
+      console.warn("GitHub API 请求异常，尝试备用 CDN 线路...");
+    }
+
+    // 2. 备用线路（如遇 GitHub API 限流）
+    if (!newCode) {
+      const backupUrls = [
+        `https://raw.githubusercontent.com/yisaings/surge/main/CDT-Monitor-scriptable.js?_t=${Date.now()}`,
+        `https://testingcf.jsdelivr.net/gh/yisaings/surge@main/CDT-Monitor-scriptable.js?_t=${Date.now()}`
+      ];
+      for (const url of backupUrls) {
+        try {
+          const req = new Request(url);
+          req.timeoutInterval = 5;
+          const content = await req.loadString();
+          if (content && content.includes("@name: CDT Monitor")) {
+            newCode = content;
+            break;
+          }
+        } catch (err) {}
+      }
     }
 
     if (!newCode) {
@@ -107,6 +127,7 @@ class Widget extends DmYY {
       return;
     }
 
+    // 提取远端版本号
     const versionMatch = newCode.match(/@version:\s*([0-9.]+)/);
     const remoteVersion = versionMatch ? versionMatch[1] : null;
 
@@ -139,6 +160,7 @@ class Widget extends DmYY {
       try {
         fm.writeString(module.filename, newCode);
         
+        // 清理缓存
         const cachePath = fm.joinPath(fm.joinPath(fm.documentsDirectory(), "CDT_Monitor_Cache"), "cdt_status_cache.json");
         if (fm.fileExists(cachePath)) fm.remove(cachePath);
 
@@ -301,14 +323,14 @@ class Widget extends DmYY {
     return false;
   }
 
-  // ==================== 小号组件 (Small) 丰富版 ====================
+  // ==================== 小号组件 (Small) 专属渲染 ====================
   renderSmall = async (widget) => {
     if (this.checkEmpty(widget)) return widget;
     widget.setPadding(13, 13, 13, 13);
 
     const a = this.serverList[0];
 
-    // 1. 顶部栏：实例标识 + 状态圆点
+    // 1. 顶部：实例名 + 状态
     const topRow = widget.addStack();
     topRow.centerAlignContent();
     const name = topRow.addText(a.name);
@@ -326,7 +348,7 @@ class Widget extends DmYY {
     dot.font = Font.boldSystemFont(8);
     dot.textColor = a.isRunning ? new Color("#30d158") : new Color("#ff9f0a");
 
-    // 2. 副标题：地域 + 本月账单
+    // 2. 副标题：地域 + 账单
     const subRow = widget.addStack();
     subRow.centerAlignContent();
     if (a.region) {
@@ -371,7 +393,7 @@ class Widget extends DmYY {
 
     widget.addSpacer(5);
 
-    // 5. 底部信息：已用百分比 + 阈值 / 同步时间
+    // 5. 底部：已用百分比 + 同步时间
     const botRow = widget.addStack();
     botRow.centerAlignContent();
     const pct = botRow.addText(`${a.usedPercent}% 已用`);
@@ -388,7 +410,7 @@ class Widget extends DmYY {
     return widget;
   };
 
-  // ==================== 中号组件 (Medium) ====================
+  // ==================== 中号组件 (Medium) 专属渲染 ====================
   renderMedium = async (widget) => {
     if (this.checkEmpty(widget)) return widget;
     widget.setPadding(13, 15, 13, 15);
@@ -511,7 +533,7 @@ class Widget extends DmYY {
     return widget;
   };
 
-  // ==================== 大号组件 (Large) ====================
+  // ==================== 大号组件 (Large) 专属渲染 ====================
   renderLarge = async (widget) => {
     return await this.renderMedium(widget);
   };
@@ -574,6 +596,7 @@ class Widget extends DmYY {
     }
   }
 
+  // 核心分流入口
   async render() {
     await this.init();
     const widget = new ListWidget();
