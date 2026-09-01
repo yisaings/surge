@@ -73,7 +73,7 @@ class Widget extends DmYY {
 
   // ==================== 基础配置 ====================
 
-  version = '3.3.4';
+  version = '3.3.5';
 
   baseUrl = '';
   apiKey = '';
