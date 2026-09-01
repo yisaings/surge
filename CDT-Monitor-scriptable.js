@@ -1,16 +1,19 @@
 /*
- * @name: CDT Monitor (Glass Multi-Server Edition)
- * @description: 阿里云/多平台 CDT 流量监控小组件 (自动刷新机制彻底修复版)
- * @version: 2.9.4
+ * @name: CDT Monitor
+ * @description: 阿里云CDT 流量监控小组件
+ * @version: 3.2.0
+ * @author: 以撒 (yisaings)
+ * @update: 2026/09/01
 */
 
-// ==================== 0. 脚本仓库路径配置 ====================
+// ==================== 0. 脚本发布源配置 ====================
 const GITHUB_REPO_PATH = "repos/yisaings/surge/contents/CDT-Monitor-scriptable.js";
+const BACKUP_RAW_URL = "https://raw.githubusercontent.com/yisaings/surge/main/CDT-Monitor-scriptable.js";
 // ==========================================================
 
 // ==================== 1. 自动依赖管理 ====================
 async function checkAndDownloadDmYY() {
-  const fm = FileManager[module.filename.includes('Documents/iCloud~') ? 'iCloud' : 'local']();
+  const fm = FileManager.local();
   const dmyyPath = fm.joinPath(fm.documentsDirectory(), 'DmYY.js');
   
   if (!fm.fileExists(dmyyPath)) {
@@ -33,7 +36,6 @@ async function checkAndDownloadDmYY() {
   }
 }
 
-// 仅在 App 内打开时检查下载依赖，避免桌面后台刷新时超时被 iOS 杀进程
 if (config.runsInApp) {
   await checkAndDownloadDmYY();
 }
@@ -50,10 +52,26 @@ class Widget extends DmYY {
     this.Run();
   }
 
-  version = '2.9.4';
+  version = '3.2.0';
   baseUrl = '';
   apiKey = '';
-  refreshInterval = 10;
+  refreshInterval = 15;
+
+  // 时间格式化与记录（吸纳联通设计）
+  format = (str) => {
+    return parseInt(str) >= 10 ? str : `0${str}`;
+  };
+
+  arrUpdateTime = ['00', '00', '00', '00'];
+
+  refreshUpdateTime(date) {
+    this.arrUpdateTime = [
+      this.format(date.getMonth() + 1),
+      this.format(date.getDate()),
+      this.format(date.getHours()),
+      this.format(date.getMinutes()),
+    ];
+  }
 
   summaryData = {
     totalInstances: 0,
@@ -68,114 +86,14 @@ class Widget extends DmYY {
     try {
       this.baseUrl = (this.settings.baseUrl || '').trim().replace(/\/+$/, '');
       this.apiKey = (this.settings.apiKey || '').trim();
-      this.refreshInterval = parseInt(this.settings.refreshInterval || '10');
+      this.refreshInterval = parseInt(this.settings.refreshInterval || '15');
     } catch (e) {
       console.error(e);
     }
     await this.getData();
   };
 
-  // 走 GitHub REST API 实时穿透获取最新代码
-  async checkUpdateSelf() {
-    const fm = FileManager[module.filename.includes('Documents/iCloud~') ? 'iCloud' : 'local']();
-    let newCode = null;
-
-    const apiUrl = `https://api.github.com/${GITHUB_REPO_PATH}?ref=main&_t=${Date.now()}`;
-    
-    try {
-      const req = new Request(apiUrl);
-      req.timeoutInterval = 6;
-      req.headers = {
-        'Accept': 'application/vnd.github.v3.raw',
-        'User-Agent': 'Scriptable-CDT-Updater'
-      };
-      const content = await req.loadString();
-      if (content && content.includes("@name: CDT Monitor")) {
-        newCode = content;
-      }
-    } catch (e) {
-      console.warn("GitHub API 请求异常，尝试备用 CDN 线路...");
-    }
-
-    if (!newCode) {
-      const backupUrls = [
-        `https://raw.githubusercontent.com/yisaings/surge/main/CDT-Monitor-scriptable.js?_t=${Date.now()}`,
-        `https://testingcf.jsdelivr.net/gh/yisaings/surge@main/CDT-Monitor-scriptable.js?_t=${Date.now()}`
-      ];
-      for (const url of backupUrls) {
-        try {
-          const req = new Request(url);
-          req.timeoutInterval = 5;
-          const content = await req.loadString();
-          if (content && content.includes("@name: CDT Monitor")) {
-            newCode = content;
-            break;
-          }
-        } catch (err) {}
-      }
-    }
-
-    if (!newCode) {
-      const failAlert = new Alert();
-      failAlert.title = "更新失败";
-      failAlert.message = "无法连接至 GitHub 仓库或镜像源，请稍后再试。";
-      failAlert.addAction("确定");
-      await failAlert.presentAlert();
-      return;
-    }
-
-    const versionMatch = newCode.match(/@version:\s*([0-9.]+)/);
-    const remoteVersion = versionMatch ? versionMatch[1] : null;
-
-    if (!remoteVersion) {
-      const errAlert = new Alert();
-      errAlert.title = "解析失败";
-      errAlert.message = "无法解析远端脚本的版本号。";
-      errAlert.addAction("确定");
-      await errAlert.presentAlert();
-      return;
-    }
-
-    if (remoteVersion === this.version) {
-      const okAlert = new Alert();
-      okAlert.title = "已是最新版本";
-      okAlert.message = `当前脚本版本 (v${this.version}) 已经是最新的。`;
-      okAlert.addAction("好的");
-      await okAlert.presentAlert();
-      return;
-    }
-
-    const confirmAlert = new Alert();
-    confirmAlert.title = `发现新版本 v${remoteVersion}`;
-    confirmAlert.message = `当前版本: v${this.version}\n远端版本: v${remoteVersion}\n是否立即下载并覆盖更新？`;
-    confirmAlert.addAction("立即更新");
-    confirmAlert.addCancelAction("暂不更新");
-
-    const choice = await confirmAlert.presentAlert();
-    if (choice === 0) {
-      try {
-        fm.writeString(module.filename, newCode);
-        
-        const cachePath = fm.joinPath(fm.joinPath(fm.documentsDirectory(), "CDT_Monitor_Cache"), "cdt_status_cache.json");
-        if (fm.fileExists(cachePath)) fm.remove(cachePath);
-
-        const doneAlert = new Alert();
-        doneAlert.title = "更新成功！";
-        doneAlert.message = `已成功升级至 v${remoteVersion}，脚本将自动重新载入。`;
-        doneAlert.addAction("确定");
-        await doneAlert.presentAlert();
-        
-        this.reopenScript();
-      } catch (err) {
-        const errAlert = new Alert();
-        errAlert.title = "写入失败";
-        errAlert.message = String(err);
-        errAlert.addAction("确定");
-        await errAlert.presentAlert();
-      }
-    }
-  }
-
+  // ==================== 联通标准缓存与请求调度 ====================
   async getData() {
     if (!this.baseUrl || !this.apiKey) return;
 
@@ -186,31 +104,62 @@ class Widget extends DmYY {
     if (!fm.fileExists(cacheDir)) fm.createDirectory(cacheDir, true);
 
     let rawData = null;
-    const url = `${this.baseUrl}/api/v1/status`;
+    let useCache = false;
+    const settingTime = this.refreshInterval;
 
-    // 桌面唤醒时优先发起快速网络请求（3 秒超时），超时才读取本地缓存
-    try {
-      const req = new Request(url);
-      req.method = "GET";
-      req.timeoutInterval = 3;
-      req.headers = {
-        "Authorization": `Bearer ${this.apiKey}`,
-        "Content-Type": "application/json"
-      };
-      const res = await req.loadJSON();
-      if (res && res.accounts) {
-        rawData = res;
-        if (fm.fileExists(cachePath)) fm.remove(cachePath);
-        fm.writeString(cachePath, JSON.stringify(rawData));
-      }
-    } catch (e) {
-      if (fm.fileExists(cachePath)) {
+    // 1. 检查本地快照缓存与有效时长
+    if (fm.fileExists(cachePath)) {
+      const modified = fm.modificationDate(cachePath);
+      const diff = (new Date() - modified) / (1000 * 60);
+
+      // 如果在设置的刷新时间之内，直接读缓存，更新时间按文件修改时间显示
+      if (diff < settingTime && config.runsInWidget) {
         try {
           rawData = JSON.parse(fm.readString(cachePath));
-        } catch (err) {}
+          useCache = true;
+          this.refreshUpdateTime(modified);
+        } catch (e) {
+          useCache = false;
+        }
       }
     }
 
+    // 2. 缓存过期或在 App 内预览时，发起网络请求
+    if (!useCache) {
+      const url = `${this.baseUrl}/api/v1/status`;
+      try {
+        const req = new Request(url);
+        req.method = "GET";
+        req.timeoutInterval = 4;
+        req.headers = {
+          "Authorization": `Bearer ${this.apiKey}`,
+          "Content-Type": "application/json"
+        };
+        const res = await req.loadJSON();
+        if (res && res.accounts) {
+          rawData = res;
+          if (fm.fileExists(cachePath)) fm.remove(cachePath);
+          fm.writeString(cachePath, JSON.stringify(rawData));
+          this.refreshUpdateTime(new Date());
+        } else {
+          // 请求异常时，降级读取旧快照
+          if (fm.fileExists(cachePath)) {
+            rawData = JSON.parse(fm.readString(cachePath));
+            this.refreshUpdateTime(fm.modificationDate(cachePath));
+          }
+        }
+      } catch (e) {
+        // 网络超时或无网时，读取旧快照
+        if (fm.fileExists(cachePath)) {
+          try {
+            rawData = JSON.parse(fm.readString(cachePath));
+            this.refreshUpdateTime(fm.modificationDate(cachePath));
+          } catch (err) {}
+        }
+      }
+    }
+
+    // 3. 解析与绑定数据
     if (rawData && rawData.accounts) {
       let list = Array.isArray(rawData.accounts) ? rawData.accounts : [];
 
@@ -358,6 +307,7 @@ class Widget extends DmYY {
 
     widget.addSpacer(8);
 
+    // 底部：采用实际数据更新时间
     const botRow = widget.addStack();
     botRow.centerAlignContent();
     const pct = botRow.addText(`${a.usedPercent}% 已用`);
@@ -366,7 +316,7 @@ class Widget extends DmYY {
     
     botRow.addSpacer();
     
-    const sync = botRow.addText(`同步 ${new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}`);
+    const sync = botRow.addText(`同步 ${this.arrUpdateTime[2]}:${this.arrUpdateTime[3]}`);
     sync.font = Font.systemFont(8);
     sync.textColor = new Color("#ffffff", 0.35);
 
@@ -481,7 +431,7 @@ class Widget extends DmYY {
     pct.font = Font.systemFont(8);
     pct.textColor = new Color("#ffffff", 0.6);
     rowBottom.addSpacer();
-    const sync = rowBottom.addText(`同步 ${new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}`);
+    const sync = rowBottom.addText(`同步 ${this.arrUpdateTime[2]}:${this.arrUpdateTime[3]}`);
     sync.font = Font.systemFont(8);
     sync.textColor = new Color("#ffffff", 0.35);
 
@@ -495,11 +445,107 @@ class Widget extends DmYY {
     return widget;
   };
 
-  // ==================== 大号组件 (Large) ====================
   renderLarge = async (widget) => {
     return await this.renderMedium(widget);
   };
 
+  // ==================== 脚本 OTA 更新 ====================
+  async checkAndUpdateScript() {
+    console.log("正在检查更新...");
+    const scriptName = Script.name() + '.js';
+    let newScriptContent = null;
+
+    const apiUrl = `https://api.github.com/${GITHUB_REPO_PATH}?ref=main&_t=${Date.now()}`;
+    try {
+      const req = new Request(apiUrl);
+      req.timeoutInterval = 6;
+      req.headers = {
+        'Accept': 'application/vnd.github.v3.raw',
+        'User-Agent': 'Scriptable-CDT-Updater'
+      };
+      const content = await req.loadString();
+      if (content && content.includes("class Widget")) {
+        newScriptContent = content;
+      }
+    } catch (e) {
+      console.warn("GitHub API 检查失败，使用备用线路...");
+    }
+
+    if (!newScriptContent) {
+      try {
+        const req = new Request(`${BACKUP_RAW_URL}?_t=${Date.now()}`);
+        req.timeoutInterval = 5;
+        const content = await req.loadString();
+        if (content && content.includes("class Widget")) {
+          newScriptContent = content;
+        }
+      } catch (err) {}
+    }
+
+    if (!newScriptContent) {
+      const alert = new Alert();
+      alert.title = "更新出错";
+      alert.message = "网络请求失败，未能连接到 GitHub 仓库。";
+      alert.addAction("确定");
+      await alert.presentAlert();
+      return;
+    }
+
+    const versionPattern = /version\s*=\s*['"]([^'"]+)['"]/;
+    const match = newScriptContent.match(versionPattern);
+
+    if (!match) {
+      const alert = new Alert();
+      alert.title = "检查失败";
+      alert.message = "远程脚本格式不正确，未匹配到版本号。";
+      alert.addAction("确定");
+      await alert.presentAlert();
+      return;
+    }
+
+    const latestVersion = match[1];
+    if (this.version !== latestVersion) {
+      const alert = new Alert();
+      alert.title = "检测到新版本";
+      alert.message = `当前版本：v${this.version}\n最新版本：v${latestVersion}\n\n是否立即下载并覆盖更新？`;
+      alert.addAction("更新");
+      alert.addCancelAction("取消");
+
+      const response = await alert.presentAlert();
+      if (response === 0) {
+        try {
+          const fm = FileManager.local();
+          const scriptPath = fm.joinPath(fm.documentsDirectory(), scriptName);
+          fm.writeString(scriptPath, newScriptContent);
+
+          const cachePath = fm.joinPath(fm.joinPath(fm.documentsDirectory(), "CDT_Monitor_Cache"), "cdt_status_cache.json");
+          if (fm.fileExists(cachePath)) fm.remove(cachePath);
+
+          const successAlert = new Alert();
+          successAlert.title = "更新成功";
+          successAlert.message = `已升级至 v${latestVersion}，请重新打开脚本！`;
+          successAlert.addAction("确定");
+          await successAlert.presentAlert();
+
+          this.reopenScript();
+        } catch (err) {
+          const errAlert = new Alert();
+          errAlert.title = "写入失败";
+          errAlert.message = String(err);
+          errAlert.addAction("确定");
+          await errAlert.presentAlert();
+        }
+      }
+    } else {
+      const noUpdateAlert = new Alert();
+      noUpdateAlert.title = "无需更新";
+      noUpdateAlert.message = `当前已是最新版本 (v${this.version})。`;
+      noUpdateAlert.addAction("确定");
+      await noUpdateAlert.presentAlert();
+    }
+  }
+
+  // ==================== 菜单注册 ====================
   Run() {
     if (config.runsInApp) {
       this.registerAction({
@@ -526,25 +572,25 @@ class Widget extends DmYY {
           {
             name: 'refreshInterval',
             icon: { name: 'arrow.clockwise', color: '#30d158' },
-            title: '刷新间隔 (分钟)',
+            title: '缓存有效期 / 刷新间隔 (分)',
             type: 'input',
-            placeholder: '10',
+            placeholder: '15',
             val: 'refreshInterval',
-            desc: '建议 10-30 分钟'
+            desc: '在此时间内的系统唤醒将直接读取快照'
           },
           {
             name: 'update',
             icon: { name: 'arrow.down.circle.fill', color: '#007aff' },
-            title: `检查并更新脚本 (v${this.version})`,
+            title: `脚本更新 (当前 v${this.version})`,
             type: 'input',
             onClick: async () => {
-              await this.checkUpdateSelf();
+              await this.checkAndUpdateScript();
             }
           },
           {
             name: 'reload',
             icon: { name: 'arrow.triangle.2.circlepath', color: '#ffd60a' },
-            title: '清除缓存并立即重载',
+            title: '清除快照缓存并重载',
             type: 'input',
             onClick: () => {
               const fm = FileManager.local();
@@ -558,7 +604,7 @@ class Widget extends DmYY {
     }
   }
 
-  // 核心入口：统一注入刷新计划
+  // ==================== 渲染总入口 ====================
   async render() {
     await this.init();
     const widget = new ListWidget();
@@ -573,7 +619,9 @@ class Widget extends DmYY {
       resWidget = await this.renderMedium(widget);
     }
 
-    // 严格为每个尺寸的小组件注入下一次刷新时间
+    resWidget.url = `scriptable:///run/${encodeURIComponent(Script.name())}`;
+
+    // 统一将刷新计划注入给 iOS 系统
     const intervalMinutes = Math.max(5, this.refreshInterval);
     resWidget.refreshAfterDate = new Date(Date.now() + intervalMinutes * 60 * 1000);
 
