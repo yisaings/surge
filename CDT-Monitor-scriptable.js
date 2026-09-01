@@ -1,7 +1,7 @@
 /*
  * @name: CDT Monitor (Glass Multi-Server Edition)
  * @description: 阿里云/多平台 CDT 流量监控小组件
- * @version: 2.5.2
+ * @version: 2.6.2
 */
 
 if (typeof require === 'undefined') require = importModule;
@@ -15,7 +15,7 @@ class Widget extends DmYY {
     this.Run();
   }
 
-  version = '2.5.2';
+  version = '2.6.2';
   baseUrl = '';
   apiKey = '';
   refreshInterval = 10;
@@ -23,7 +23,7 @@ class Widget extends DmYY {
   summaryData = {
     totalInstances: 0,
     runningInstances: 0,
-    totalTraffic: '0.0',
+    totalTraffic: '0.00',
     alerts: 0
   };
 
@@ -31,11 +31,12 @@ class Widget extends DmYY {
 
   defaultPlaceholder = {
     name: "未连接实例",
-    region: "请先配置",
+    region: "中国香港",
     status: "未运行",
-    cost: "0.00",
+    isRunning: false,
+    cost: "0.01",
     balance: "0.00",
-    cdtUsed: 0.00,
+    cdtUsed: "0.00",
     cdtLimit: 200,
     usedPercent: "0.00",
     threshold: 95
@@ -53,10 +54,7 @@ class Widget extends DmYY {
   };
 
   async getData() {
-    if (!this.baseUrl || !this.apiKey) {
-      console.log("⚠️ 尚未配置 Base URL 或 API Key");
-      return;
-    }
+    if (!this.baseUrl || !this.apiKey) return;
 
     const fm = FileManager.local();
     const cacheDir = fm.joinPath(fm.documentsDirectory(), "CDT_Monitor_Cache");
@@ -67,7 +65,7 @@ class Widget extends DmYY {
     let rawData = null;
     let useCache = false;
 
-    if (fm.fileExists(cachePath)) {
+    if (config.runsInWidget && fm.fileExists(cachePath)) {
       const modified = fm.modificationDate(cachePath);
       const diffMinutes = (new Date() - modified) / (1000 * 60);
       if (diffMinutes < this.refreshInterval) {
@@ -81,7 +79,6 @@ class Widget extends DmYY {
     if (!useCache) {
       const url = `${this.baseUrl}/api/v1/widget/summary`;
       try {
-        console.log(`🌐 正在请求: ${url}`);
         const req = new Request(url);
         req.method = "GET";
         req.headers = {
@@ -93,69 +90,51 @@ class Widget extends DmYY {
           rawData = res;
           if (fm.fileExists(cachePath)) fm.remove(cachePath);
           fm.writeString(cachePath, JSON.stringify(rawData));
-          console.log("🟢 数据拉取成功并已更新缓存");
         }
       } catch (e) {
-        console.error(`❌ 网络请求失败: ${e}`);
         if (fm.fileExists(cachePath)) {
-          console.log("🟠 自动使用本地历史缓存兜底");
           rawData = JSON.parse(fm.readString(cachePath));
         }
       }
     }
 
     if (rawData) {
-      // 打印完整原始结构方便调试排查
-      console.log("📦 后端原始返回数据:", JSON.stringify(rawData));
-
-      const summary = rawData.summary || rawData.data?.summary || rawData;
-      
-      // 兼容所有可能的实例数组键名
-      let list = rawData.accounts || rawData.data?.accounts || rawData.data || rawData.items || rawData.instances || rawData.managed_instances || (rawData.instance ? [rawData.instance] : []);
+      let list = rawData.accounts || rawData.data || rawData.items || [];
       if (!Array.isArray(list)) list = [];
 
       this.serverList = list.map(item => {
-        // 深度提取已用流量 (GB)
-        let used = item.cdt_used_gb ?? item.traffic_used_gb ?? item.traffic_used ?? item.flow_used ?? item.used_traffic ?? item.traffic?.used_gb ?? item.traffic?.used ?? summary.cdt_used_gb ?? summary.total_traffic_gb ?? 0;
-        used = Number(used);
+        const usedNum = parseFloat(item.used ?? item.traffic_used ?? item.cdt_used_gb ?? 0.0);
+        const limitNum = parseFloat(item.total ?? item.traffic_limit ?? item.cdt_limit_gb ?? 200) || 200;
+        
+        let pct = item.percentage ?? (limitNum > 0 ? (usedNum / limitNum) * 100 : 0);
+        pct = parseFloat(pct);
 
-        // 深度提取总配额 (GB)，若未设置默认设为 200 GB
-        let limit = item.cdt_limit_gb ?? item.traffic_limit_gb ?? item.traffic_limit ?? item.flow_total ?? item.total_traffic ?? item.traffic?.limit_gb ?? item.traffic?.total ?? summary.cdt_limit_gb ?? 200;
-        limit = Number(limit) || 200;
-
-        // 提取使用百分比
-        let pct = item.percentageOfUse ?? item.used_percent ?? item.percent ?? (limit > 0 ? (used / limit) * 100 : 0);
-        pct = Number(pct);
-
-        // 提取费用与余额
-        let costVal = item.month_cost ?? item.cost?.monthly_cost ?? item.cost ?? summary.month_cost ?? "0.00";
-        let balVal = item.balance ?? item.account_balance ?? summary.balance ?? "0.00";
+        const statusStr = String(item.status || 'Running');
+        const isRunning = statusStr.toLowerCase() === 'running' || statusStr.includes('运行');
 
         return {
-          name: item.name || item.account_name || item.instance_name || item.instance_id || "LTAI5tE***",
-          region: item.region || item.location || item.regionName || "中国香港",
-          status: item.status || item.instanceStatus || "运行中",
-          cost: String(costVal),
-          balance: String(balVal),
-          cdtUsed: used >= 1 ? used.toFixed(2) : (used > 0 ? used.toFixed(3) : "0.00"),
-          cdtLimit: limit,
+          name: item.name || "LTAI5tE***",
+          region: item.region || "中国香港",
+          status: isRunning ? "运行中" : "未运行",
+          isRunning: isRunning,
+          cost: parseFloat(item.cost ?? item.month_cost ?? 0.01).toFixed(2),
+          balance: parseFloat(item.balance ?? 0.00).toFixed(2),
+          cdtUsed: usedNum.toFixed(2),
+          cdtLimit: limitNum,
           usedPercent: pct.toFixed(2),
           threshold: item.threshold ?? 95
         };
       });
 
-      const runningCount = this.serverList.filter(i => String(i.status).includes("运行") || String(i.status).toLowerCase().includes("run")).length;
-      
-      this.summaryData.totalInstances = summary.total_instances ?? summary.instances_total ?? summary.instances ?? this.serverList.length;
-      this.summaryData.runningInstances = summary.running_instances ?? summary.instances_running ?? summary.running ?? runningCount;
-      
-      // 累计总流量
-      let sumTraffic = summary.total_traffic_gb ?? summary.total_traffic ?? summary.accumulated_traffic;
-      if (sumTraffic === undefined) {
-        sumTraffic = this.serverList.reduce((acc, cur) => acc + Number(cur.cdtUsed || 0), 0);
-      }
-      this.summaryData.totalTraffic = Number(sumTraffic).toFixed(1);
-      this.summaryData.alerts = summary.alerts ?? summary.alert_count ?? 0;
+      const runningCount = this.serverList.filter(i => i.isRunning).length;
+      const totalUsedNum = this.serverList.reduce((acc, cur) => acc + parseFloat(cur.cdtUsed || 0), 0);
+
+      this.summaryData = {
+        totalInstances: this.serverList.length,
+        runningInstances: runningCount,
+        totalTraffic: totalUsedNum < 1 && totalUsedNum > 0 ? totalUsedNum.toFixed(2) : totalUsedNum.toFixed(1),
+        alerts: this.serverList.filter(i => parseFloat(i.usedPercent) >= i.threshold).length
+      };
     }
   }
 
@@ -243,7 +222,7 @@ class Widget extends DmYY {
 
     const barW = 295;
     const barH = count === 1 ? 6 : 4;
-    const pImg = this.drawProgressBar(Number(a.usedPercent), barW, barH);
+    const pImg = this.drawProgressBar(parseFloat(a.usedPercent), barW, barH);
     const imgW = mainCard.addImage(pImg);
     imgW.imageSize = new Size(barW, barH);
 
@@ -279,7 +258,7 @@ class Widget extends DmYY {
     row1.addSpacer();
     const dot = row1.addText("●");
     dot.font = Font.systemFont(8);
-    dot.textColor = a.status.includes("运行") ? new Color("#30d158") : new Color("#ff9f0a");
+    dot.textColor = a.isRunning ? new Color("#30d158") : new Color("#ff9f0a");
 
     card.addSpacer(4);
 
@@ -306,7 +285,7 @@ class Widget extends DmYY {
 
     card.addSpacer(6);
 
-    const pImg = this.drawProgressBar(Number(a.usedPercent), 132, 4);
+    const pImg = this.drawProgressBar(parseFloat(a.usedPercent), 132, 4);
     const imgW = card.addImage(pImg);
     imgW.imageSize = new Size(132, 4);
 
@@ -323,7 +302,6 @@ class Widget extends DmYY {
     widget.setPadding(12, 12, 12, 12);
 
     const a = this.serverList[0] || this.defaultPlaceholder;
-    const isRunning = String(a.status).includes("运行") || String(a.status).toLowerCase().includes("running");
 
     const topRow = widget.addStack();
     topRow.centerAlignContent();
@@ -333,7 +311,7 @@ class Widget extends DmYY {
     topRow.addSpacer();
     const dot = topRow.addText("●");
     dot.font = Font.systemFont(8);
-    dot.textColor = isRunning ? new Color("#30d158") : new Color("#ff9f0a");
+    dot.textColor = a.isRunning ? new Color("#30d158") : new Color("#ff9f0a");
 
     widget.addSpacer(2);
 
@@ -361,7 +339,7 @@ class Widget extends DmYY {
 
     widget.addSpacer(8);
 
-    const pImg = this.drawProgressBar(Number(a.usedPercent), 118, 4);
+    const pImg = this.drawProgressBar(parseFloat(a.usedPercent), 118, 4);
     const imgW = widget.addImage(pImg);
     imgW.imageSize = new Size(118, 4);
 
@@ -387,7 +365,6 @@ class Widget extends DmYY {
 
     const s = this.summaryData;
     const a = this.serverList[0] || this.defaultPlaceholder;
-    const isRunning = String(a.status).includes("运行") || String(a.status).toLowerCase().includes("running");
 
     const header = widget.addStack();
     header.centerAlignContent();
@@ -397,17 +374,17 @@ class Widget extends DmYY {
     header.addSpacer();
 
     const badge = header.addStack();
-    badge.backgroundColor = isRunning ? new Color("#30d158", 0.15) : new Color("#ff9f0a", 0.15);
+    badge.backgroundColor = a.isRunning ? new Color("#30d158", 0.15) : new Color("#ff9f0a", 0.15);
     badge.cornerRadius = 6;
     badge.setPadding(2, 6, 2, 6);
     badge.centerAlignContent();
 
     const dot = badge.addText("● ");
     dot.font = Font.systemFont(7);
-    dot.textColor = isRunning ? new Color("#30d158") : new Color("#ff9f0a");
-    const statusText = badge.addText(isRunning ? "运行中" : a.status);
+    dot.textColor = a.isRunning ? new Color("#30d158") : new Color("#ff9f0a");
+    const statusText = badge.addText(a.status);
     statusText.font = Font.boldSystemFont(9);
-    statusText.textColor = isRunning ? new Color("#30d158") : new Color("#ff9f0a");
+    statusText.textColor = a.isRunning ? new Color("#30d158") : new Color("#ff9f0a");
 
     widget.addSpacer(6);
 
@@ -455,7 +432,7 @@ class Widget extends DmYY {
     reg.font = Font.systemFont(8);
     reg.textColor = new Color("#ffffff", 0.45);
     rowTop.addSpacer();
-    const fee = rowTop.addText(`本月 $${a.cost} | 余额 $${a.balance}`);
+    const fee = rowTop.addText(`本月 $${a.cost}`);
     fee.font = Font.systemFont(8);
     fee.textColor = new Color("#ffd60a", 0.9);
 
@@ -472,7 +449,7 @@ class Widget extends DmYY {
 
     mainCard.addSpacer(4);
 
-    const pImg = this.drawProgressBar(Number(a.usedPercent), 270, 4);
+    const pImg = this.drawProgressBar(parseFloat(a.usedPercent), 270, 4);
     const imgW = mainCard.addImage(pImg);
     imgW.imageSize = new Size(270, 4);
 
@@ -632,6 +609,9 @@ class Widget extends DmYY {
             title: '重载并保存',
             type: 'input',
             onClick: () => {
+              const fm = FileManager.local();
+              const cachePath = fm.joinPath(fm.joinPath(fm.documentsDirectory(), "CDT_Monitor_Cache"), "cdt_glass_summary.json");
+              if (fm.fileExists(cachePath)) fm.remove(cachePath);
               this.reopenScript();
             }
           }
