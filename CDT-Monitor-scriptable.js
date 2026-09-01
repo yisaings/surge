@@ -1,7 +1,7 @@
 /*
  * @name: CDT Monitor (Glass Multi-Server Edition)
- * @description: 阿里云/多平台 CDT 流量监控小组件 (精确尺寸分流版)
- * @version: 2.8.8
+ * @description: 阿里云/多平台 CDT 流量监控小组件 (小号组件精致丰满版)
+ * @version: 2.9.0
 */
 
 // ==================== 0. 脚本精准更新源 ====================
@@ -54,7 +54,7 @@ class Widget extends DmYY {
     this.Run();
   }
 
-  version = '2.8.8';
+  version = '2.9.0';
   baseUrl = '';
   apiKey = '';
   refreshInterval = 10;
@@ -214,7 +214,8 @@ class Widget extends DmYY {
         const usedNum = parseFloat(item.flow_used ?? item.used ?? 0.0);
         const limitNum = parseFloat(item.flow_total ?? item.total ?? 200);
         const pctNum = parseFloat(item.percentage ?? (limitNum > 0 ? (usedNum / limitNum) * 100 : 0));
-        
+        const remainNum = Math.max(0, limitNum - usedNum);
+
         const statusStr = String(item.instance_status ?? item.status ?? 'Running');
         const isRunning = statusStr.toLowerCase().includes('run') || statusStr.includes('运行');
 
@@ -234,6 +235,7 @@ class Widget extends DmYY {
           cost: costDisplay,
           cdtUsed: usedNum.toFixed(2),
           cdtLimit: limitNum,
+          cdtRemain: remainNum.toFixed(2),
           usedPercent: pctNum.toFixed(2),
           threshold: item.threshold ?? 95
         };
@@ -299,25 +301,32 @@ class Widget extends DmYY {
     return false;
   }
 
-  // ==================== 小号组件 (Small) 专属渲染 ====================
+  // ==================== 小号组件 (Small) 丰富版 ====================
   renderSmall = async (widget) => {
     if (this.checkEmpty(widget)) return widget;
-    widget.setPadding(12, 12, 12, 12);
+    widget.setPadding(13, 13, 13, 13);
 
     const a = this.serverList[0];
 
+    // 1. 顶部栏：实例标识 + 状态圆点
     const topRow = widget.addStack();
     topRow.centerAlignContent();
     const name = topRow.addText(a.name);
     name.font = Font.boldSystemFont(11);
     name.textColor = new Color("#ffffff", 0.95);
+    
     topRow.addSpacer();
-    const dot = topRow.addText("●");
-    dot.font = Font.systemFont(8);
+    
+    const dotBadge = topRow.addStack();
+    dotBadge.backgroundColor = a.isRunning ? new Color("#30d158", 0.15) : new Color("#ff9f0a", 0.15);
+    dotBadge.cornerRadius = 4;
+    dotBadge.setPadding(1, 4, 1, 4);
+    dotBadge.centerAlignContent();
+    const dot = dotBadge.addText(a.isRunning ? "● 在线" : "● 离线");
+    dot.font = Font.boldSystemFont(8);
     dot.textColor = a.isRunning ? new Color("#30d158") : new Color("#ff9f0a");
 
-    widget.addSpacer(2);
-
+    // 2. 副标题：地域 + 本月账单
     const subRow = widget.addStack();
     subRow.centerAlignContent();
     if (a.region) {
@@ -327,46 +336,59 @@ class Widget extends DmYY {
     }
     subRow.addSpacer();
     if (a.cost) {
-      const fee = subRow.addText(a.cost);
+      const fee = subRow.addText(`本月 ${a.cost}`);
       fee.font = Font.boldSystemFont(10);
-      fee.textColor = new Color("#ffd60a", 0.9);
+      fee.textColor = new Color("#ffd60a", 0.95);
     }
-
-    widget.addSpacer(8);
-
-    const flowRow = widget.addStack();
-    flowRow.bottomAlignContent();
-    const num = flowRow.addText(`${a.cdtUsed}`);
-    num.font = Font.heavySystemFont(20);
-    num.textColor = new Color("#ffffff");
-    flowRow.addSpacer(2);
-    const limit = flowRow.addText(` / ${a.cdtLimit}G`);
-    limit.font = Font.boldSystemFont(10);
-    limit.textColor = new Color("#ffffff", 0.45);
-
-    widget.addSpacer(8);
-
-    const pImg = this.drawProgressBar(parseFloat(a.usedPercent), 118, 4);
-    const imgW = widget.addImage(pImg);
-    imgW.imageSize = new Size(118, 4);
 
     widget.addSpacer(6);
 
+    // 3. 核心流量大字与剩余额度
+    const flowRow = widget.addStack();
+    flowRow.bottomAlignContent();
+    const num = flowRow.addText(`${a.cdtUsed}`);
+    num.font = Font.heavySystemFont(22);
+    num.textColor = new Color("#ffffff");
+    
+    const limit = flowRow.addText(` / ${a.cdtLimit}G`);
+    limit.font = Font.systemFont(10);
+    limit.textColor = new Color("#ffffff", 0.45);
+    
+    flowRow.addSpacer();
+
+    const remCol = flowRow.addStack();
+    remCol.layoutVertically();
+    const remLbl = remCol.addText(`剩 ${a.cdtRemain}G`);
+    remLbl.font = Font.systemFont(8);
+    remLbl.textColor = new Color("#ffffff", 0.5);
+
+    widget.addSpacer(6);
+
+    // 4. 进度条
+    const pImg = this.drawProgressBar(parseFloat(a.usedPercent), 130, 4);
+    const imgW = widget.addImage(pImg);
+    imgW.imageSize = new Size(130, 4);
+
+    widget.addSpacer(5);
+
+    // 5. 底部信息：已用百分比 + 阈值 / 同步时间
     const botRow = widget.addStack();
     botRow.centerAlignContent();
-    const pct = botRow.addText(`${a.usedPercent}%`);
-    pct.font = Font.systemFont(9);
+    const pct = botRow.addText(`${a.usedPercent}% 已用`);
+    pct.font = Font.systemFont(8);
     pct.textColor = new Color("#ffffff", 0.6);
+    
     botRow.addSpacer();
+    
     const sync = botRow.addText(new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }));
-    sync.font = Font.systemFont(9);
+    sync.font = Font.systemFont(8);
     sync.textColor = new Color("#ffffff", 0.35);
 
     widget.refreshAfterDate = new Date(Date.now() + this.refreshInterval * 60 * 1000);
     return widget;
   };
 
-  // ==================== 中号组件 (Medium) 专属渲染 ====================
+  // ==================== 中号组件 (Medium) ====================
   renderMedium = async (widget) => {
     if (this.checkEmpty(widget)) return widget;
     widget.setPadding(13, 15, 13, 15);
@@ -489,7 +511,7 @@ class Widget extends DmYY {
     return widget;
   };
 
-  // ==================== 大号组件 (Large) 专属渲染 ====================
+  // ==================== 大号组件 (Large) ====================
   renderLarge = async (widget) => {
     return await this.renderMedium(widget);
   };
@@ -552,7 +574,6 @@ class Widget extends DmYY {
     }
   }
 
-  // 核心分流入口
   async render() {
     await this.init();
     const widget = new ListWidget();
