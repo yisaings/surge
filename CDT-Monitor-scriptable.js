@@ -1,7 +1,7 @@
 /*
  * @name: CDT Monitor
- * @description: 阿里云/多平台 CDT 流量监控小组件 
- * @version: 3.3.1
+ * @description: 阿里云/多平台 CDT 流量监控小组件
+ * @version: 3.3.2
  * @author: 以撒 (yisaings)
  * @update: 2026/09/01
 */
@@ -13,8 +13,7 @@ const BACKUP_RAW_URL = "https://raw.githubusercontent.com/yisaings/surge/main/CD
 
 // ==================== 1. 自动依赖管理 ====================
 async function checkAndDownloadDmYY() {
-  const isICloud = module.filename.includes('Documents/iCloud~');
-  const fm = FileManager[isICloud ? 'iCloud' : 'local']();
+  const fm = FileManager.local();
   const dmyyPath = fm.joinPath(fm.documentsDirectory(), 'DmYY.js');
   
   if (!fm.fileExists(dmyyPath)) {
@@ -53,7 +52,7 @@ class Widget extends DmYY {
     this.Run();
   }
 
-  version = '3.3.1';
+  version = '3.3.2';
   baseUrl = '';
   apiKey = '';
 
@@ -91,7 +90,7 @@ class Widget extends DmYY {
     await this.getData();
   };
 
-  // ==================== 联通标准缓存与请求调度 ====================
+  // ==================== 数据获取与状态解析 ====================
   async getData() {
     if (!this.baseUrl || !this.apiKey) return;
 
@@ -436,9 +435,10 @@ class Widget extends DmYY {
     return await this.renderMedium(widget);
   };
 
-  // ==================== 脚本更新 ====================
+  // ==================== 脚本更新（双模路径精准覆盖） ====================
   async checkAndUpdateScript() {
     console.log("正在检查更新...");
+    const scriptFileName = `${Script.name()}.js`;
     let newScriptContent = null;
 
     const apiUrl = `https://api.github.com/${GITHUB_REPO_PATH}?ref=main&_t=${Date.now()}`;
@@ -498,18 +498,25 @@ class Widget extends DmYY {
       const response = await alert.presentAlert();
       if (response === 0) {
         try {
-          const isICloud = module.filename.includes('Documents/iCloud~');
-          const fm = FileManager[isICloud ? 'iCloud' : 'local']();
+          const fmLocal = FileManager.local();
+          const fmICloud = FileManager.iCloud();
           
-          fm.writeString(module.filename, newScriptContent);
+          let targetFM = fmLocal;
+          let targetPath = fmLocal.joinPath(fmLocal.documentsDirectory(), scriptFileName);
 
-          const localFm = FileManager.local();
-          const cachePath = localFm.joinPath(localFm.joinPath(localFm.documentsDirectory(), "CDT_Monitor_Cache"), "cdt_status_cache.json");
-          if (localFm.fileExists(cachePath)) localFm.remove(cachePath);
+          if (fmICloud.fileExists(fmICloud.joinPath(fmICloud.documentsDirectory(), scriptFileName))) {
+            targetFM = fmICloud;
+            targetPath = fmICloud.joinPath(fmICloud.documentsDirectory(), scriptFileName);
+          }
+
+          targetFM.writeString(targetPath, newScriptContent);
+
+          const cachePath = fmLocal.joinPath(fmLocal.joinPath(fmLocal.documentsDirectory(), "CDT_Monitor_Cache"), "cdt_status_cache.json");
+          if (fmLocal.fileExists(cachePath)) fmLocal.remove(cachePath);
 
           const successAlert = new Alert();
           successAlert.title = "更新成功";
-          successAlert.message = `已升级至 v${latestVersion}，请完全退出 Scriptable 后重新打开！`;
+          successAlert.message = `已成功升级至 v${latestVersion}！\n\n请完全关闭 Scriptable 后重新打开！`;
           successAlert.addAction("确定");
           await successAlert.presentAlert();
 
