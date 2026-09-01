@@ -1,7 +1,7 @@
 /*
  * @name: CDT Monitor
- * @description: 阿里云CDT 流量监控小组件
- * @version: 3.2.0
+ * @description: 阿里云 CDT 流量监控小组件
+ * @version: 3.3.0
  * @author: 以撒 (yisaings)
  * @update: 2026/09/01
 */
@@ -52,12 +52,10 @@ class Widget extends DmYY {
     this.Run();
   }
 
-  version = '3.2.0';
+  version = '3.3.0';
   baseUrl = '';
   apiKey = '';
-  refreshInterval = 15;
 
-  // 时间格式化与记录（吸纳联通设计）
   format = (str) => {
     return parseInt(str) >= 10 ? str : `0${str}`;
   };
@@ -86,7 +84,6 @@ class Widget extends DmYY {
     try {
       this.baseUrl = (this.settings.baseUrl || '').trim().replace(/\/+$/, '');
       this.apiKey = (this.settings.apiKey || '').trim();
-      this.refreshInterval = parseInt(this.settings.refreshInterval || '15');
     } catch (e) {
       console.error(e);
     }
@@ -105,14 +102,17 @@ class Widget extends DmYY {
 
     let rawData = null;
     let useCache = false;
-    const settingTime = this.refreshInterval;
+    
+    // 对齐联通：读取 refreshAfterDate 键名
+    let settingTime = 15;
+    if (this.settings.refreshAfterDate) {
+      settingTime = parseInt(this.settings.refreshAfterDate);
+    }
 
-    // 1. 检查本地快照缓存与有效时长
     if (fm.fileExists(cachePath)) {
       const modified = fm.modificationDate(cachePath);
       const diff = (new Date() - modified) / (1000 * 60);
 
-      // 如果在设置的刷新时间之内，直接读缓存，更新时间按文件修改时间显示
       if (diff < settingTime && config.runsInWidget) {
         try {
           rawData = JSON.parse(fm.readString(cachePath));
@@ -124,7 +124,6 @@ class Widget extends DmYY {
       }
     }
 
-    // 2. 缓存过期或在 App 内预览时，发起网络请求
     if (!useCache) {
       const url = `${this.baseUrl}/api/v1/status`;
       try {
@@ -142,14 +141,12 @@ class Widget extends DmYY {
           fm.writeString(cachePath, JSON.stringify(rawData));
           this.refreshUpdateTime(new Date());
         } else {
-          // 请求异常时，降级读取旧快照
           if (fm.fileExists(cachePath)) {
             rawData = JSON.parse(fm.readString(cachePath));
             this.refreshUpdateTime(fm.modificationDate(cachePath));
           }
         }
       } catch (e) {
-        // 网络超时或无网时，读取旧快照
         if (fm.fileExists(cachePath)) {
           try {
             rawData = JSON.parse(fm.readString(cachePath));
@@ -159,7 +156,6 @@ class Widget extends DmYY {
       }
     }
 
-    // 3. 解析与绑定数据
     if (rawData && rawData.accounts) {
       let list = Array.isArray(rawData.accounts) ? rawData.accounts : [];
 
@@ -227,15 +223,7 @@ class Widget extends DmYY {
     return context.getImage();
   }
 
-  setGlassBackground(widget) {
-    const bgGradient = new LinearGradient();
-    bgGradient.colors = [new Color("#1c2029", 0.95), new Color("#0c0d10", 0.98)];
-    bgGradient.locations = [0.0, 1.0];
-    widget.backgroundGradient = bgGradient;
-  }
-
   checkEmpty(widget) {
-    this.setGlassBackground(widget);
     widget.setPadding(14, 14, 14, 14);
     if (!this.baseUrl || !this.apiKey) {
       const err = widget.addText("⚠️ 请在 App 首页配置 Base URL 和 API Key");
@@ -307,7 +295,6 @@ class Widget extends DmYY {
 
     widget.addSpacer(8);
 
-    // 底部：采用实际数据更新时间
     const botRow = widget.addStack();
     botRow.centerAlignContent();
     const pct = botRow.addText(`${a.usedPercent}% 已用`);
@@ -449,7 +436,7 @@ class Widget extends DmYY {
     return await this.renderMedium(widget);
   };
 
-  // ==================== 脚本 OTA 更新 ====================
+  // ==================== 脚本更新 ====================
   async checkAndUpdateScript() {
     console.log("正在检查更新...");
     const scriptName = Script.name() + '.js';
@@ -467,9 +454,7 @@ class Widget extends DmYY {
       if (content && content.includes("class Widget")) {
         newScriptContent = content;
       }
-    } catch (e) {
-      console.warn("GitHub API 检查失败，使用备用线路...");
-    }
+    } catch (e) {}
 
     if (!newScriptContent) {
       try {
@@ -570,15 +555,6 @@ class Widget extends DmYY {
             desc: '具有 widget:read 权限的 Token'
           },
           {
-            name: 'refreshInterval',
-            icon: { name: 'arrow.clockwise', color: '#30d158' },
-            title: '缓存有效期 / 刷新间隔 (分)',
-            type: 'input',
-            placeholder: '15',
-            val: 'refreshInterval',
-            desc: '在此时间内的系统唤醒将直接读取快照'
-          },
-          {
             name: 'update',
             icon: { name: 'arrow.down.circle.fill', color: '#007aff' },
             title: `脚本更新 (当前 v${this.version})`,
@@ -586,11 +562,26 @@ class Widget extends DmYY {
             onClick: async () => {
               await this.checkAndUpdateScript();
             }
+          }
+        ]
+      });
+
+      this.registerAction({
+        title: '',
+        menu: [
+          {
+            name: 'basic',
+            url: 'https://raw.githubusercontent.com/anker1209/Scriptable/main/icon/basic.png',
+            title: '基础功能',
+            type: 'input',
+            onClick: () => {
+              return this.setWidgetConfig(); // 👈 对齐联通：呼出 DmYY 官方刷新与透明背景设置
+            },
           },
           {
             name: 'reload',
-            icon: { name: 'arrow.triangle.2.circlepath', color: '#ffd60a' },
-            title: '清除快照缓存并重载',
+            url: 'https://raw.githubusercontent.com/anker1209/Scriptable/main/icon/reload.png',
+            title: '重载组件',
             type: 'input',
             onClick: () => {
               const fm = FileManager.local();
@@ -604,26 +595,31 @@ class Widget extends DmYY {
     }
   }
 
-  // ==================== 渲染总入口 ====================
+  // ==================== 渲染总入口（1:1 对齐联通） ====================
   async render() {
     await this.init();
     const widget = new ListWidget();
-    const family = config.widgetFamily || this.widgetFamily || 'medium';
     
+    // 1. 交给 DmYY 生成透明/渐变背景并注入刷新器
+    await this.getWidgetBackgroundImage(widget);
+
     let resWidget;
-    if (family === 'small') {
-      resWidget = await this.renderSmall(widget);
-    } else if (family === 'large') {
+    if (this.widgetFamily === 'medium') {
+      resWidget = await this.renderMedium(widget);
+    } else if (this.widgetFamily === 'large') {
       resWidget = await this.renderLarge(widget);
     } else {
-      resWidget = await this.renderMedium(widget);
+      resWidget = await this.renderSmall(widget);
     }
 
     resWidget.url = `scriptable:///run/${encodeURIComponent(Script.name())}`;
 
-    // 统一将刷新计划注入给 iOS 系统
-    const intervalMinutes = Math.max(5, this.refreshInterval);
-    resWidget.refreshAfterDate = new Date(Date.now() + intervalMinutes * 60 * 1000);
+    // 2. 注入系统刷新计划
+    let settingTime = 15;
+    if (this.settings.refreshAfterDate) {
+      settingTime = parseInt(this.settings.refreshAfterDate);
+    }
+    resWidget.refreshAfterDate = new Date(Date.now() + settingTime * 60 * 1000);
 
     return resWidget;
   }
