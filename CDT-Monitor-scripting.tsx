@@ -13,23 +13,31 @@ const API_KEY = "cdt_7DHQNmMUNrRu3F9OCa0S..."; // 替换为你的完整 API Key
 
 interface AccountItem {
   id?: number;
+  account?: string;
   name?: string;
   region?: string;
+  region_name?: string;
+  instance_status?: string;
   status?: string;
+  flow_used?: number;
   used?: number;
+  flow_total?: number;
   total?: number;
   percentage?: number;
+  threshold?: number;
+  monthly_cost?: number;
   cost?: number;
+  currency?: string;
 }
 
 interface ApiResponse {
   accounts?: AccountItem[];
-  updated_at?: string;
+  system_last_run?: string;
 }
 
 const loadData = async (): Promise<ApiResponse | null> => {
   try {
-    const url = BASE_URL.trim().replace(/\/+$/, '') + '/api/v1/widget/summary';
+    const url = BASE_URL.trim().replace(/\/+$/, '') + '/api/v1/status';
     const res = await fetch(url, {
       method: 'GET',
       headers: {
@@ -69,17 +77,38 @@ function WidgetView(props: { data: ApiResponse | null }) {
     );
   }
 
-  // 2. 数据解析
-  const list = data.accounts;
-  const mainServer = list[0];
-  const runningCount = list.filter(i => (i.status || '').toLowerCase().includes('run')).length;
-  const totalTrafficNum = list.reduce((acc, cur) => acc + (cur.used || 0), 0);
-  const formattedTraffic = totalTrafficNum < 1 && totalTrafficNum > 0 ? totalTrafficNum.toFixed(2) : totalTrafficNum.toFixed(1);
+  // 2. 真实字段解析与聚合
+  const list = data.accounts.map((item) => {
+    const used = parseFloat(String(item.flow_used ?? item.used ?? 0.0));
+    const total = parseFloat(String(item.flow_total ?? item.total ?? 200)) || 200;
+    const pct = item.percentage !== undefined ? parseFloat(String(item.percentage)) : (total > 0 ? (used / total) * 100 : 0);
+    const statusStr = String(item.instance_status ?? item.status ?? 'Running');
+    const isRunning = statusStr.toLowerCase().includes('run') || statusStr.includes('运行');
 
-  const mainUsed = (mainServer.used || 0).toFixed(2);
-  const mainLimit = mainServer.total || 200;
-  const mainPct = ((mainServer.used || 0) / mainLimit * 100).toFixed(2);
-  const isMainRunning = (mainServer.status || '').toLowerCase().includes('run');
+    const rawCost = item.monthly_cost ?? item.cost ?? null;
+    let costDisplay = '';
+    if (rawCost !== null && rawCost !== undefined) {
+      const symbol = (item.currency === 'USD' || !item.currency) ? '$' : '¥';
+      costDisplay = `${symbol}${parseFloat(String(rawCost)).toFixed(2)}`;
+    }
+
+    return {
+      name: item.account ?? item.name ?? '未命名实例',
+      region: item.region_name ?? item.region ?? '中国香港',
+      status: isRunning ? '运行中' : '未运行',
+      isRunning,
+      used: used.toFixed(2),
+      total,
+      pct: pct.toFixed(2),
+      cost: costDisplay,
+      threshold: item.threshold ?? 95,
+    };
+  });
+
+  const mainServer = list[0];
+  const runningCount = list.filter((i) => i.isRunning).length;
+  const totalTrafficNum = list.reduce((acc, cur) => acc + parseFloat(cur.used), 0);
+  const formattedTraffic = totalTrafficNum < 1 && totalTrafficNum > 0 ? totalTrafficNum.toFixed(2) : totalTrafficNum.toFixed(1);
   const syncTime = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
 
   // 3. 小号组件 (Small)
@@ -93,34 +122,30 @@ function WidgetView(props: { data: ApiResponse | null }) {
         spacing={4}
       >
         <HStack alignment="center">
-          <Text font={11} bold>{mainServer.name || 'LTAI5tE***'}</Text>
+          <Text font={11} bold>{mainServer.name}</Text>
           <Spacer />
-          <Text font={8} foregroundStyle={isMainRunning ? '#30d158' : '#ff9f0a'}>●</Text>
+          <Text font={8} foregroundStyle={mainServer.isRunning ? '#30d158' : '#ff9f0a'}>●</Text>
         </HStack>
 
         <HStack alignment="center">
-          <Text font={9} foregroundStyle="rgba(255, 255, 255, 0.45)">
-            {mainServer.region || '中国香港'}
-          </Text>
+          <Text font={9} foregroundStyle="rgba(255, 255, 255, 0.45)">{mainServer.region}</Text>
           <Spacer />
-          <Text font={10} bold foregroundStyle="#ffd60a">
-            $0.01
-          </Text>
+          {mainServer.cost ? (
+            <Text font={10} bold foregroundStyle="#ffd60a">{mainServer.cost}</Text>
+          ) : null}
         </HStack>
 
         <Spacer />
 
         <HStack alignment="bottom">
-          <Text font={20} bold>{mainUsed}</Text>
-          <Text font={10} foregroundStyle="rgba(255, 255, 255, 0.45)">
-            {` / ${mainLimit}G`}
-          </Text>
+          <Text font={20} bold>{mainServer.used}</Text>
+          <Text font={10} foregroundStyle="rgba(255, 255, 255, 0.45)">{` / ${mainServer.total}G`}</Text>
         </HStack>
 
         <Spacer />
 
         <HStack alignment="center">
-          <Text font={9} foregroundStyle="rgba(255, 255, 255, 0.6)">{mainPct}%</Text>
+          <Text font={9} foregroundStyle="rgba(255, 255, 255, 0.6)">{`${mainServer.pct}%`}</Text>
           <Spacer />
           <Text font={9} foregroundStyle="rgba(255, 255, 255, 0.35)">{syncTime}</Text>
         </HStack>
@@ -128,7 +153,7 @@ function WidgetView(props: { data: ApiResponse | null }) {
     );
   }
 
-  // 4. 中号组件 (Medium - 黄金比例)
+  // 4. 中号组件 (Medium)
   return (
     <VStack
       padding
@@ -143,8 +168,8 @@ function WidgetView(props: { data: ApiResponse | null }) {
           CDT MONITOR
         </Text>
         <Spacer />
-        <Text font={9} bold foregroundStyle={isMainRunning ? '#30d158' : '#ff9f0a'}>
-          {isMainRunning ? '● 运行中' : '● 未运行'}
+        <Text font={9} bold foregroundStyle={mainServer.isRunning ? '#30d158' : '#ff9f0a'}>
+          {mainServer.isRunning ? '● 运行中' : '● 未运行'}
         </Text>
       </HStack>
 
@@ -177,23 +202,21 @@ function WidgetView(props: { data: ApiResponse | null }) {
         spacing={3}
       >
         <HStack alignment="center">
-          <Text font={10} bold>{mainServer.name || 'LTAI5tE***'}</Text>
-          <Text font={8} foregroundStyle="rgba(255, 255, 255, 0.45)">
-            {` · ${mainServer.region || '中国香港'}`}
-          </Text>
+          <Text font={10} bold>{mainServer.name}</Text>
+          <Text font={8} foregroundStyle="rgba(255, 255, 255, 0.45)">{` · ${mainServer.region}`}</Text>
           <Spacer />
-          <Text font={8} bold foregroundStyle="#ffd60a">本月 $0.01</Text>
+          {mainServer.cost ? (
+            <Text font={8} bold foregroundStyle="#ffd60a">{`本月 ${mainServer.cost}`}</Text>
+          ) : null}
         </HStack>
 
         <HStack alignment="bottom">
-          <Text font={15} bold>{mainUsed}</Text>
-          <Text font={9} foregroundStyle="rgba(255, 255, 255, 0.45)">
-            {` / ${mainLimit} GB`}
-          </Text>
+          <Text font={15} bold>{mainServer.used}</Text>
+          <Text font={9} foregroundStyle="rgba(255, 255, 255, 0.45)">{` / ${mainServer.total} GB`}</Text>
         </HStack>
 
         <HStack alignment="center">
-          <Text font={8} foregroundStyle="rgba(255, 255, 255, 0.6)">{mainPct}% 已使用</Text>
+          <Text font={8} foregroundStyle="rgba(255, 255, 255, 0.6)">{`${mainServer.pct}% 已使用`}</Text>
           <Spacer />
           <Text font={8} foregroundStyle="rgba(255, 255, 255, 0.35)">同步 {syncTime}</Text>
           <Spacer />
