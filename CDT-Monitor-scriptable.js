@@ -1,12 +1,34 @@
 /*
  * @name: CDT Monitor (Glass Multi-Server Edition)
  * @description: 阿里云/多平台 CDT 流量监控小组件
- * @version: 2.6.2
+ * @version: 2.6.3
 */
+
+// ==================== 1. 自动依赖管理 (免手动安装 DmYY) ====================
+async function checkAndDownloadDmYY() {
+  const fm = FileManager[module.filename.includes('Documents/iCloud~') ? 'iCloud' : 'local']();
+  const dmyyPath = fm.joinPath(fm.documentsDirectory(), 'DmYY.js');
+  
+  if (!fm.fileExists(dmyyPath)) {
+    console.log("正在自动下载 DmYY 基础框架依赖...");
+    const url = "https://raw.githubusercontent.com/dompling/Scriptable/master/Scripts/DmYY.js";
+    try {
+      const req = new Request(url);
+      const content = await req.loadString();
+      fm.writeString(dmyyPath, content);
+      console.log("DmYY 依赖下载完成！");
+    } catch (e) {
+      console.error("DmYY 自动下载失败，请检查网络: " + e);
+    }
+  }
+}
+
+await checkAndDownloadDmYY();
 
 if (typeof require === 'undefined') require = importModule;
 const { DmYY, Runing } = require('./DmYY');
 
+// ==================== 2. CDT Monitor 业务逻辑 ====================
 class Widget extends DmYY {
   constructor(arg) {
     super(arg);
@@ -15,7 +37,7 @@ class Widget extends DmYY {
     this.Run();
   }
 
-  version = '2.6.2';
+  version = '2.6.3';
   baseUrl = '';
   apiKey = '';
   refreshInterval = 10;
@@ -433,7 +455,7 @@ class Widget extends DmYY {
     reg.textColor = new Color("#ffffff", 0.45);
     rowTop.addSpacer();
     const fee = rowTop.addText(`本月 $${a.cost}`);
-    fee.font = Font.systemFont(8);
+    fee.font = Font.boldSystemFont(10);
     fee.textColor = new Color("#ffd60a", 0.9);
 
     mainCard.addSpacer(3);
