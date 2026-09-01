@@ -1,10 +1,17 @@
 /*
  * @name: CDT Monitor (Glass Multi-Server Edition)
- * @description: 阿里云/多平台 CDT 流量监控小组件
- * @version: 2.6.5
+ * @description: 阿里云/多平台 CDT 流量监控小组件 (支持 OTA 在线一键更新)
+ * @version: 2.8.6
 */
 
-// ==================== 1. 自动依赖管理 (修复异步等待与 CDN 加速) ====================
+// ==================== 0. 脚本精准更新源 ====================
+const SCRIPT_REPO_URLS = [
+  "https://testingcf.jsdelivr.net/gh/yisaings/surge@main/CDT-Monitor-scriptable.js",
+  "https://raw.githubusercontent.com/yisaings/surge/main/CDT-Monitor-scriptable.js"
+];
+// ==========================================================
+
+// ==================== 1. 自动依赖管理 ====================
 async function checkAndDownloadDmYY() {
   const fm = FileManager[module.filename.includes('Documents/iCloud~') ? 'iCloud' : 'local']();
   const dmyyPath = fm.joinPath(fm.documentsDirectory(), 'DmYY.js');
@@ -19,15 +26,15 @@ async function checkAndDownloadDmYY() {
     for (const url of urls) {
       try {
         const req = new Request(url);
-        req.timeoutInterval = 6;
-        const content = await req.loadString(); // 必须 await 获取纯文本字符串
+        req.timeoutInterval = 5;
+        const content = await req.loadString();
         if (content && content.includes("class DmYY")) {
           fm.writeString(dmyyPath, String(content));
           console.log("DmYY 依赖下载完成！");
           break;
         }
       } catch (e) {
-        console.warn(`节点 [${url}] 获取失败，尝试下一个...`);
+        console.warn(`节点 [${url}] 获取失败，尝试备用线路...`);
       }
     }
   }
@@ -47,7 +54,7 @@ class Widget extends DmYY {
     this.Run();
   }
 
-  version = '2.6.5';
+  version = '2.8.6';
   baseUrl = '';
   apiKey = '';
   refreshInterval = 10;
@@ -61,19 +68,6 @@ class Widget extends DmYY {
 
   serverList = [];
 
-  defaultPlaceholder = {
-    name: "未连接实例",
-    region: "中国香港",
-    status: "未运行",
-    isRunning: false,
-    cost: "0.01",
-    balance: "0.00",
-    cdtUsed: "0.00",
-    cdtLimit: 200,
-    usedPercent: "0.00",
-    threshold: 95
-  };
-
   init = async () => {
     try {
       this.baseUrl = (this.settings.baseUrl || '').trim().replace(/\/+$/, '');
@@ -85,19 +79,89 @@ class Widget extends DmYY {
     await this.getData();
   };
 
+  // 在线检查并覆盖更新自身脚本
+  async checkUpdateSelf() {
+    const fm = FileManager[module.filename.includes('Documents/iCloud~') ? 'iCloud' : 'local']();
+    let newCode = null;
+
+    for (const url of SCRIPT_REPO_URLS) {
+      try {
+        const req = new Request(url);
+        req.timeoutInterval = 6;
+        const content = await req.loadString();
+        if (content && content.includes("@name: CDT Monitor")) {
+          newCode = content;
+          break;
+        }
+      } catch (e) {}
+    }
+
+    if (!newCode) {
+      const failAlert = new Alert();
+      failAlert.title = "更新失败";
+      failAlert.message = "无法连接至 GitHub 仓库或镜像源，请稍后再试。";
+      failAlert.addAction("确定");
+      await failAlert.presentAlert();
+      return;
+    }
+
+    // 提取远端版本号
+    const versionMatch = newCode.match(/@version:\s*([0-9.]+)/);
+    const remoteVersion = versionMatch ? versionMatch[1] : '最新';
+
+    if (remoteVersion === this.version) {
+      const okAlert = new Alert();
+      okAlert.title = "已是最新版本";
+      okAlert.message = `当前脚本版本 (v${this.version}) 已经是最新的。`;
+      okAlert.addAction("好的");
+      await okAlert.presentAlert();
+      return;
+    }
+
+    const confirmAlert = new Alert();
+    confirmAlert.title = `发现新版本 v${remoteVersion}`;
+    confirmAlert.message = `当前版本: v${this.version}\n是否立即下载并覆盖更新？`;
+    confirmAlert.addAction("立即更新");
+    confirmAlert.addCancelAction("暂不更新");
+
+    const choice = await confirmAlert.presentAlert();
+    if (choice === 0) {
+      try {
+        fm.writeString(module.filename, newCode);
+        
+        // 清理缓存
+        const cachePath = fm.joinPath(fm.joinPath(fm.documentsDirectory(), "CDT_Monitor_Cache"), "cdt_status_cache.json");
+        if (fm.fileExists(cachePath)) fm.remove(cachePath);
+
+        const doneAlert = new Alert();
+        doneAlert.title = "更新成功！";
+        doneAlert.message = `已成功升级至 v${remoteVersion}，脚本将自动重新载入。`;
+        doneAlert.addAction("确定");
+        await doneAlert.presentAlert();
+        
+        this.reopenScript();
+      } catch (err) {
+        const errAlert = new Alert();
+        errAlert.title = "写入失败";
+        errAlert.message = String(err);
+        errAlert.addAction("确定");
+        await errAlert.presentAlert();
+      }
+    }
+  }
+
   async getData() {
     if (!this.baseUrl || !this.apiKey) return;
 
     const fm = FileManager.local();
     const cacheDir = fm.joinPath(fm.documentsDirectory(), "CDT_Monitor_Cache");
-    const cachePath = fm.joinPath(cacheDir, `cdt_glass_summary.json`);
+    const cachePath = fm.joinPath(cacheDir, `cdt_status_cache.json`);
 
     if (!fm.fileExists(cacheDir)) fm.createDirectory(cacheDir, true);
 
     let rawData = null;
     let useCache = false;
 
-    // 缓存时效检测
     if (config.runsInWidget && fm.fileExists(cachePath)) {
       const modified = fm.modificationDate(cachePath);
       const diffMinutes = (new Date() - modified) / (1000 * 60);
@@ -109,9 +173,9 @@ class Widget extends DmYY {
       }
     }
 
-    // 在线拉取（限制 4 秒极速超时，防止被系统杀后台）
+    // 在线拉取 /api/v1/status
     if (!useCache) {
-      const url = `${this.baseUrl}/api/v1/widget/summary`;
+      const url = `${this.baseUrl}/api/v1/status`;
       try {
         const req = new Request(url);
         req.method = "GET";
@@ -135,30 +199,35 @@ class Widget extends DmYY {
       }
     }
 
-    if (rawData) {
-      let list = rawData.accounts || rawData.data || rawData.items || [];
-      if (!Array.isArray(list)) list = [];
+    if (rawData && rawData.accounts) {
+      let list = Array.isArray(rawData.accounts) ? rawData.accounts : [];
 
       this.serverList = list.map(item => {
-        const usedNum = parseFloat(item.used ?? item.traffic_used ?? item.cdt_used_gb ?? 0.0);
-        const limitNum = parseFloat(item.total ?? item.traffic_limit ?? item.cdt_limit_gb ?? 200) || 200;
+        const usedNum = parseFloat(item.flow_used ?? item.used ?? 0.0);
+        const limitNum = parseFloat(item.flow_total ?? item.total ?? 200);
+        const pctNum = parseFloat(item.percentage ?? (limitNum > 0 ? (usedNum / limitNum) * 100 : 0));
         
-        let pct = item.percentage ?? (limitNum > 0 ? (usedNum / limitNum) * 100 : 0);
-        pct = parseFloat(pct);
+        const statusStr = String(item.instance_status ?? item.status ?? 'Running');
+        const isRunning = statusStr.toLowerCase().includes('run') || statusStr.includes('运行');
 
-        const statusStr = String(item.status || 'Running');
-        const isRunning = statusStr.toLowerCase() === 'running' || statusStr.includes('运行');
+        // 精准读取 monthly_cost 与 currency
+        const rawCost = item.monthly_cost ?? item.cost ?? null;
+        let costDisplay = '';
+        if (rawCost !== null && rawCost !== undefined) {
+          const costVal = parseFloat(rawCost);
+          const symbol = (item.currency === 'USD' || !item.currency) ? '$' : '¥';
+          costDisplay = `${symbol}${costVal.toFixed(2)}`;
+        }
 
         return {
-          name: item.name || "LTAI5tE***",
-          region: item.region || "中国香港",
-          status: isRunning ? "运行中" : "未运行",
+          name: item.account ?? item.name ?? '未命名实例',
+          region: item.region_name ?? item.region ?? '中国香港',
+          status: isRunning ? '运行中' : '未运行',
           isRunning: isRunning,
-          cost: parseFloat(item.cost ?? item.month_cost ?? 0.01).toFixed(2),
-          balance: parseFloat(item.balance ?? 0.00).toFixed(2),
+          cost: costDisplay,
           cdtUsed: usedNum.toFixed(2),
           cdtLimit: limitNum,
-          usedPercent: pct.toFixed(2),
+          usedPercent: pctNum.toFixed(2),
           threshold: item.threshold ?? 95
         };
       });
@@ -187,11 +256,12 @@ class Widget extends DmYY {
     context.setFillColor(new Color("#ffffff", 0.12));
     context.fillPath();
 
-    const fillWidth = Math.max(height, Math.min(width, (percentage / 100) * width));
+    const pctNum = parseFloat(percentage) || 0;
+    const fillWidth = Math.max(height, Math.min(width, (pctNum / 100) * width));
     const fillPath = new Path();
     fillPath.addRoundedRect(new Rect(0, 0, fillWidth, height), radius, radius);
     context.addPath(fillPath);
-    context.setFillColor(percentage > 90 ? new Color("#ff375f") : new Color("#0a84ff"));
+    context.setFillColor(pctNum > 90 ? new Color("#ff375f") : new Color("#0a84ff"));
     context.fillPath();
 
     return context.getImage();
@@ -213,195 +283,21 @@ class Widget extends DmYY {
       err.textColor = new Color("#ff453a");
       return true;
     }
+    if (this.serverList.length === 0) {
+      const err = widget.addText("⚠️ 暂未获取到 accounts 实例数据");
+      err.font = Font.systemFont(12);
+      err.textColor = new Color("#ff9f0a");
+      return true;
+    }
     return false;
   }
-
-  drawLargeServerRow(container, a, count) {
-    const mainCard = container.addStack();
-    mainCard.layoutVertically();
-    mainCard.backgroundColor = new Color("#ffffff", 0.08);
-    mainCard.cornerRadius = 12;
-    mainCard.borderColor = new Color("#ffffff", 0.15);
-    mainCard.borderWidth = 0.5;
-
-    const padV = count === 1 ? 22 : (count === 2 ? 14 : 9);
-    mainCard.setPadding(padV, 14, padV, 14);
-
-    const rowTop = mainCard.addStack();
-    rowTop.centerAlignContent();
-    const name = rowTop.addText(a.name);
-    name.font = Font.boldSystemFont(count === 3 ? 10 : 12);
-    name.textColor = new Color("#ffffff", 0.95);
-
-    const reg = rowTop.addText(` · ${a.region}`);
-    reg.font = Font.systemFont(count === 3 ? 8 : 10);
-    reg.textColor = new Color("#ffffff", 0.45);
-
-    rowTop.addSpacer();
-
-    const fee = rowTop.addText(`本月 $${a.cost}`);
-    fee.font = Font.boldSystemFont(count === 3 ? 10 : 12);
-    fee.textColor = new Color("#ffd60a", 0.9);
-
-    mainCard.addSpacer(count === 1 ? 10 : (count === 2 ? 6 : 4));
-
-    const rowData = mainCard.addStack();
-    rowData.bottomAlignContent();
-    const num = rowData.addText(`${a.cdtUsed}`);
-    num.font = Font.heavySystemFont(count === 1 ? 24 : (count === 2 ? 18 : 15));
-    num.textColor = new Color("#ffffff");
-
-    const limit = rowData.addText(` / ${a.cdtLimit} GB`);
-    limit.font = Font.systemFont(count === 3 ? 9 : 11);
-    limit.textColor = new Color("#ffffff", 0.45);
-
-    mainCard.addSpacer(count === 1 ? 10 : (count === 2 ? 6 : 4));
-
-    const barW = 295;
-    const barH = count === 1 ? 6 : 4;
-    const pImg = this.drawProgressBar(parseFloat(a.usedPercent), barW, barH);
-    const imgW = mainCard.addImage(pImg);
-    imgW.imageSize = new Size(barW, barH);
-
-    mainCard.addSpacer(count === 1 ? 8 : (count === 2 ? 5 : 3));
-
-    const rowBottom = mainCard.addStack();
-    rowBottom.centerAlignContent();
-    const pct = rowBottom.addText(`${a.usedPercent}% 已用`);
-    pct.font = Font.systemFont(count === 3 ? 8 : 10);
-    pct.textColor = new Color("#ffffff", 0.6);
-
-    rowBottom.addSpacer();
-
-    const th = rowBottom.addText(`阈值 ${a.threshold}%`);
-    th.font = Font.systemFont(count === 3 ? 8 : 10);
-    th.textColor = new Color("#ffffff", 0.35);
-  }
-
-  drawLargeGridItem(container, a) {
-    const card = container.addStack();
-    card.layoutVertically();
-    card.backgroundColor = new Color("#ffffff", 0.08);
-    card.cornerRadius = 12;
-    card.borderColor = new Color("#ffffff", 0.15);
-    card.borderWidth = 0.5;
-    card.setPadding(12, 10, 12, 10);
-
-    const row1 = card.addStack();
-    row1.centerAlignContent();
-    const name = row1.addText(a.name);
-    name.font = Font.boldSystemFont(10);
-    name.textColor = new Color("#ffffff", 0.95);
-    row1.addSpacer();
-    const dot = row1.addText("●");
-    dot.font = Font.systemFont(8);
-    dot.textColor = a.isRunning ? new Color("#30d158") : new Color("#ff9f0a");
-
-    card.addSpacer(4);
-
-    const row2 = card.addStack();
-    row2.centerAlignContent();
-    const fee = row2.addText(`$${a.cost}`);
-    fee.font = Font.boldSystemFont(9);
-    fee.textColor = new Color("#ffd60a");
-    row2.addSpacer();
-    const reg = row2.addText(a.region);
-    reg.font = Font.systemFont(8);
-    reg.textColor = new Color("#ffffff", 0.45);
-
-    card.addSpacer(8);
-
-    const row3 = card.addStack();
-    row3.bottomAlignContent();
-    const used = row3.addText(`${a.cdtUsed}`);
-    used.font = Font.heavySystemFont(15);
-    used.textColor = new Color("#ffffff");
-    const lim = row3.addText(` / ${a.cdtLimit}G`);
-    lim.font = Font.systemFont(8);
-    lim.textColor = new Color("#ffffff", 0.45);
-
-    card.addSpacer(6);
-
-    const pImg = this.drawProgressBar(parseFloat(a.usedPercent), 132, 4);
-    const imgW = card.addImage(pImg);
-    imgW.imageSize = new Size(132, 4);
-
-    card.addSpacer(6);
-
-    const row4 = card.addStack();
-    const pct = row4.addText(`${a.usedPercent}% 已用`);
-    pct.font = Font.systemFont(8);
-    pct.textColor = new Color("#ffffff", 0.5);
-  }
-
-  renderSmall = async (widget) => {
-    if (this.checkEmpty(widget)) return widget;
-    widget.setPadding(12, 12, 12, 12);
-
-    const a = this.serverList[0] || this.defaultPlaceholder;
-
-    const topRow = widget.addStack();
-    topRow.centerAlignContent();
-    const name = topRow.addText(a.name);
-    name.font = Font.boldSystemFont(11);
-    name.textColor = new Color("#ffffff", 0.95);
-    topRow.addSpacer();
-    const dot = topRow.addText("●");
-    dot.font = Font.systemFont(8);
-    dot.textColor = a.isRunning ? new Color("#30d158") : new Color("#ff9f0a");
-
-    widget.addSpacer(2);
-
-    const subRow = widget.addStack();
-    subRow.centerAlignContent();
-    const reg = subRow.addText(a.region);
-    reg.font = Font.systemFont(9);
-    reg.textColor = new Color("#ffffff", 0.45);
-    subRow.addSpacer();
-    const fee = subRow.addText(`$${a.cost}`);
-    fee.font = Font.boldSystemFont(10);
-    fee.textColor = new Color("#ffd60a", 0.9);
-
-    widget.addSpacer(8);
-
-    const flowRow = widget.addStack();
-    flowRow.bottomAlignContent();
-    const num = flowRow.addText(`${a.cdtUsed}`);
-    num.font = Font.heavySystemFont(20);
-    num.textColor = new Color("#ffffff");
-    flowRow.addSpacer(2);
-    const limit = flowRow.addText(` / ${a.cdtLimit}G`);
-    limit.font = Font.boldSystemFont(10);
-    limit.textColor = new Color("#ffffff", 0.45);
-
-    widget.addSpacer(8);
-
-    const pImg = this.drawProgressBar(parseFloat(a.usedPercent), 118, 4);
-    const imgW = widget.addImage(pImg);
-    imgW.imageSize = new Size(118, 4);
-
-    widget.addSpacer(6);
-
-    const botRow = widget.addStack();
-    botRow.centerAlignContent();
-    const pct = botRow.addText(`${a.usedPercent}%`);
-    pct.font = Font.systemFont(9);
-    pct.textColor = new Color("#ffffff", 0.6);
-    botRow.addSpacer();
-    const sync = botRow.addText(new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }));
-    sync.font = Font.systemFont(9);
-    sync.textColor = new Color("#ffffff", 0.35);
-
-    widget.refreshAfterDate = new Date(Date.now() + this.refreshInterval * 60 * 1000);
-    return widget;
-  };
 
   renderMedium = async (widget) => {
     if (this.checkEmpty(widget)) return widget;
     widget.setPadding(13, 15, 13, 15);
 
     const s = this.summaryData;
-    const a = this.serverList[0] || this.defaultPlaceholder;
+    const a = this.serverList[0];
 
     const header = widget.addStack();
     header.centerAlignContent();
@@ -465,13 +361,18 @@ class Widget extends DmYY {
     const name = rowTop.addText(a.name);
     name.font = Font.boldSystemFont(10);
     name.textColor = new Color("#ffffff", 0.95);
-    const reg = rowTop.addText(` · ${a.region}`);
-    reg.font = Font.systemFont(8);
-    reg.textColor = new Color("#ffffff", 0.45);
+    if (a.region) {
+      const reg = rowTop.addText(` · ${a.region}`);
+      reg.font = Font.systemFont(8);
+      reg.textColor = new Color("#ffffff", 0.45);
+    }
     rowTop.addSpacer();
-    const fee = rowTop.addText(`本月 $${a.cost}`);
-    fee.font = Font.boldSystemFont(10);
-    fee.textColor = new Color("#ffd60a", 0.9);
+    
+    if (a.cost) {
+      const fee = rowTop.addText(`本月 ${a.cost}`);
+      fee.font = Font.boldSystemFont(10);
+      fee.textColor = new Color("#ffd60a", 0.9);
+    }
 
     mainCard.addSpacer(3);
 
@@ -501,111 +402,24 @@ class Widget extends DmYY {
     const sync = rowBottom.addText(`同步 ${new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}`);
     sync.font = Font.systemFont(8);
     sync.textColor = new Color("#ffffff", 0.35);
-    rowBottom.addSpacer();
-    const th = rowBottom.addText(`阈值 ${a.threshold}%`);
-    th.font = Font.systemFont(8);
-    th.textColor = new Color("#ffffff", 0.35);
+
+    if (a.threshold !== null) {
+      rowBottom.addSpacer();
+      const th = rowBottom.addText(`阈值 ${a.threshold}%`);
+      th.font = Font.systemFont(8);
+      th.textColor = new Color("#ffffff", 0.35);
+    }
 
     widget.refreshAfterDate = new Date(Date.now() + this.refreshInterval * 60 * 1000);
     return widget;
   };
 
+  renderSmall = async (widget) => {
+    return await this.renderMedium(widget);
+  };
+
   renderLarge = async (widget) => {
-    if (this.checkEmpty(widget)) return widget;
-    widget.setPadding(14, 15, 14, 15);
-
-    const s = this.summaryData;
-    const list = this.serverList.length > 0 ? this.serverList : [this.defaultPlaceholder];
-    const count = list.length;
-
-    const header = widget.addStack();
-    header.centerAlignContent();
-    const title = header.addText("CDT MONITOR");
-    title.font = Font.boldSystemFont(13);
-    title.textColor = new Color("#ffffff", 0.7);
-    header.addSpacer();
-
-    const isRunning = s.runningInstances > 0;
-    const badge = header.addStack();
-    badge.backgroundColor = isRunning ? new Color("#30d158", 0.15) : new Color("#ff9f0a", 0.15);
-    badge.cornerRadius = 6;
-    badge.setPadding(3, 8, 3, 8);
-    badge.centerAlignContent();
-
-    const dot = badge.addText("● ");
-    dot.font = Font.systemFont(8);
-    dot.textColor = isRunning ? new Color("#30d158") : new Color("#ff9f0a");
-    const statusText = badge.addText(`在线: ${s.runningInstances}/${s.totalInstances}`);
-    statusText.font = Font.boldSystemFont(10);
-    statusText.textColor = isRunning ? new Color("#30d158") : new Color("#ff9f0a");
-
-    widget.addSpacer(8);
-
-    const statsCard = widget.addStack();
-    statsCard.backgroundColor = new Color("#ffffff", 0.08);
-    statsCard.cornerRadius = 12;
-    statsCard.borderColor = new Color("#ffffff", 0.15);
-    statsCard.borderWidth = 0.5;
-    statsCard.setPadding(8, 14, 8, 14);
-    statsCard.centerAlignContent();
-
-    const addStat = (stack, label, val) => {
-      const col = stack.addStack();
-      col.layoutVertically();
-      const lbl = col.addText(label);
-      lbl.font = Font.systemFont(9);
-      lbl.textColor = new Color("#ffffff", 0.5);
-      const num = col.addText(String(val));
-      num.font = Font.boldSystemFont(12);
-      num.textColor = new Color("#ffffff", 0.95);
-    };
-
-    addStat(statsCard, "实例总数", `${s.totalInstances} 台`);
-    statsCard.addSpacer();
-    addStat(statsCard, "累计流量", `${s.totalTraffic} GB`);
-    statsCard.addSpacer();
-    addStat(statsCard, "阈值告警", `${s.alerts} 项`);
-
-    widget.addSpacer(10);
-
-    if (count >= 4) {
-      const grid = widget.addStack();
-      grid.layoutVertically();
-
-      const r1 = grid.addStack();
-      r1.layoutHorizontally();
-      this.drawLargeGridItem(r1, list[0]);
-      r1.addSpacer(10);
-      this.drawLargeGridItem(r1, list[1]);
-
-      grid.addSpacer(10);
-
-      const r2 = grid.addStack();
-      r2.layoutHorizontally();
-      this.drawLargeGridItem(r2, list[2]);
-      r2.addSpacer(10);
-      this.drawLargeGridItem(r2, list[3]);
-
-    } else {
-      const displayList = list.slice(0, 3);
-      const gap = count === 1 ? 0 : (count === 2 ? 12 : 8);
-
-      displayList.forEach((item, idx) => {
-        if (idx > 0) widget.addSpacer(gap);
-        this.drawLargeServerRow(widget, item, count);
-      });
-    }
-
-    widget.addSpacer();
-
-    const footRow = widget.addStack();
-    footRow.centerAlignContent();
-    const timeText = footRow.addText(`上次同步: ${new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}`);
-    timeText.font = Font.systemFont(9);
-    timeText.textColor = new Color("#ffffff", 0.35);
-
-    widget.refreshAfterDate = new Date(Date.now() + this.refreshInterval * 60 * 1000);
-    return widget;
+    return await this.renderMedium(widget);
   };
 
   Run() {
@@ -619,8 +433,8 @@ class Widget extends DmYY {
             title: 'Base URL (面板地址)',
             type: 'input',
             val: 'baseUrl',
-            placeholder: 'https://panel.example.com',
-            desc: '反代后的完整网页访问地址'
+            placeholder: 'https://cdt.yisaw.com',
+            desc: '面板访问地址'
           },
           {
             name: 'apiKey',
@@ -641,13 +455,22 @@ class Widget extends DmYY {
             desc: '建议 10-30 分钟'
           },
           {
+            name: 'update',
+            icon: { name: 'arrow.down.circle.fill', color: '#007aff' },
+            title: `检查并更新脚本 (v${this.version})`,
+            type: 'input',
+            onClick: async () => {
+              await this.checkUpdateSelf();
+            }
+          },
+          {
             name: 'reload',
             icon: { name: 'arrow.triangle.2.circlepath', color: '#ffd60a' },
-            title: '重载并保存',
+            title: '清除缓存并立即重载',
             type: 'input',
             onClick: () => {
               const fm = FileManager.local();
-              const cachePath = fm.joinPath(fm.joinPath(fm.documentsDirectory(), "CDT_Monitor_Cache"), "cdt_glass_summary.json");
+              const cachePath = fm.joinPath(fm.joinPath(fm.documentsDirectory(), "CDT_Monitor_Cache"), "cdt_status_cache.json");
               if (fm.fileExists(cachePath)) fm.remove(cachePath);
               this.reopenScript();
             }
@@ -660,13 +483,7 @@ class Widget extends DmYY {
   async render() {
     await this.init();
     const widget = new ListWidget();
-    if (this.widgetFamily === 'small') {
-      return await this.renderSmall(widget);
-    } else if (this.widgetFamily === 'large') {
-      return await this.renderLarge(widget);
-    } else {
-      return await this.renderMedium(widget);
-    }
+    return await this.renderMedium(widget);
   }
 }
 
