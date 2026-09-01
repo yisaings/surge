@@ -1,29 +1,29 @@
 /*
  * @name: CDT Monitor (Glass Multi-Server Edition)
  * @description: 阿里云/多平台 CDT 流量监控小组件
- * @version: 2.6.3
+ * @version: 2.6.4
 */
 
-// ==================== 1. 自动依赖管理 (免手动安装 DmYY) ====================
-async function checkAndDownloadDmYY() {
+// ==================== 1. 快速依赖管理 ====================
+function checkAndDownloadDmYY() {
   const fm = FileManager[module.filename.includes('Documents/iCloud~') ? 'iCloud' : 'local']();
   const dmyyPath = fm.joinPath(fm.documentsDirectory(), 'DmYY.js');
   
   if (!fm.fileExists(dmyyPath)) {
-    console.log("正在自动下载 DmYY 基础框架依赖...");
+    console.log("正在下载 DmYY 基础框架依赖...");
     const url = "https://raw.githubusercontent.com/dompling/Scriptable/master/Scripts/DmYY.js";
     try {
       const req = new Request(url);
-      const content = await req.loadString();
+      req.timeoutInterval = 5;
+      const content = req.loadString();
       fm.writeString(dmyyPath, content);
-      console.log("DmYY 依赖下载完成！");
     } catch (e) {
-      console.error("DmYY 自动下载失败，请检查网络: " + e);
+      console.error("DmYY 依赖下载失败: " + e);
     }
   }
 }
 
-await checkAndDownloadDmYY();
+checkAndDownloadDmYY();
 
 if (typeof require === 'undefined') require = importModule;
 const { DmYY, Runing } = require('./DmYY');
@@ -37,7 +37,7 @@ class Widget extends DmYY {
     this.Run();
   }
 
-  version = '2.6.3';
+  version = '2.6.4';
   baseUrl = '';
   apiKey = '';
   refreshInterval = 10;
@@ -87,6 +87,7 @@ class Widget extends DmYY {
     let rawData = null;
     let useCache = false;
 
+    // 缓存时效检测
     if (config.runsInWidget && fm.fileExists(cachePath)) {
       const modified = fm.modificationDate(cachePath);
       const diffMinutes = (new Date() - modified) / (1000 * 60);
@@ -98,24 +99,29 @@ class Widget extends DmYY {
       }
     }
 
+    // 在线拉取（限制 4 秒极速超时，防止被系统杀后台）
     if (!useCache) {
       const url = `${this.baseUrl}/api/v1/widget/summary`;
       try {
         const req = new Request(url);
         req.method = "GET";
+        req.timeoutInterval = 4; // 严格限制 4 秒超时
         req.headers = {
           "Authorization": `Bearer ${this.apiKey}`,
           "Content-Type": "application/json"
         };
         const res = await req.loadJSON();
-        if (res) {
+        if (res && res.accounts) {
           rawData = res;
           if (fm.fileExists(cachePath)) fm.remove(cachePath);
           fm.writeString(cachePath, JSON.stringify(rawData));
         }
       } catch (e) {
+        // 网络超时或失败，立即降级使用历史缓存
         if (fm.fileExists(cachePath)) {
-          rawData = JSON.parse(fm.readString(cachePath));
+          try {
+            rawData = JSON.parse(fm.readString(cachePath));
+          } catch (err) {}
         }
       }
     }
