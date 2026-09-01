@@ -31,13 +31,11 @@ class Widget extends DmYY {
     this.Run();
   }
 
-  version = '2.4.1';
+  version = '2.5.0';
   baseUrl = '';
   apiKey = '';
   refreshInterval = 10;
-  mockCount = '0';
 
-  // 默认通用初始指标
   summaryData = {
     totalInstances: 0,
     runningInstances: 0,
@@ -47,10 +45,9 @@ class Widget extends DmYY {
 
   serverList = [];
 
-  // 通用兜底模板（仅在网络异常/未拉取到数据时防报错使用）
   defaultPlaceholder = {
     name: "未连接实例",
-    region: "未配置",
+    region: "请先配置",
     status: "未运行",
     cost: "0.00",
     balance: "0.00",
@@ -65,7 +62,6 @@ class Widget extends DmYY {
       this.baseUrl = (this.settings.baseUrl || '').trim().replace(/\/+$/, '');
       this.apiKey = (this.settings.apiKey || '').trim();
       this.refreshInterval = parseInt(this.settings.refreshInterval || '10');
-      this.mockCount = this.settings.mockCount || '0';
     } catch (e) {
       console.error(e);
     }
@@ -73,28 +69,10 @@ class Widget extends DmYY {
   };
 
   async getData() {
-    // 1. 如果手动开启了模拟测试（纯虚拟演示节点）
-    if (this.mockCount !== '0') {
-      const mockPresets = [
-        { name: "Demo-Server-01", region: "测试节点-A", status: "运行中", cost: "0.00", balance: "0.00", cdtUsed: 12.50, cdtLimit: 200, usedPercent: "6.25", threshold: 95 },
-        { name: "Demo-Server-02", region: "测试节点-B", status: "运行中", cost: "0.00", balance: "0.00", cdtUsed: 45.00, cdtLimit: 200, usedPercent: "22.50", threshold: 95 },
-        { name: "Demo-Server-03", region: "测试节点-C", status: "运行中", cost: "0.00", balance: "0.00", cdtUsed: 128.00, cdtLimit: 200, usedPercent: "64.00", threshold: 95 },
-        { name: "Demo-Server-04", region: "测试节点-D", status: "运行中", cost: "0.00", balance: "0.00", cdtUsed: 195.00, cdtLimit: 200, usedPercent: "97.50", threshold: 95 }
-      ];
-
-      const count = parseInt(this.mockCount);
-      this.serverList = mockPresets.slice(0, count);
-      this.summaryData = {
-        totalInstances: count,
-        runningInstances: count,
-        totalTraffic: this.serverList.reduce((acc, cur) => acc + cur.cdtUsed, 0).toFixed(1),
-        alerts: count >= 4 ? 1 : 0
-      };
+    if (!this.baseUrl || !this.apiKey) {
+      console.log("⚠️ 尚未配置 Base URL 或 API Key");
       return;
     }
-
-    // 2. 真实请求拉取
-    if (!this.baseUrl || !this.apiKey) return;
 
     const fm = FileManager.local();
     const cacheDir = fm.joinPath(fm.documentsDirectory(), "CDT_Monitor_Cache");
@@ -105,6 +83,7 @@ class Widget extends DmYY {
     let rawData = null;
     let useCache = false;
 
+    // 缓存过期检测
     if (fm.fileExists(cachePath)) {
       const modified = fm.modificationDate(cachePath);
       const diffMinutes = (new Date() - modified) / (1000 * 60);
@@ -116,9 +95,11 @@ class Widget extends DmYY {
       }
     }
 
+    // 在线拉取
     if (!useCache) {
       const url = `${this.baseUrl}/api/v1/widget/summary`;
       try {
+        console.log(`🌐 正在请求: ${url}`);
         const req = new Request(url);
         req.method = "GET";
         req.headers = {
@@ -130,32 +111,40 @@ class Widget extends DmYY {
           rawData = res;
           if (fm.fileExists(cachePath)) fm.remove(cachePath);
           fm.writeString(cachePath, JSON.stringify(rawData));
+          console.log("🟢 数据拉取成功并已更新缓存");
         }
       } catch (e) {
+        console.error(`❌ 网络请求失败: ${e}`);
         if (fm.fileExists(cachePath)) {
+          console.log("🟠 自动使用本地历史缓存兜底");
           rawData = JSON.parse(fm.readString(cachePath));
         }
       }
     }
 
+    // 解析装载真实数据
     if (rawData) {
       const summary = rawData.summary || rawData;
-      this.summaryData.totalInstances = summary.total_instances ?? summary.instances_total ?? summary.instances ?? 0;
-      this.summaryData.runningInstances = summary.running_instances ?? summary.instances_running ?? summary.running ?? 0;
-      this.summaryData.totalTraffic = summary.total_traffic_gb ?? summary.total_traffic ?? summary.accumulated_traffic ?? 0.0;
-      this.summaryData.alerts = summary.alerts ?? summary.alert_count ?? 0;
-
-      let list = rawData.accounts || rawData.managed_instances || (rawData.instance ? [rawData.instance] : []);
       
+      // 全版本数据字段自适应兼容
+      let list = rawData.accounts || rawData.data || rawData.items || rawData.managed_instances || (rawData.instance ? [rawData.instance] : []);
+      if (!Array.isArray(list)) list = [];
+
       this.serverList = list.map(item => {
-        const used = Number(item.cdt_used_gb ?? item.traffic_used ?? summary.cdt_used_gb ?? 0.00);
-        const limit = Number(item.cdt_limit_gb ?? item.traffic_limit ?? summary.cdt_limit_gb ?? 0);
-        const pct = limit > 0 ? (used / limit) * 100 : 0;
+        const used = Number(item.cdt_used_gb ?? item.traffic_used ?? item.flow_used ?? summary.cdt_used_gb ?? 0.00);
+        const limit = Number(item.cdt_limit_gb ?? item.traffic_limit ?? item.flow_total ?? summary.cdt_limit_gb ?? 0);
+        const pct = limit > 0 ? (used / limit) * 100 : (item.percentageOfUse ? Number(item.percentageOfUse) : 0);
+        
+        let costVal = "0.00";
+        if (item.month_cost !== undefined) costVal = String(item.month_cost);
+        else if (item.cost?.monthly_cost !== undefined) costVal = String(item.cost.monthly_cost);
+        else if (summary.month_cost !== undefined) costVal = String(summary.month_cost);
+
         return {
           name: item.name || item.account_name || item.instance_name || "未命名节点",
-          region: item.region || item.location || "未知区域",
-          status: item.status || "运行中",
-          cost: item.month_cost ?? item.cost ?? summary.month_cost ?? "0.00",
+          region: item.region || item.location || item.regionName || "中国香港",
+          status: item.status || item.instanceStatus || "运行中",
+          cost: costVal,
           balance: item.balance ?? item.account_balance ?? summary.balance ?? "0.00",
           cdtUsed: used,
           cdtLimit: limit,
@@ -163,6 +152,14 @@ class Widget extends DmYY {
           threshold: item.threshold ?? 95
         };
       });
+
+      // 智能动态计算总数，杜绝显示 0 台
+      const runningCount = this.serverList.filter(i => String(i.status).includes("运行") || String(i.status).toLowerCase().includes("run")).length;
+      
+      this.summaryData.totalInstances = summary.total_instances ?? summary.instances_total ?? summary.instances ?? this.serverList.length;
+      this.summaryData.runningInstances = summary.running_instances ?? summary.instances_running ?? summary.running ?? runningCount;
+      this.summaryData.totalTraffic = summary.total_traffic_gb ?? summary.total_traffic ?? summary.accumulated_traffic ?? this.serverList.reduce((acc, cur) => acc + (cur.cdtUsed || 0), 0).toFixed(1);
+      this.summaryData.alerts = summary.alerts ?? summary.alert_count ?? 0;
     }
   }
 
@@ -198,7 +195,7 @@ class Widget extends DmYY {
   checkEmpty(widget) {
     this.setGlassBackground(widget);
     widget.setPadding(14, 14, 14, 14);
-    if (this.mockCount === '0' && (!this.baseUrl || !this.apiKey)) {
+    if (!this.baseUrl || !this.apiKey) {
       const err = widget.addText("⚠️ 请在 App 首页配置 Base URL 和 API Key");
       err.font = Font.systemFont(12);
       err.textColor = new Color("#ff453a");
@@ -623,15 +620,6 @@ class Widget extends DmYY {
             val: 'apiKey',
             placeholder: 'cdt_xxxxxxxx',
             desc: '具有 widget:read 权限的 Token'
-          },
-          {
-            name: 'mockCount',
-            icon: { name: 'square.grid.2x2', color: '#af52de' },
-            type: 'select',
-            title: '模拟服务器数量',
-            options: ['0', '2', '3', '4'],
-            val: 'mockCount',
-            desc: '0 为关闭模拟，选 2/3/4 查看大号铺满效果'
           },
           {
             name: 'refreshInterval',
