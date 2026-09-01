@@ -1,7 +1,7 @@
 /*
  * @name: CDT Monitor (Glass Multi-Server Edition)
- * @description: 阿里云/多平台 CDT 流量监控小组件 (支持 OTA 在线一键更新 + 防缓存穿透)
- * @version: 2.8.7
+ * @description: 阿里云/多平台 CDT 流量监控小组件 (精确尺寸分流版)
+ * @version: 2.8.8
 */
 
 // ==================== 0. 脚本精准更新源 ====================
@@ -54,7 +54,7 @@ class Widget extends DmYY {
     this.Run();
   }
 
-  version = '2.8.7';
+  version = '2.8.8';
   baseUrl = '';
   apiKey = '';
   refreshInterval = 10;
@@ -299,6 +299,74 @@ class Widget extends DmYY {
     return false;
   }
 
+  // ==================== 小号组件 (Small) 专属渲染 ====================
+  renderSmall = async (widget) => {
+    if (this.checkEmpty(widget)) return widget;
+    widget.setPadding(12, 12, 12, 12);
+
+    const a = this.serverList[0];
+
+    const topRow = widget.addStack();
+    topRow.centerAlignContent();
+    const name = topRow.addText(a.name);
+    name.font = Font.boldSystemFont(11);
+    name.textColor = new Color("#ffffff", 0.95);
+    topRow.addSpacer();
+    const dot = topRow.addText("●");
+    dot.font = Font.systemFont(8);
+    dot.textColor = a.isRunning ? new Color("#30d158") : new Color("#ff9f0a");
+
+    widget.addSpacer(2);
+
+    const subRow = widget.addStack();
+    subRow.centerAlignContent();
+    if (a.region) {
+      const reg = subRow.addText(a.region);
+      reg.font = Font.systemFont(9);
+      reg.textColor = new Color("#ffffff", 0.45);
+    }
+    subRow.addSpacer();
+    if (a.cost) {
+      const fee = subRow.addText(a.cost);
+      fee.font = Font.boldSystemFont(10);
+      fee.textColor = new Color("#ffd60a", 0.9);
+    }
+
+    widget.addSpacer(8);
+
+    const flowRow = widget.addStack();
+    flowRow.bottomAlignContent();
+    const num = flowRow.addText(`${a.cdtUsed}`);
+    num.font = Font.heavySystemFont(20);
+    num.textColor = new Color("#ffffff");
+    flowRow.addSpacer(2);
+    const limit = flowRow.addText(` / ${a.cdtLimit}G`);
+    limit.font = Font.boldSystemFont(10);
+    limit.textColor = new Color("#ffffff", 0.45);
+
+    widget.addSpacer(8);
+
+    const pImg = this.drawProgressBar(parseFloat(a.usedPercent), 118, 4);
+    const imgW = widget.addImage(pImg);
+    imgW.imageSize = new Size(118, 4);
+
+    widget.addSpacer(6);
+
+    const botRow = widget.addStack();
+    botRow.centerAlignContent();
+    const pct = botRow.addText(`${a.usedPercent}%`);
+    pct.font = Font.systemFont(9);
+    pct.textColor = new Color("#ffffff", 0.6);
+    botRow.addSpacer();
+    const sync = botRow.addText(new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }));
+    sync.font = Font.systemFont(9);
+    sync.textColor = new Color("#ffffff", 0.35);
+
+    widget.refreshAfterDate = new Date(Date.now() + this.refreshInterval * 60 * 1000);
+    return widget;
+  };
+
+  // ==================== 中号组件 (Medium) 专属渲染 ====================
   renderMedium = async (widget) => {
     if (this.checkEmpty(widget)) return widget;
     widget.setPadding(13, 15, 13, 15);
@@ -421,10 +489,7 @@ class Widget extends DmYY {
     return widget;
   };
 
-  renderSmall = async (widget) => {
-    return await this.renderMedium(widget);
-  };
-
+  // ==================== 大号组件 (Large) 专属渲染 ====================
   renderLarge = async (widget) => {
     return await this.renderMedium(widget);
   };
@@ -487,10 +552,19 @@ class Widget extends DmYY {
     }
   }
 
+  // 核心分流入口
   async render() {
     await this.init();
     const widget = new ListWidget();
-    return await this.renderMedium(widget);
+    const family = config.widgetFamily || this.widgetFamily || 'medium';
+    
+    if (family === 'small') {
+      return await this.renderSmall(widget);
+    } else if (family === 'large') {
+      return await this.renderLarge(widget);
+    } else {
+      return await this.renderMedium(widget);
+    }
   }
 }
 
