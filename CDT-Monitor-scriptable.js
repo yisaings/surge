@@ -1,7 +1,7 @@
 /*
  * @name: CDT Monitor
- * @description: 阿里云 CDT 流量监控小组件
- * @version: 3.3.0
+ * @description: 阿里云/多平台 CDT 流量监控小组件 
+ * @version: 3.3.1
  * @author: 以撒 (yisaings)
  * @update: 2026/09/01
 */
@@ -13,7 +13,8 @@ const BACKUP_RAW_URL = "https://raw.githubusercontent.com/yisaings/surge/main/CD
 
 // ==================== 1. 自动依赖管理 ====================
 async function checkAndDownloadDmYY() {
-  const fm = FileManager.local();
+  const isICloud = module.filename.includes('Documents/iCloud~');
+  const fm = FileManager[isICloud ? 'iCloud' : 'local']();
   const dmyyPath = fm.joinPath(fm.documentsDirectory(), 'DmYY.js');
   
   if (!fm.fileExists(dmyyPath)) {
@@ -52,7 +53,7 @@ class Widget extends DmYY {
     this.Run();
   }
 
-  version = '3.3.0';
+  version = '3.3.1';
   baseUrl = '';
   apiKey = '';
 
@@ -103,7 +104,6 @@ class Widget extends DmYY {
     let rawData = null;
     let useCache = false;
     
-    // 对齐联通：读取 refreshAfterDate 键名
     let settingTime = 15;
     if (this.settings.refreshAfterDate) {
       settingTime = parseInt(this.settings.refreshAfterDate);
@@ -439,7 +439,6 @@ class Widget extends DmYY {
   // ==================== 脚本更新 ====================
   async checkAndUpdateScript() {
     console.log("正在检查更新...");
-    const scriptName = Script.name() + '.js';
     let newScriptContent = null;
 
     const apiUrl = `https://api.github.com/${GITHUB_REPO_PATH}?ref=main&_t=${Date.now()}`;
@@ -499,16 +498,18 @@ class Widget extends DmYY {
       const response = await alert.presentAlert();
       if (response === 0) {
         try {
-          const fm = FileManager.local();
-          const scriptPath = fm.joinPath(fm.documentsDirectory(), scriptName);
-          fm.writeString(scriptPath, newScriptContent);
+          const isICloud = module.filename.includes('Documents/iCloud~');
+          const fm = FileManager[isICloud ? 'iCloud' : 'local']();
+          
+          fm.writeString(module.filename, newScriptContent);
 
-          const cachePath = fm.joinPath(fm.joinPath(fm.documentsDirectory(), "CDT_Monitor_Cache"), "cdt_status_cache.json");
-          if (fm.fileExists(cachePath)) fm.remove(cachePath);
+          const localFm = FileManager.local();
+          const cachePath = localFm.joinPath(localFm.joinPath(localFm.documentsDirectory(), "CDT_Monitor_Cache"), "cdt_status_cache.json");
+          if (localFm.fileExists(cachePath)) localFm.remove(cachePath);
 
           const successAlert = new Alert();
           successAlert.title = "更新成功";
-          successAlert.message = `已升级至 v${latestVersion}，请重新打开脚本！`;
+          successAlert.message = `已升级至 v${latestVersion}，请完全退出 Scriptable 后重新打开！`;
           successAlert.addAction("确定");
           await successAlert.presentAlert();
 
@@ -575,7 +576,7 @@ class Widget extends DmYY {
             title: '基础功能',
             type: 'input',
             onClick: () => {
-              return this.setWidgetConfig(); // 👈 对齐联通：呼出 DmYY 官方刷新与透明背景设置
+              return this.setWidgetConfig();
             },
           },
           {
@@ -595,12 +596,11 @@ class Widget extends DmYY {
     }
   }
 
-  // ==================== 渲染总入口（1:1 对齐联通） ====================
+  // ==================== 渲染总入口 ====================
   async render() {
     await this.init();
     const widget = new ListWidget();
     
-    // 1. 交给 DmYY 生成透明/渐变背景并注入刷新器
     await this.getWidgetBackgroundImage(widget);
 
     let resWidget;
@@ -614,7 +614,6 @@ class Widget extends DmYY {
 
     resWidget.url = `scriptable:///run/${encodeURIComponent(Script.name())}`;
 
-    // 2. 注入系统刷新计划
     let settingTime = 15;
     if (this.settings.refreshAfterDate) {
       settingTime = parseInt(this.settings.refreshAfterDate);
