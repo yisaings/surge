@@ -7,7 +7,7 @@ import {
 } from 'scripting';
 
 // ==================== 用户配置区 ====================
-const BASE_URL = "https://cdt.yisaw.com"; // 面板地址
+const BASE_URL = "https://域名.com"; // 面板地址
 const API_KEY = "cdt_7DHQNmMUNrRu3F9OCa0S..."; // 替换为你的完整 API Key
 // ====================================================
 
