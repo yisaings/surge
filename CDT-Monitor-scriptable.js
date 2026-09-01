@@ -1,13 +1,13 @@
 /*
  * @name: CDT Monitor (Glass Multi-Server Edition)
- * @description: 阿里云/多平台 CDT 流量监控小组件 (支持 OTA 在线一键更新)
- * @version: 2.8.6
+ * @description: 阿里云/多平台 CDT 流量监控小组件 (支持 OTA 在线一键更新 + 防缓存穿透)
+ * @version: 2.8.7
 */
 
 // ==================== 0. 脚本精准更新源 ====================
 const SCRIPT_REPO_URLS = [
-  "https://testingcf.jsdelivr.net/gh/yisaings/surge@main/CDT-Monitor-scriptable.js",
-  "https://raw.githubusercontent.com/yisaings/surge/main/CDT-Monitor-scriptable.js"
+  "https://raw.githubusercontent.com/yisaings/surge/main/CDT-Monitor-scriptable.js",
+  "https://testingcf.jsdelivr.net/gh/yisaings/surge@main/CDT-Monitor-scriptable.js"
 ];
 // ==========================================================
 
@@ -54,7 +54,7 @@ class Widget extends DmYY {
     this.Run();
   }
 
-  version = '2.8.6';
+  version = '2.8.7';
   baseUrl = '';
   apiKey = '';
   refreshInterval = 10;
@@ -79,14 +79,16 @@ class Widget extends DmYY {
     await this.getData();
   };
 
-  // 在线检查并覆盖更新自身脚本
+  // 在线检查并覆盖更新自身脚本（带时间戳穿透 CDN 强缓存）
   async checkUpdateSelf() {
     const fm = FileManager[module.filename.includes('Documents/iCloud~') ? 'iCloud' : 'local']();
     let newCode = null;
+    const now = Date.now();
 
-    for (const url of SCRIPT_REPO_URLS) {
+    for (const rawUrl of SCRIPT_REPO_URLS) {
       try {
-        const req = new Request(url);
+        const noCacheUrl = rawUrl.includes('?') ? `${rawUrl}&_t=${now}` : `${rawUrl}?_t=${now}`;
+        const req = new Request(noCacheUrl);
         req.timeoutInterval = 6;
         const content = await req.loadString();
         if (content && content.includes("@name: CDT Monitor")) {
@@ -105,9 +107,17 @@ class Widget extends DmYY {
       return;
     }
 
-    // 提取远端版本号
     const versionMatch = newCode.match(/@version:\s*([0-9.]+)/);
-    const remoteVersion = versionMatch ? versionMatch[1] : '最新';
+    const remoteVersion = versionMatch ? versionMatch[1] : null;
+
+    if (!remoteVersion) {
+      const errAlert = new Alert();
+      errAlert.title = "解析失败";
+      errAlert.message = "无法解析远端脚本的版本号。";
+      errAlert.addAction("确定");
+      await errAlert.presentAlert();
+      return;
+    }
 
     if (remoteVersion === this.version) {
       const okAlert = new Alert();
@@ -120,7 +130,7 @@ class Widget extends DmYY {
 
     const confirmAlert = new Alert();
     confirmAlert.title = `发现新版本 v${remoteVersion}`;
-    confirmAlert.message = `当前版本: v${this.version}\n是否立即下载并覆盖更新？`;
+    confirmAlert.message = `当前版本: v${this.version}\n远端版本: v${remoteVersion}\n是否立即下载并覆盖更新？`;
     confirmAlert.addAction("立即更新");
     confirmAlert.addCancelAction("暂不更新");
 
@@ -129,7 +139,6 @@ class Widget extends DmYY {
       try {
         fm.writeString(module.filename, newCode);
         
-        // 清理缓存
         const cachePath = fm.joinPath(fm.joinPath(fm.documentsDirectory(), "CDT_Monitor_Cache"), "cdt_status_cache.json");
         if (fm.fileExists(cachePath)) fm.remove(cachePath);
 
@@ -173,7 +182,6 @@ class Widget extends DmYY {
       }
     }
 
-    // 在线拉取 /api/v1/status
     if (!useCache) {
       const url = `${this.baseUrl}/api/v1/status`;
       try {
@@ -210,7 +218,6 @@ class Widget extends DmYY {
         const statusStr = String(item.instance_status ?? item.status ?? 'Running');
         const isRunning = statusStr.toLowerCase().includes('run') || statusStr.includes('运行');
 
-        // 精准读取 monthly_cost 与 currency
         const rawCost = item.monthly_cost ?? item.cost ?? null;
         let costDisplay = '';
         if (rawCost !== null && rawCost !== undefined) {
