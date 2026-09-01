@@ -1,7 +1,7 @@
 /*
  * @name: CDT Monitor (Glass Multi-Server Edition)
- * @description: 阿里云/多平台 CDT 流量监控小组件 (GitHub API 实时更新版)
- * @version: 2.9.2
+ * @description: 阿里云/多平台 CDT 流量监控小组件 (自动刷新机制彻底修复版)
+ * @version: 2.9.4
 */
 
 // ==================== 0. 脚本仓库路径配置 ====================
@@ -14,7 +14,6 @@ async function checkAndDownloadDmYY() {
   const dmyyPath = fm.joinPath(fm.documentsDirectory(), 'DmYY.js');
   
   if (!fm.fileExists(dmyyPath)) {
-    console.log("正在自动下载 DmYY 基础框架依赖...");
     const urls = [
       "https://testingcf.jsdelivr.net/gh/dompling/Scriptable@master/Scripts/DmYY.js",
       "https://raw.githubusercontent.com/dompling/Scriptable/master/Scripts/DmYY.js"
@@ -23,21 +22,21 @@ async function checkAndDownloadDmYY() {
     for (const url of urls) {
       try {
         const req = new Request(url);
-        req.timeoutInterval = 5;
+        req.timeoutInterval = 4;
         const content = await req.loadString();
         if (content && content.includes("class DmYY")) {
           fm.writeString(dmyyPath, String(content));
-          console.log("DmYY 依赖下载完成！");
           break;
         }
-      } catch (e) {
-        console.warn(`节点 [${url}] 获取失败，尝试备用线路...`);
-      }
+      } catch (e) {}
     }
   }
 }
 
-await checkAndDownloadDmYY();
+// 仅在 App 内打开时检查下载依赖，避免桌面后台刷新时超时被 iOS 杀进程
+if (config.runsInApp) {
+  await checkAndDownloadDmYY();
+}
 
 if (typeof require === 'undefined') require = importModule;
 const { DmYY, Runing } = require('./DmYY');
@@ -51,7 +50,7 @@ class Widget extends DmYY {
     this.Run();
   }
 
-  version = '2.9.2';
+  version = '2.9.4';
   baseUrl = '';
   apiKey = '';
   refreshInterval = 10;
@@ -187,41 +186,28 @@ class Widget extends DmYY {
     if (!fm.fileExists(cacheDir)) fm.createDirectory(cacheDir, true);
 
     let rawData = null;
-    let useCache = false;
+    const url = `${this.baseUrl}/api/v1/status`;
 
-    if (config.runsInWidget && fm.fileExists(cachePath)) {
-      const modified = fm.modificationDate(cachePath);
-      const diffMinutes = (new Date() - modified) / (1000 * 60);
-      if (diffMinutes < this.refreshInterval) {
+    // 桌面唤醒时优先发起快速网络请求（3 秒超时），超时才读取本地缓存
+    try {
+      const req = new Request(url);
+      req.method = "GET";
+      req.timeoutInterval = 3;
+      req.headers = {
+        "Authorization": `Bearer ${this.apiKey}`,
+        "Content-Type": "application/json"
+      };
+      const res = await req.loadJSON();
+      if (res && res.accounts) {
+        rawData = res;
+        if (fm.fileExists(cachePath)) fm.remove(cachePath);
+        fm.writeString(cachePath, JSON.stringify(rawData));
+      }
+    } catch (e) {
+      if (fm.fileExists(cachePath)) {
         try {
           rawData = JSON.parse(fm.readString(cachePath));
-          useCache = true;
-        } catch (e) {}
-      }
-    }
-
-    if (!useCache) {
-      const url = `${this.baseUrl}/api/v1/status`;
-      try {
-        const req = new Request(url);
-        req.method = "GET";
-        req.timeoutInterval = 4;
-        req.headers = {
-          "Authorization": `Bearer ${this.apiKey}`,
-          "Content-Type": "application/json"
-        };
-        const res = await req.loadJSON();
-        if (res && res.accounts) {
-          rawData = res;
-          if (fm.fileExists(cachePath)) fm.remove(cachePath);
-          fm.writeString(cachePath, JSON.stringify(rawData));
-        }
-      } catch (e) {
-        if (fm.fileExists(cachePath)) {
-          try {
-            rawData = JSON.parse(fm.readString(cachePath));
-          } catch (err) {}
-        }
+        } catch (err) {}
       }
     }
 
@@ -317,14 +303,13 @@ class Widget extends DmYY {
     return false;
   }
 
-  // ==================== 小号组件 (Small) 黄金排版 ====================
+  // ==================== 小号组件 (Small) ====================
   renderSmall = async (widget) => {
     if (this.checkEmpty(widget)) return widget;
     widget.setPadding(14, 14, 14, 14);
 
     const a = this.serverList[0];
 
-    // 1. 实例名与状态点
     const topRow = widget.addStack();
     topRow.centerAlignContent();
     const name = topRow.addText(a.name);
@@ -339,7 +324,6 @@ class Widget extends DmYY {
 
     widget.addSpacer(2);
 
-    // 2. 地域与账单
     const subRow = widget.addStack();
     subRow.centerAlignContent();
     if (a.region) {
@@ -356,7 +340,6 @@ class Widget extends DmYY {
 
     widget.addSpacer(12);
 
-    // 3. 核心流量大字（整行贯穿，严禁折行）
     const flowRow = widget.addStack();
     flowRow.bottomAlignContent();
     const num = flowRow.addText(`${a.cdtUsed}`);
@@ -369,14 +352,12 @@ class Widget extends DmYY {
 
     widget.addSpacer(8);
 
-    // 4. 进度条（满宽 128px）
     const pImg = this.drawProgressBar(parseFloat(a.usedPercent), 128, 4);
     const imgW = widget.addImage(pImg);
     imgW.imageSize = new Size(128, 4);
 
     widget.addSpacer(8);
 
-    // 5. 底部百分比与同步时间
     const botRow = widget.addStack();
     botRow.centerAlignContent();
     const pct = botRow.addText(`${a.usedPercent}% 已用`);
@@ -389,7 +370,6 @@ class Widget extends DmYY {
     sync.font = Font.systemFont(8);
     sync.textColor = new Color("#ffffff", 0.35);
 
-    widget.refreshAfterDate = new Date(Date.now() + this.refreshInterval * 60 * 1000);
     return widget;
   };
 
@@ -512,7 +492,6 @@ class Widget extends DmYY {
       th.textColor = new Color("#ffffff", 0.35);
     }
 
-    widget.refreshAfterDate = new Date(Date.now() + this.refreshInterval * 60 * 1000);
     return widget;
   };
 
@@ -579,18 +558,26 @@ class Widget extends DmYY {
     }
   }
 
+  // 核心入口：统一注入刷新计划
   async render() {
     await this.init();
     const widget = new ListWidget();
     const family = config.widgetFamily || this.widgetFamily || 'medium';
     
+    let resWidget;
     if (family === 'small') {
-      return await this.renderSmall(widget);
+      resWidget = await this.renderSmall(widget);
     } else if (family === 'large') {
-      return await this.renderLarge(widget);
+      resWidget = await this.renderLarge(widget);
     } else {
-      return await this.renderMedium(widget);
+      resWidget = await this.renderMedium(widget);
     }
+
+    // 严格为每个尺寸的小组件注入下一次刷新时间
+    const intervalMinutes = Math.max(5, this.refreshInterval);
+    resWidget.refreshAfterDate = new Date(Date.now() + intervalMinutes * 60 * 1000);
+
+    return resWidget;
   }
 }
 
