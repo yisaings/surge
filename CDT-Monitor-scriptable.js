@@ -1,7 +1,7 @@
 /*
  * @name: CDT Monitor
  * @description: 阿里云CDT 流量监控小组件
- * @version: 3.4.2
+ * @version: 3.4.7
  * @author: 以撒 (yisaings)
  * @update: 2026/09/03
  */
@@ -64,7 +64,7 @@ class Widget extends DmYY {
     this.Run();
   }
 
-  version = "3.4.2";
+  version = "3.4.7";
 
   baseUrl = "";
   apiKey = "";
@@ -260,9 +260,20 @@ class Widget extends DmYY {
       }
       pctNum = Math.max(0, Math.min(100, pctNum));
 
-      const statusStr = String(item.instance_status ?? item.status ?? "Running");
-      const lowerStatus = statusStr.toLowerCase();
-      const isRunning = lowerStatus.includes("run") || statusStr.includes("运行");
+      const statusRaw = String(item.instance_status ?? item.status ?? "").trim();
+      const lowerStatus = statusRaw.toLowerCase();
+      const isRunning = lowerStatus.includes("run") || statusRaw.includes("运行");
+
+      let displayStatus = "";
+      if (isRunning) {
+        displayStatus = "运行中";
+      } else if (lowerStatus.includes("stop") || statusRaw.includes("关机") || statusRaw.includes("停止")) {
+        displayStatus = "已关机";
+      } else if (lowerStatus.includes("start")) {
+        displayStatus = "启动中";
+      } else {
+        displayStatus = isRunning ? "运行中" : "已关机";
+      }
 
       const rawCost = item.monthly_cost ?? item.cost ?? null;
       let costDisplay = "";
@@ -278,7 +289,7 @@ class Widget extends DmYY {
       return {
         name: item.account ?? item.name ?? "未命名实例",
         region: item.region_name ?? item.region ?? "中国香港",
-        status: isRunning ? "运行中" : "已停止",
+        status: displayStatus,
         isRunning,
         cost: costDisplay,
         cdtUsed: usedNum.toFixed(2),
@@ -431,12 +442,132 @@ class Widget extends DmYY {
   renderMedium = async widget => {
     if (this.checkEmpty(widget)) return widget;
     const theme = this.getTheme();
-    widget.setPadding(13, 15, 13, 15);
-
     const s = this.summaryData;
+
+    // 两台及以上：左右双卡片
+    if (this.serverList.length >= 2) {
+      widget.setPadding(12, 14, 12, 14);
+
+      const header = widget.addStack();
+      header.centerAlignContent();
+
+      const title = header.addText("CDT MONITOR");
+      title.font = Font.boldSystemFont(11);
+      title.textColor = theme.secondary;
+
+      header.addSpacer();
+
+      const isAllRun = s.runningInstances === s.totalInstances && s.totalInstances > 0;
+      const badge = header.addStack();
+      badge.backgroundColor = isAllRun ? new Color("#30d158", 0.15) : new Color("#ff9f0a", 0.15);
+      badge.cornerRadius = 6;
+      badge.setPadding(2, 6, 2, 6);
+      badge.centerAlignContent();
+
+      const dot = badge.addText("● ");
+      dot.font = Font.systemFont(7);
+      dot.textColor = isAllRun ? new Color("#30d158") : new Color("#ff9f0a");
+
+      const statusText = badge.addText(isAllRun ? "全部运行" : `${s.runningInstances}/${s.totalInstances} 运行`);
+      statusText.font = Font.boldSystemFont(9);
+      statusText.textColor = isAllRun ? new Color("#30d158") : new Color("#ff9f0a");
+
+      widget.addSpacer(7);
+
+      const mainRow = widget.addStack();
+      mainRow.layoutHorizontally();
+
+      const renderCard = (parent, item) => {
+        const card = parent.addStack();
+        card.layoutVertically();
+        card.backgroundColor = theme.card;
+        card.cornerRadius = 10;
+        card.borderColor = theme.cardBorder;
+        card.borderWidth = 0.5;
+        card.setPadding(7, 10, 7, 10);
+
+        const rTop = card.addStack();
+        rTop.centerAlignContent();
+
+        const n = rTop.addText(item.name);
+        n.font = Font.boldSystemFont(10);
+        n.textColor = theme.primary;
+        n.lineLimit = 1;
+
+        if (item.region) {
+          const reg = rTop.addText(` · ${item.region}`);
+          reg.font = Font.systemFont(8);
+          reg.textColor = theme.muted;
+          reg.lineLimit = 1;
+        }
+
+        rTop.addSpacer();
+
+        const d = rTop.addText("●");
+        d.font = Font.systemFont(7);
+        d.textColor = item.isRunning ? new Color("#30d158") : new Color("#ff9f0a");
+
+        card.addSpacer(3);
+
+        const rFee = card.addStack();
+        rFee.centerAlignContent();
+
+        if (item.cost) {
+          const fee = rFee.addText(`本月 ${item.cost}`);
+          fee.font = Font.boldSystemFont(9);
+          fee.textColor = new Color("#ffd60a", 0.90);
+        } else {
+          const st = rFee.addText(item.status);
+          st.font = Font.systemFont(8);
+          st.textColor = theme.muted;
+        }
+
+        rFee.addSpacer();
+
+        const pct = rFee.addText(`${item.usedPercent}%`);
+        pct.font = Font.boldSystemFont(9);
+        pct.textColor = theme.tertiary;
+
+        card.addSpacer(4);
+
+        const rData = card.addStack();
+        rData.bottomAlignContent();
+
+        const num = rData.addText(`${item.cdtUsed}`);
+        num.font = Font.heavySystemFont(16);
+        num.textColor = theme.primary;
+
+        const lim = rData.addText(` / ${item.cdtLimit} GB`);
+        lim.font = Font.systemFont(8);
+        lim.textColor = theme.muted;
+
+        card.addSpacer(5);
+
+        const pImg = this.drawProgressBar(item.usedPercent, 126, 3.5);
+        const imgW = card.addImage(pImg);
+        imgW.imageSize = new Size(126, 3.5);
+
+        card.addSpacer(4);
+
+        const rBot = card.addStack();
+        rBot.centerAlignContent();
+
+        const sync = rBot.addText(this.getSyncText());
+        sync.font = Font.systemFont(7);
+        sync.textColor = theme.faint;
+      };
+
+      renderCard(mainRow, this.serverList[0]);
+      mainRow.addSpacer(8);
+      renderCard(mainRow, this.serverList[1]);
+
+      return widget;
+    }
+
+    // 单台机器
+    widget.setPadding(13, 15, 13, 15);
     const a = this.serverList[0];
 
-    // 1. 标题栏与状态
     const header = widget.addStack();
     header.centerAlignContent();
 
@@ -447,9 +578,7 @@ class Widget extends DmYY {
     header.addSpacer();
 
     const badge = header.addStack();
-    badge.backgroundColor = a.isRunning
-      ? new Color("#30d158", 0.15)
-      : new Color("#ff9f0a", 0.15);
+    badge.backgroundColor = a.isRunning ? new Color("#30d158", 0.15) : new Color("#ff9f0a", 0.15);
     badge.cornerRadius = 6;
     badge.setPadding(2, 6, 2, 6);
     badge.centerAlignContent();
@@ -464,7 +593,6 @@ class Widget extends DmYY {
 
     widget.addSpacer(6);
 
-    // 2. 统计行
     const statsCard = widget.addStack();
     statsCard.backgroundColor = theme.card;
     statsCard.cornerRadius = 10;
@@ -492,7 +620,6 @@ class Widget extends DmYY {
 
     widget.addSpacer(6);
 
-    // 3. 主卡片
     const mainCard = widget.addStack();
     mainCard.layoutVertically();
     mainCard.backgroundColor = theme.card;
@@ -516,7 +643,6 @@ class Widget extends DmYY {
 
     rowTop.addSpacer();
 
-    // 实例状态小圆点
     const cardDot = rowTop.addText("● ");
     cardDot.font = Font.systemFont(7);
     cardDot.textColor = a.isRunning ? new Color("#30d158") : new Color("#ff9f0a");
@@ -572,7 +698,7 @@ class Widget extends DmYY {
   };
 
 
-  // ==================== Large (每个实例独立显示状态圆点) ====================
+  // ==================== Large (撑满自适应排版) ====================
   renderLarge = async widget => {
     if (this.checkEmpty(widget)) return widget;
     const theme = this.getTheme();
@@ -591,12 +717,9 @@ class Widget extends DmYY {
 
     header.addSpacer();
 
-    // 顶部胶囊：显示总体在线情况（例如：全部运行 或 1/2 运行）
     const isAllRun = s.runningInstances === s.totalInstances && s.totalInstances > 0;
     const badge = header.addStack();
-    badge.backgroundColor = isAllRun
-      ? new Color("#30d158", 0.15)
-      : new Color("#ff9f0a", 0.15);
+    badge.backgroundColor = isAllRun ? new Color("#30d158", 0.15) : new Color("#ff9f0a", 0.15);
     badge.cornerRadius = 6;
     badge.setPadding(2, 6, 2, 6);
     badge.centerAlignContent();
@@ -637,29 +760,29 @@ class Widget extends DmYY {
     statsCard.addSpacer();
     addStat(statsCard, "阈值告警", `${s.alerts} 项`);
 
-    // 3. 单机器卡片：状态圆点 + 费用同时展示
-    const addCard = (parent, item, isGrid = false, isTwo = false) => {
+    // ==========================================
+    // 渲染函数 A：横向全宽大卡片 (1~3台)
+    // ==========================================
+    const renderFullCard = (parent, item, isTight = false) => {
       const card = parent.addStack();
       card.layoutVertically();
       card.backgroundColor = theme.card;
-      card.cornerRadius = 12;
+      card.cornerRadius = 11;
       card.borderColor = theme.cardBorder;
       card.borderWidth = 0.5;
 
-      const pV = isTwo ? 14 : (isGrid ? 8 : 10);
-      const pH = isGrid ? 10 : 12;
-      card.setPadding(pV, pH, pV, pH);
+      const pV = count === 2 ? 14 : (isTight ? 8 : 11);
+      card.setPadding(pV, 12, pV, 12);
 
-      // 第一行：名称 + 地区 + 【运行圆点 + 费用并存】
       const rTop = card.addStack();
       rTop.centerAlignContent();
 
       const n = rTop.addText(item.name);
-      n.font = Font.boldSystemFont(isGrid ? 10 : 11);
+      n.font = Font.boldSystemFont(11);
       n.textColor = theme.primary;
       n.lineLimit = 1;
 
-      if (item.region && !isGrid) {
+      if (item.region) {
         const r = rTop.addText(` · ${item.region}`);
         r.font = Font.systemFont(8);
         r.textColor = theme.muted;
@@ -667,46 +790,42 @@ class Widget extends DmYY {
 
       rTop.addSpacer();
 
-      // 核心改进：状态圆点常驻，明确区分开机与关机
       const d = rTop.addText("● ");
       d.font = Font.systemFont(7);
       d.textColor = item.isRunning ? new Color("#30d158") : new Color("#ff9f0a");
 
       if (item.cost) {
-        const fee = rTop.addText(isGrid ? item.cost : `本月 ${item.cost}`);
-        fee.font = Font.boldSystemFont(isGrid ? 10 : 11);
+        const fee = rTop.addText(`本月 ${item.cost}`);
+        fee.font = Font.boldSystemFont(10);
         fee.textColor = new Color("#ffd60a", 0.90);
       } else {
         const stText = rTop.addText(item.status);
-        stText.font = Font.systemFont(isGrid ? 9 : 10);
+        stText.font = Font.systemFont(9);
         stText.textColor = item.isRunning ? new Color("#30d158") : new Color("#ff9f0a");
       }
 
-      card.addSpacer(isTwo ? 8 : (isGrid ? 4 : 5));
+      card.addSpacer(count === 2 ? 7 : 5);
 
-      // 第二行：流量数字
       const rData = card.addStack();
       rData.bottomAlignContent();
 
       const num = rData.addText(`${item.cdtUsed}`);
-      num.font = Font.heavySystemFont(isTwo ? 18 : (isGrid ? 14 : 15));
+      num.font = Font.heavySystemFont(count === 2 ? 18 : 16);
       num.textColor = theme.primary;
 
       const lim = rData.addText(` / ${item.cdtLimit} GB`);
-      lim.font = Font.systemFont(isGrid ? 8 : 9);
+      lim.font = Font.systemFont(9);
       lim.textColor = theme.muted;
 
-      card.addSpacer(isTwo ? 8 : 5);
+      card.addSpacer(count === 2 ? 7 : 5);
 
-      // 第三行：进度条
-      const barW = isGrid ? 130 : 270;
+      const barW = 270;
       const pImg = this.drawProgressBar(item.usedPercent, barW, 4);
       const imgW = card.addImage(pImg);
       imgW.imageSize = new Size(barW, 4);
 
-      card.addSpacer(isTwo ? 8 : 5);
+      card.addSpacer(count === 2 ? 7 : 5);
 
-      // 第四行：已用比例与同步时间
       const rBot = card.addStack();
       rBot.centerAlignContent();
 
@@ -721,32 +840,154 @@ class Widget extends DmYY {
       sync.textColor = theme.faint;
     };
 
-    // 4. 自适应排列
-    if (count >= 4) {
-      widget.addSpacer(8);
+    // ==========================================
+    // 渲染函数 B：双并排卡片 (针对 4台 / 5台 / 6台 专属优化高度)
+    // ==========================================
+    const renderGridCard = (parent, item, isFourGrid = false, isSixGrid = false) => {
+      const card = parent.addStack();
+      card.layoutVertically();
+      card.backgroundColor = theme.card;
+      card.cornerRadius = 11;
+      card.borderColor = theme.cardBorder;
+      card.borderWidth = 0.5;
+
+      // 4台四宫格时显著加大内部上下边距，消除空洞感
+      const pV = isFourGrid ? 17 : (isSixGrid ? 9 : 11);
+      const pH = 11;
+      card.setPadding(pV, pH, pV, pH);
+
+      // 1. 标题行
+      const rTop = card.addStack();
+      rTop.centerAlignContent();
+
+      const n = rTop.addText(item.name);
+      n.font = Font.boldSystemFont(isFourGrid ? 11.5 : 10.5);
+      n.textColor = theme.primary;
+      n.lineLimit = 1;
+
+      rTop.addSpacer();
+
+      const d = rTop.addText("● ");
+      d.font = Font.systemFont(6.5);
+      d.textColor = item.isRunning ? new Color("#30d158") : new Color("#ff9f0a");
+
+      if (item.cost) {
+        const fee = rTop.addText(item.cost);
+        fee.font = Font.boldSystemFont(isFourGrid ? 11 : 9.5);
+        fee.textColor = new Color("#ffd60a", 0.90);
+      } else {
+        const stText = rTop.addText(item.status);
+        stText.font = Font.systemFont(isFourGrid ? 9.5 : 8.5);
+        stText.textColor = item.isRunning ? new Color("#30d158") : new Color("#ff9f0a");
+      }
+
+      card.addSpacer(isFourGrid ? 8 : (isSixGrid ? 4 : 5));
+
+      // 2. 数据行
+      const rData = card.addStack();
+      rData.bottomAlignContent();
+
+      const num = rData.addText(`${item.cdtUsed}`);
+      num.font = Font.heavySystemFont(isFourGrid ? 18 : (isSixGrid ? 14 : 15));
+      num.textColor = theme.primary;
+
+      const lim = rData.addText(` / ${item.cdtLimit}G`);
+      lim.font = Font.systemFont(isFourGrid ? 8.5 : 7.5);
+      lim.textColor = theme.muted;
+
+      rData.addSpacer();
+
+      const pct = rData.addText(`${item.usedPercent}%`);
+      pct.font = Font.boldSystemFont(isFourGrid ? 9 : 8);
+      pct.textColor = theme.tertiary;
+
+      card.addSpacer(isFourGrid ? 7 : (isSixGrid ? 4 : 5));
+
+      // 3. 进度条
+      const barW = 126;
+      const pImg = this.drawProgressBar(item.usedPercent, barW, isFourGrid ? 4 : 3.5);
+      const imgW = card.addImage(pImg);
+      imgW.imageSize = new Size(barW, isFourGrid ? 4 : 3.5);
+
+      // 4台机器时补齐底部时间行，整体更饱满
+      if (isFourGrid) {
+        card.addSpacer(7);
+        const rBot = card.addStack();
+        rBot.centerAlignContent();
+
+        const pText = rBot.addText(`${item.usedPercent}% 已使用`);
+        pText.font = Font.systemFont(7.5);
+        pText.textColor = theme.faint;
+
+        rBot.addSpacer();
+
+        const sText = rBot.addText(this.getSyncText());
+        sText.font = Font.systemFont(7.5);
+        sText.textColor = theme.faint;
+      }
+    };
+
+    // ==========================================
+    // 布局组合排版引擎
+    // ==========================================
+    if (count <= 3) {
+      // 1 ~ 3 台：横向全宽大卡片均分撑满
+      for (let i = 0; i < count; i++) {
+        widget.addSpacer();
+        renderFullCard(widget, this.serverList[i], count === 3);
+      }
+      widget.addSpacer();
+
+    } else if (count === 4) {
+      // 4 台机器：饱满厚实的四宫格，不再留白
+      widget.addSpacer();
+
       const row1 = widget.addStack();
-      addCard(row1, this.serverList[0], true, false);
+      renderGridCard(row1, this.serverList[0], true, false);
       row1.addSpacer(8);
-      addCard(row1, this.serverList[1], true, false);
+      renderGridCard(row1, this.serverList[1], true, false);
 
       widget.addSpacer(8);
 
       const row2 = widget.addStack();
-      addCard(row2, this.serverList[2], true, false);
+      renderGridCard(row2, this.serverList[2], true, false);
       row2.addSpacer(8);
-      addCard(row2, this.serverList[3], true, false);
+      renderGridCard(row2, this.serverList[3], true, false);
+
       widget.addSpacer();
-    } else if (count === 2) {
+
+    } else if (count === 5) {
+      // 5 台机器：1 个通栏大卡片 + 4 个双并排卡片
       widget.addSpacer();
-      addCard(widget, this.serverList[0], false, true);
+      renderFullCard(widget, this.serverList[0], true);
+
+      widget.addSpacer(8);
+
+      const row1 = widget.addStack();
+      renderGridCard(row1, this.serverList[1], false, false);
+      row1.addSpacer(8);
+      renderGridCard(row1, this.serverList[2], false, false);
+
+      widget.addSpacer(8);
+
+      const row2 = widget.addStack();
+      renderGridCard(row2, this.serverList[3], false, false);
+      row2.addSpacer(8);
+      renderGridCard(row2, this.serverList[4], false, false);
+
       widget.addSpacer();
-      addCard(widget, this.serverList[1], false, true);
-      widget.addSpacer();
+
     } else {
-      const displayCount = Math.min(count, 3);
-      for (let i = 0; i < displayCount; i++) {
+      // 6 台机器（截取前 6 台）：3 行 × 2 列 双并排卡片
+      const displayCount = Math.min(count, 6);
+      for (let i = 0; i < displayCount; i += 2) {
         widget.addSpacer();
-        addCard(widget, this.serverList[i], false, false);
+        const row = widget.addStack();
+        renderGridCard(row, this.serverList[i], false, true);
+        row.addSpacer(8);
+        if (i + 1 < displayCount) {
+          renderGridCard(row, this.serverList[i + 1], false, true);
+        }
       }
       widget.addSpacer();
     }
