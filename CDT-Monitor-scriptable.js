@@ -1,7 +1,7 @@
 /*
  * @name: CDT Monitor
  * @description: 阿里云CDT 流量监控小组件
- * @version: 3.4.1
+ * @version: 3.4.2
  * @author: 以撒 (yisaings)
  * @update: 2026/09/03
  */
@@ -64,7 +64,7 @@ class Widget extends DmYY {
     this.Run();
   }
 
-  version = "3.4.1";
+  version = "3.4.2";
 
   baseUrl = "";
   apiKey = "";
@@ -82,16 +82,14 @@ class Widget extends DmYY {
   serverList = [];
 
 
-  // ==================== 动态主题颜色 (解决深浅色切换黑屏白屏) ====================
+  // ==================== 动态主题颜色 ====================
   getTheme() {
     return {
-      // 浅色与深色自动映射，交给 iOS 底层瞬间切换
       primary: Color.dynamic(new Color("#000000", 0.90), new Color("#ffffff", 0.95)),
       secondary: Color.dynamic(new Color("#000000", 0.70), new Color("#ffffff", 0.70)),
       tertiary: Color.dynamic(new Color("#000000", 0.60), new Color("#ffffff", 0.60)),
       muted: Color.dynamic(new Color("#000000", 0.50), new Color("#ffffff", 0.45)),
       faint: Color.dynamic(new Color("#000000", 0.40), new Color("#ffffff", 0.35)),
-      
       card: Color.dynamic(new Color("#000000", 0.055), new Color("#ffffff", 0.08)),
       cardBorder: Color.dynamic(new Color("#000000", 0.10), new Color("#ffffff", 0.15)),
       progressBackground: Color.dynamic(new Color("#000000", 0.10), new Color("#ffffff", 0.12))
@@ -280,7 +278,7 @@ class Widget extends DmYY {
       return {
         name: item.account ?? item.name ?? "未命名实例",
         region: item.region_name ?? item.region ?? "中国香港",
-        status: isRunning ? "运行中" : "未运行",
+        status: isRunning ? "运行中" : "已停止",
         isRunning,
         cost: costDisplay,
         cdtUsed: usedNum.toFixed(2),
@@ -312,7 +310,6 @@ class Widget extends DmYY {
     const bgPath = new Path();
     bgPath.addRoundedRect(new Rect(0, 0, width, height), radius, radius);
     context.addPath(bgPath);
-    // 采用中性灰背景，深浅色均高度兼容
     context.setFillColor(new Color("#808080", 0.22));
     context.fillPath();
 
@@ -430,7 +427,7 @@ class Widget extends DmYY {
   };
 
 
-  // ==================== Medium (原版经典原味) ====================
+  // ==================== Medium ====================
   renderMedium = async widget => {
     if (this.checkEmpty(widget)) return widget;
     const theme = this.getTheme();
@@ -439,7 +436,7 @@ class Widget extends DmYY {
     const s = this.summaryData;
     const a = this.serverList[0];
 
-    // 1. 标题行
+    // 1. 标题栏与状态
     const header = widget.addStack();
     header.centerAlignContent();
 
@@ -467,7 +464,7 @@ class Widget extends DmYY {
 
     widget.addSpacer(6);
 
-    // 2. 统计卡片
+    // 2. 统计行
     const statsCard = widget.addStack();
     statsCard.backgroundColor = theme.card;
     statsCard.cornerRadius = 10;
@@ -518,6 +515,11 @@ class Widget extends DmYY {
     }
 
     rowTop.addSpacer();
+
+    // 实例状态小圆点
+    const cardDot = rowTop.addText("● ");
+    cardDot.font = Font.systemFont(7);
+    cardDot.textColor = a.isRunning ? new Color("#30d158") : new Color("#ff9f0a");
 
     if (a.cost) {
       const fee = rowTop.addText(`本月 ${a.cost}`);
@@ -570,7 +572,7 @@ class Widget extends DmYY {
   };
 
 
-  // ==================== Large (2~4台自适应) ====================
+  // ==================== Large (每个实例独立显示状态圆点) ====================
   renderLarge = async widget => {
     if (this.checkEmpty(widget)) return widget;
     const theme = this.getTheme();
@@ -579,7 +581,7 @@ class Widget extends DmYY {
     const s = this.summaryData;
     const count = this.serverList.length;
 
-    // 1. 标题行
+    // 1. 顶部 Header
     const header = widget.addStack();
     header.centerAlignContent();
 
@@ -589,9 +591,12 @@ class Widget extends DmYY {
 
     header.addSpacer();
 
+    // 顶部胶囊：显示总体在线情况（例如：全部运行 或 1/2 运行）
     const isAllRun = s.runningInstances === s.totalInstances && s.totalInstances > 0;
     const badge = header.addStack();
-    badge.backgroundColor = isAllRun ? new Color("#30d158", 0.15) : new Color("#ff9f0a", 0.15);
+    badge.backgroundColor = isAllRun
+      ? new Color("#30d158", 0.15)
+      : new Color("#ff9f0a", 0.15);
     badge.cornerRadius = 6;
     badge.setPadding(2, 6, 2, 6);
     badge.centerAlignContent();
@@ -600,13 +605,13 @@ class Widget extends DmYY {
     dot.font = Font.systemFont(7);
     dot.textColor = isAllRun ? new Color("#30d158") : new Color("#ff9f0a");
 
-    const statusText = badge.addText(isAllRun ? "运行中" : "异常");
+    const statusText = badge.addText(isAllRun ? "全部运行" : `${s.runningInstances}/${s.totalInstances} 运行`);
     statusText.font = Font.boldSystemFont(9);
     statusText.textColor = isAllRun ? new Color("#30d158") : new Color("#ff9f0a");
 
     widget.addSpacer(6);
 
-    // 2. 汇总条
+    // 2. 统计卡片
     const statsCard = widget.addStack();
     statsCard.backgroundColor = theme.card;
     statsCard.cornerRadius = 10;
@@ -632,7 +637,7 @@ class Widget extends DmYY {
     statsCard.addSpacer();
     addStat(statsCard, "阈值告警", `${s.alerts} 项`);
 
-    // 卡片生成器
+    // 3. 单机器卡片：状态圆点 + 费用同时展示
     const addCard = (parent, item, isGrid = false, isTwo = false) => {
       const card = parent.addStack();
       card.layoutVertically();
@@ -645,6 +650,7 @@ class Widget extends DmYY {
       const pH = isGrid ? 10 : 12;
       card.setPadding(pV, pH, pV, pH);
 
+      // 第一行：名称 + 地区 + 【运行圆点 + 费用并存】
       const rTop = card.addStack();
       rTop.centerAlignContent();
 
@@ -661,18 +667,24 @@ class Widget extends DmYY {
 
       rTop.addSpacer();
 
+      // 核心改进：状态圆点常驻，明确区分开机与关机
+      const d = rTop.addText("● ");
+      d.font = Font.systemFont(7);
+      d.textColor = item.isRunning ? new Color("#30d158") : new Color("#ff9f0a");
+
       if (item.cost) {
         const fee = rTop.addText(isGrid ? item.cost : `本月 ${item.cost}`);
         fee.font = Font.boldSystemFont(isGrid ? 10 : 11);
         fee.textColor = new Color("#ffd60a", 0.90);
       } else {
-        const d = rTop.addText("●");
-        d.font = Font.systemFont(8);
-        d.textColor = item.isRunning ? new Color("#30d158") : new Color("#ff9f0a");
+        const stText = rTop.addText(item.status);
+        stText.font = Font.systemFont(isGrid ? 9 : 10);
+        stText.textColor = item.isRunning ? new Color("#30d158") : new Color("#ff9f0a");
       }
 
       card.addSpacer(isTwo ? 8 : (isGrid ? 4 : 5));
 
+      // 第二行：流量数字
       const rData = card.addStack();
       rData.bottomAlignContent();
 
@@ -686,6 +698,7 @@ class Widget extends DmYY {
 
       card.addSpacer(isTwo ? 8 : 5);
 
+      // 第三行：进度条
       const barW = isGrid ? 130 : 270;
       const pImg = this.drawProgressBar(item.usedPercent, barW, 4);
       const imgW = card.addImage(pImg);
@@ -693,6 +706,7 @@ class Widget extends DmYY {
 
       card.addSpacer(isTwo ? 8 : 5);
 
+      // 第四行：已用比例与同步时间
       const rBot = card.addStack();
       rBot.centerAlignContent();
 
@@ -707,6 +721,7 @@ class Widget extends DmYY {
       sync.textColor = theme.faint;
     };
 
+    // 4. 自适应排列
     if (count >= 4) {
       widget.addSpacer(8);
       const row1 = widget.addStack();
@@ -967,7 +982,7 @@ class Widget extends DmYY {
           type: "input",
           val: "apiKey",
           placeholder: "cdt_xxxxxxxx",
-          desc: "填写你自己的 API Key（需具有 widget:read权限）"
+          desc: "填写你自己的 API Key（需具有 widget:read 权限）"
         },
         {
           name: "update",
@@ -1024,7 +1039,6 @@ class Widget extends DmYY {
     const widget = new ListWidget();
     await this.getWidgetBackgroundImage(widget);
 
-    // 保证背景跟随系统原生自适应（如果不设背景图）
     widget.backgroundColor = Color.dynamic(new Color("#ffffff"), new Color("#000000"));
 
     const size = (config.widgetFamily || this.widgetFamily || "medium").toLowerCase();
