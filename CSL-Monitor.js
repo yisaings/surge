@@ -13,7 +13,106 @@
  * - Color.dynamic 底层动态变色，深浅色模式秒级丝滑切换
  * - 像素级物理对齐与对称排版，严防长队名折行与队徽形变
  * - 本地磁盘多级穿透缓存，保障弱网与离线队徽瞬时加载
+ * - 内置 OTA 检查更新与一键在线升级
  */
+
+/* ============================================================
+ * OTA 更新配置
+ * ============================================================ */
+
+const SCRIPT_NAME = "CSL Monitor";
+const CURRENT_VERSION = "1.0.0";
+const RAW_SCRIPT_URL = "https://raw.githubusercontent.com/yisaings/surge/main/CSL-Monitor.js";
+const BACKUP_SCRIPT_URL = "https://testingcf.jsdelivr.net/gh/yisaings/surge@main/CSL-Monitor.js";
+
+function compareVersions(v1, v2) {
+  const parts1 = String(v1).replace(/^v/i, "").split(".").map(n => parseInt(n, 10) || 0);
+  const parts2 = String(v2).replace(/^v/i, "").split(".").map(n => parseInt(n, 10) || 0);
+  const len = Math.max(parts1.length, parts2.length);
+  for (let i = 0; i < len; i++) {
+    const p1 = parts1[i] || 0;
+    const p2 = parts2[i] || 0;
+    if (p1 > p2) return 1;
+    if (p1 < p2) return -1;
+  }
+  return 0;
+}
+
+async function checkScriptUpdate(silent = false) {
+  let remoteCode = "";
+  const urls = [RAW_SCRIPT_URL, BACKUP_SCRIPT_URL];
+
+  for (const u of urls) {
+    try {
+      const req = new Request(u);
+      req.method = "GET";
+      req.headers = { "User-Agent": "Mozilla/5.0" };
+      req.timeoutInterval = 8;
+      const res = await req.loadString();
+      if (res && res.includes("@version:")) {
+        remoteCode = res;
+        break;
+      }
+    } catch (e) {}
+  }
+
+  if (!remoteCode) {
+    if (!silent) {
+      const alert = new Alert();
+      alert.title = "检查更新失败";
+      alert.message = "无法连接至 GitHub 获取版本信息，请检查网络连接。";
+      alert.addAction("好的");
+      await alert.presentAlert();
+    }
+    return;
+  }
+
+  const match = remoteCode.match(/@version:\s*([0-9.]+)/i);
+  const remoteVersion = match ? match[1].trim() : "";
+
+  if (remoteVersion && compareVersions(remoteVersion, CURRENT_VERSION) > 0) {
+    const alert = new Alert();
+    alert.title = "发现新版本 🚀";
+    alert.message = `当前版本: v${CURRENT_VERSION}\n最新版本: v${remoteVersion}\n是否立即在线更新脚本？`;
+    alert.addAction("立即更新");
+    alert.addCancelAction("稍后再说");
+    const idx = await alert.presentAlert();
+
+    if (idx === 0) {
+      try {
+        const fm = FileManager.local();
+        let scriptPath = "";
+        try {
+          scriptPath = module.filename;
+        } catch (e) {}
+
+        if (!scriptPath || !fm.fileExists(scriptPath)) {
+          scriptPath = fm.joinPath(fm.documentsDirectory(), `${Script.name()}.js`);
+        }
+
+        fm.writeString(scriptPath, remoteCode);
+
+        const successAlert = new Alert();
+        successAlert.title = "更新成功 🎉";
+        successAlert.message = `脚本已成功更新至 v${remoteVersion}，请重新运行脚本。`;
+        successAlert.addAction("好的");
+        await successAlert.presentAlert();
+      } catch (e) {
+        const errAlert = new Alert();
+        errAlert.title = "写入更新失败";
+        errAlert.message = safeString(e);
+        errAlert.addAction("好的");
+        await errAlert.presentAlert();
+      }
+    }
+  } else if (!silent) {
+    const alert = new Alert();
+    alert.title = "已是最新版本";
+    alert.message = `当前版本 v${CURRENT_VERSION} 已经是最新版本，无需更新。`;
+    alert.addAction("好的");
+    await alert.presentAlert();
+  }
+}
 
 /* ============================================================
  * DmYY 自动加载
@@ -747,6 +846,10 @@ class CSLMonitor extends DmYY {
         }
       ]
     });
+
+    this.registerAction("检查更新", async () => {
+      await checkScriptUpdate(false);
+    }, { name: "arrow.triangle.2.circlepath.circle", color: "#34C759" });
   }
 
   get favoriteTeam() {
@@ -1536,7 +1639,7 @@ class CSLMonitor extends DmYY {
   }
 
   /* ==========================================================
-   * 核心调度主函数
+   * 核心调度主函数 (像素级垂直布局分配)
    * ========================================================== */
   async renderLarge() {
     const widget = new ListWidget();
