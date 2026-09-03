@@ -1,7 +1,7 @@
 /*
  * @name: CDT Monitor
  * @description: 阿里云CDT 流量监控小组件
- * @version: 3.3.8
+ * @version: 3.3.9
  * @author: 以撒 (yisaings)
  * @update: 2026/09/03
  */
@@ -64,7 +64,7 @@ class Widget extends DmYY {
     this.Run();
   }
 
-  version = "3.3.8";
+  version = "3.3.9";
 
   baseUrl = "";
   apiKey = "";
@@ -93,9 +93,9 @@ class Widget extends DmYY {
       tertiary: dark ? new Color("#ffffff", 0.60) : new Color("#000000", 0.60),
       muted: dark ? new Color("#ffffff", 0.45) : new Color("#000000", 0.50),
       faint: dark ? new Color("#ffffff", 0.35) : new Color("#000000", 0.40),
-      card: dark ? new Color("#ffffff", 0.08) : new Color("#000000", 0.055),
-      cardBorder: dark ? new Color("#ffffff", 0.15) : new Color("#000000", 0.10),
-      progressBackground: dark ? new Color("#ffffff", 0.12) : new Color("#000000", 0.10)
+      card: dark ? new Color("#ffffff", 0.08) : new Color("#000000", 0.045),
+      cardBorder: dark ? new Color("#ffffff", 0.12) : new Color("#000000", 0.08),
+      progressBackground: dark ? new Color("#ffffff", 0.12) : new Color("#000000", 0.08)
     };
   }
 
@@ -300,16 +300,15 @@ class Widget extends DmYY {
 
 
   // ==================== 进度条 ====================
-  drawProgressBar(percentage, width, height = 4) {
+  drawProgressBar(percentage, width = 600, height = 8) {
     const theme = this.getTheme();
-    const safeWidth = Math.max(10, Math.floor(width));
     const context = new DrawContext();
-    context.size = new Size(safeWidth, height);
+    context.size = new Size(width, height);
     context.opaque = false;
     const radius = height / 2;
 
     const bgPath = new Path();
-    bgPath.addRoundedRect(new Rect(0, 0, safeWidth, height), radius, radius);
+    bgPath.addRoundedRect(new Rect(0, 0, width, height), radius, radius);
     context.addPath(bgPath);
     context.setFillColor(theme.progressBackground);
     context.fillPath();
@@ -317,7 +316,7 @@ class Widget extends DmYY {
     let pctNum = parseFloat(percentage) || 0;
     pctNum = Math.max(0, Math.min(100, pctNum));
 
-    const fillWidth = Math.max(height, Math.min(safeWidth, (pctNum / 100) * safeWidth));
+    const fillWidth = Math.max(height, Math.min(width, (pctNum / 100) * width));
     const fillPath = new Path();
     fillPath.addRoundedRect(new Rect(0, 0, fillWidth, height), radius, radius);
     context.addPath(fillPath);
@@ -350,26 +349,60 @@ class Widget extends DmYY {
   }
 
 
-  // ==================== 统计行通用渲染 ====================
-  renderStatsBar(stack, theme) {
+  // ==================== 顶部 Header (标准) ====================
+  renderHeader(parentStack, theme) {
     const s = this.summaryData;
-    const statsCard = stack.addStack();
+    const isAllRunning = s.runningInstances === s.totalInstances && s.totalInstances > 0;
+
+    const header = parentStack.addStack();
+    header.centerAlignContent();
+
+    const title = header.addText("CDT MONITOR");
+    title.font = Font.boldSystemFont(11);
+    title.textColor = theme.secondary;
+
+    header.addSpacer();
+
+    const badge = header.addStack();
+    badge.backgroundColor = isAllRunning
+      ? new Color("#30d158", 0.15)
+      : new Color("#ff9f0a", 0.15);
+    badge.cornerRadius = 6;
+    badge.setPadding(2, 6, 2, 6);
+    badge.centerAlignContent();
+
+    const dot = badge.addText("● ");
+    dot.font = Font.systemFont(7);
+    dot.textColor = isAllRunning ? new Color("#30d158") : new Color("#ff9f0a");
+
+    const statusText = badge.addText(isAllRunning ? "运行中" : "异常");
+    statusText.font = Font.boldSystemFont(9);
+    statusText.textColor = isAllRunning ? new Color("#30d158") : new Color("#ff9f0a");
+
+    return header;
+  }
+
+
+  // ==================== 顶部汇总栏 (标准) ====================
+  renderStatsBar(parentStack, theme) {
+    const s = this.summaryData;
+    const statsCard = parentStack.addStack();
     statsCard.backgroundColor = theme.card;
-    statsCard.cornerRadius = 8;
+    statsCard.cornerRadius = 10;
     statsCard.borderColor = theme.cardBorder;
     statsCard.borderWidth = 0.5;
-    statsCard.setPadding(5, 12, 5, 12);
+    statsCard.setPadding(6, 12, 6, 12);
     statsCard.centerAlignContent();
 
-    const addStat = (parent, label, val) => {
-      const col = parent.addStack();
+    const addStat = (stack, label, val) => {
+      const col = stack.addStack();
       col.layoutVertically();
       const lbl = col.addText(label);
       lbl.font = Font.systemFont(8);
       lbl.textColor = theme.muted;
-      const valText = col.addText(String(val));
-      valText.font = Font.boldSystemFont(11);
-      valText.textColor = theme.primary;
+      const num = col.addText(String(val));
+      num.font = Font.boldSystemFont(11);
+      num.textColor = theme.primary;
     };
 
     addStat(statsCard, "实例 (总/运)", `${s.totalInstances}/${s.runningInstances}`);
@@ -435,9 +468,9 @@ class Widget extends DmYY {
 
     widget.addSpacer(8);
 
-    const pImg = this.drawProgressBar(a.usedPercent, 128, 4);
+    const pImg = this.drawProgressBar(a.usedPercent, 300, 8);
     const imgW = widget.addImage(pImg);
-    imgW.imageSize = new Size(128, 4);
+    imgW.resizable = true;
 
     widget.addSpacer(8);
 
@@ -462,49 +495,23 @@ class Widget extends DmYY {
   renderMedium = async widget => {
     if (this.checkEmpty(widget)) return widget;
     const theme = this.getTheme();
-    widget.setPadding(12, 14, 12, 14);
+    widget.setPadding(13, 15, 13, 15);
 
     const a = this.serverList[0];
 
-    // 1. 顶部 Header
-    const header = widget.addStack();
-    header.centerAlignContent();
-
-    const title = header.addText("CDT MONITOR");
-    title.font = Font.boldSystemFont(11);
-    title.textColor = theme.secondary;
-
-    header.addSpacer();
-
-    const badge = header.addStack();
-    badge.backgroundColor = a.isRunning ? new Color("#30d158", 0.15) : new Color("#ff9f0a", 0.15);
-    badge.cornerRadius = 6;
-    badge.setPadding(2, 6, 2, 6);
-    badge.centerAlignContent();
-
-    const dot = badge.addText("● ");
-    dot.font = Font.systemFont(7);
-    dot.textColor = a.isRunning ? new Color("#30d158") : new Color("#ff9f0a");
-
-    const statusText = badge.addText(a.status);
-    statusText.font = Font.boldSystemFont(9);
-    statusText.textColor = a.isRunning ? new Color("#30d158") : new Color("#ff9f0a");
-
+    this.renderHeader(widget, theme);
     widget.addSpacer(6);
 
-    // 2. 汇总条
     this.renderStatsBar(widget, theme);
-
     widget.addSpacer(6);
 
-    // 3. 单台主卡片
     const mainCard = widget.addStack();
     mainCard.layoutVertically();
     mainCard.backgroundColor = theme.card;
-    mainCard.cornerRadius = 10;
+    mainCard.cornerRadius = 12;
     mainCard.borderColor = theme.cardBorder;
     mainCard.borderWidth = 0.5;
-    mainCard.setPadding(7, 12, 7, 12);
+    mainCard.setPadding(8, 12, 8, 12);
 
     const rowTop = mainCard.addStack();
     rowTop.centerAlignContent();
@@ -542,9 +549,9 @@ class Widget extends DmYY {
 
     mainCard.addSpacer(4);
 
-    const pImg = this.drawProgressBar(a.usedPercent, 280, 4);
+    const pImg = this.drawProgressBar(a.usedPercent, 600, 8);
     const imgW = mainCard.addImage(pImg);
-    imgW.imageSize = new Size(280, 4);
+    imgW.resizable = true;
 
     mainCard.addSpacer(4);
 
@@ -572,119 +579,149 @@ class Widget extends DmYY {
   };
 
 
-  // ==================== Large ====================
+  // ==================== Large (多台自适应排版) ====================
   renderLarge = async widget => {
     if (this.checkEmpty(widget)) return widget;
     const theme = this.getTheme();
-    widget.setPadding(12, 14, 12, 14);
+    widget.setPadding(14, 15, 14, 15);
 
     const count = this.serverList.length;
 
-    // 1. Header
-    const header = widget.addStack();
-    header.centerAlignContent();
-
-    const title = header.addText("CDT MONITOR");
-    title.font = Font.boldSystemFont(11);
-    title.textColor = theme.secondary;
-
-    header.addSpacer();
-
-    const sync = header.addText(this.getSyncText());
-    sync.font = Font.systemFont(9);
-    sync.textColor = theme.faint;
-
-    widget.addSpacer(6);
-
-    // 2. 汇总条
-    this.renderStatsBar(widget, theme);
-
+    // 1. 顶部 Header
+    this.renderHeader(widget, theme);
     widget.addSpacer(8);
 
-    // 3. 机器卡片渲染辅助
-    const buildItemCard = (parent, item, isCompact = false) => {
+    // 2. 顶部汇总条
+    this.renderStatsBar(widget, theme);
+
+    // 3. 构建单机器卡片
+    const buildCard = (parent, item, isGrid = false, isTwo = false) => {
       const card = parent.addStack();
       card.layoutVertically();
       card.backgroundColor = theme.card;
-      card.cornerRadius = isCompact ? 8 : 10;
+      card.cornerRadius = 11;
       card.borderColor = theme.cardBorder;
       card.borderWidth = 0.5;
-      card.setPadding(isCompact ? 6 : 8, isCompact ? 8 : 12, isCompact ? 6 : 8, isCompact ? 8 : 12);
 
-      const top = card.addStack();
-      top.centerAlignContent();
+      // 根据 2台 / 3台 / 4台四宫格 动态调整呼吸间距
+      const padV = isTwo ? 12 : (isGrid ? 8 : 9);
+      const padH = isGrid ? 10 : 12;
+      card.setPadding(padV, padH, padV, padH);
 
-      const n = top.addText(item.name);
-      n.font = Font.boldSystemFont(isCompact ? 9 : 10);
+      // 第一行：标题 + 状态/费用
+      const topRow = card.addStack();
+      topRow.centerAlignContent();
+
+      const n = topRow.addText(item.name);
+      n.font = Font.boldSystemFont(isGrid ? 10 : 11);
       n.textColor = theme.primary;
       n.lineLimit = 1;
 
-      if (item.region && !isCompact) {
-        const r = top.addText(` · ${item.region}`);
-        r.font = Font.systemFont(8);
-        r.textColor = theme.muted;
+      if (item.region && !isGrid) {
+        const reg = topRow.addText(` · ${item.region}`);
+        reg.font = Font.systemFont(9);
+        reg.textColor = theme.muted;
       }
 
-      top.addSpacer();
+      topRow.addSpacer();
 
       if (item.cost) {
-        const c = top.addText(isCompact ? item.cost : `本月 ${item.cost}`);
-        c.font = Font.boldSystemFont(isCompact ? 9 : 10);
-        c.textColor = new Color("#ffd60a", 0.95);
+        const fee = topRow.addText(isGrid ? item.cost : `本月 ${item.cost}`);
+        fee.font = Font.boldSystemFont(isGrid ? 10 : 11);
+        fee.textColor = new Color("#ffd60a", 0.95);
       } else {
-        const d = top.addText("●");
-        d.font = Font.systemFont(7);
-        d.textColor = item.isRunning ? new Color("#30d158") : new Color("#ff9f0a");
+        const dot = topRow.addText(item.isRunning ? "●" : "○");
+        dot.font = Font.systemFont(8);
+        dot.textColor = item.isRunning ? new Color("#30d158") : new Color("#ff9f0a");
       }
 
-      card.addSpacer(isCompact ? 3 : 4);
+      card.addSpacer(isTwo ? 6 : (isGrid ? 4 : 5));
 
-      const mid = card.addStack();
-      mid.bottomAlignContent();
+      // 第二行：流量数字
+      const midRow = card.addStack();
+      midRow.bottomAlignContent();
 
-      const u = mid.addText(`${item.cdtUsed}`);
-      u.font = Font.heavySystemFont(isCompact ? 13 : 15);
-      u.textColor = theme.primary;
+      const num = midRow.addText(`${item.cdtUsed}`);
+      num.font = Font.heavySystemFont(isTwo ? 18 : (isGrid ? 14 : 16));
+      num.textColor = theme.primary;
 
-      const l = mid.addText(` / ${item.cdtLimit} GB`);
-      l.font = Font.systemFont(isCompact ? 8 : 9);
-      l.textColor = theme.muted;
+      const limit = midRow.addText(` / ${item.cdtLimit} GB`);
+      limit.font = Font.systemFont(isGrid ? 9 : 10);
+      limit.textColor = theme.muted;
 
-      mid.addSpacer();
+      midRow.addSpacer();
 
-      const p = mid.addText(`${item.usedPercent}%`);
-      p.font = Font.boldSystemFont(isCompact ? 8 : 9);
-      p.textColor = theme.tertiary;
+      const pct = midRow.addText(`${item.usedPercent}%`);
+      pct.font = Font.boldSystemFont(isGrid ? 9 : 10);
+      pct.textColor = theme.tertiary;
 
-      card.addSpacer(isCompact ? 3 : 4);
+      card.addSpacer(isTwo ? 6 : (isGrid ? 4 : 5));
 
-      const barWidth = isCompact ? 130 : 280;
-      const pImg = this.drawProgressBar(item.usedPercent, barWidth, 3);
+      // 第三行：撑满宽度的进度条
+      const pImg = this.drawProgressBar(item.usedPercent, 600, isTwo ? 6 : 4);
       const imgW = card.addImage(pImg);
-      imgW.imageSize = new Size(barWidth, 3);
-    };
+      imgW.resizable = true;
 
-    // 4. 自适应排版逻辑：4 台及以上进四宫格，否则纵向均分
-    if (count >= 4) {
-      const row1 = widget.addStack();
-      buildItemCard(row1, this.serverList[0], true);
-      row1.addSpacer(6);
-      buildItemCard(row1, this.serverList[1], true);
+      // 如果只有 2 台机器，增加底部辅助信息栏，完全撑开视觉空间
+      if (isTwo) {
+        card.addSpacer(6);
+        const botRow = card.addStack();
+        botRow.centerAlignContent();
 
-      widget.addSpacer(6);
+        const pDesc = botRow.addText(`${item.usedPercent}% 已使用`);
+        pDesc.font = Font.systemFont(8);
+        pDesc.textColor = theme.faint;
 
-      const row2 = widget.addStack();
-      buildItemCard(row2, this.serverList[2], true);
-      row2.addSpacer(6);
-      buildItemCard(row2, this.serverList[3], true);
-    } else {
-      const displayCount = Math.min(count, 3);
-      for (let i = 0; i < displayCount; i++) {
-        buildItemCard(widget, this.serverList[i], false);
-        if (i < displayCount - 1) {
-          widget.addSpacer(6);
+        botRow.addSpacer();
+
+        const sText = botRow.addText(this.getSyncText());
+        sText.font = Font.systemFont(8);
+        sText.textColor = theme.faint;
+
+        if (item.threshold) {
+          botRow.addSpacer();
+          const th = botRow.addText(`阈值 ${item.threshold}%`);
+          th.font = Font.systemFont(8);
+          th.textColor = theme.faint;
         }
       }
+    };
+
+    // 4. 自适应均分排版
+    if (count >= 4) {
+      // 4 台及以上：四宫格排列
+      widget.addSpacer(10);
+
+      const row1 = widget.addStack();
+      buildCard(row1, this.serverList[0], true, false);
+      row1.addSpacer(8);
+      buildCard(row1, this.serverList[1], true, false);
+
+      widget.addSpacer(8);
+
+      const row2 = widget.addStack();
+      buildCard(row2, this.serverList[2], true, false);
+      row2.addSpacer(8);
+      buildCard(row2, this.serverList[3], true, false);
+
+      widget.addSpacer();
+
+    } else if (count === 2) {
+      // 刚好 2 台：使用 Spacer 纵向撑满、上下均分
+      widget.addSpacer();
+      buildCard(widget, this.serverList[0], false, true);
+      widget.addSpacer();
+      buildCard(widget, this.serverList[1], false, true);
+      widget.addSpacer();
+
+    } else {
+      // 3 台（或单台）：纵向均分
+      const displayCount = Math.min(count, 3);
+      for (let i = 0; i < displayCount; i++) {
+        widget.addSpacer();
+        buildCard(widget, this.serverList[i], false, false);
+      }
+      widget.addSpacer();
     }
 
     return widget;
@@ -967,7 +1004,6 @@ class Widget extends DmYY {
     const widget = new ListWidget();
     await this.getWidgetBackgroundImage(widget);
 
-    // 适配 DmYY 框架内部及 Scriptable 预览参数
     const size = (config.widgetFamily || this.widgetFamily || "medium").toLowerCase();
 
     let resWidget;
