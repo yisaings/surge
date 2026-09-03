@@ -1,7 +1,7 @@
 /*
  * @name: CDT Monitor
  * @description: 阿里云CDT 流量监控小组件
- * @version: 3.4.0
+ * @version: 3.4.1
  * @author: 以撒 (yisaings)
  * @update: 2026/09/03
  */
@@ -64,7 +64,7 @@ class Widget extends DmYY {
     this.Run();
   }
 
-  version = "3.4.0";
+  version = "3.4.1";
 
   baseUrl = "";
   apiKey = "";
@@ -82,44 +82,19 @@ class Widget extends DmYY {
   serverList = [];
 
 
-  // ==================== 主题颜色 ====================
+  // ==================== 动态主题颜色 (解决深浅色切换黑屏白屏) ====================
   getTheme() {
-    const dark = Device.isUsingDarkAppearance();
-
     return {
-      dark,
-
-      primary: dark
-        ? new Color("#ffffff", 0.95)
-        : new Color("#000000", 0.90),
-
-      secondary: dark
-        ? new Color("#ffffff", 0.70)
-        : new Color("#000000", 0.70),
-
-      tertiary: dark
-        ? new Color("#ffffff", 0.60)
-        : new Color("#000000", 0.60),
-
-      muted: dark
-        ? new Color("#ffffff", 0.45)
-        : new Color("#000000", 0.50),
-
-      faint: dark
-        ? new Color("#ffffff", 0.35)
-        : new Color("#000000", 0.40),
-
-      card: dark
-        ? new Color("#ffffff", 0.08)
-        : new Color("#000000", 0.055),
-
-      cardBorder: dark
-        ? new Color("#ffffff", 0.15)
-        : new Color("#000000", 0.10),
-
-      progressBackground: dark
-        ? new Color("#ffffff", 0.12)
-        : new Color("#000000", 0.10)
+      // 浅色与深色自动映射，交给 iOS 底层瞬间切换
+      primary: Color.dynamic(new Color("#000000", 0.90), new Color("#ffffff", 0.95)),
+      secondary: Color.dynamic(new Color("#000000", 0.70), new Color("#ffffff", 0.70)),
+      tertiary: Color.dynamic(new Color("#000000", 0.60), new Color("#ffffff", 0.60)),
+      muted: Color.dynamic(new Color("#000000", 0.50), new Color("#ffffff", 0.45)),
+      faint: Color.dynamic(new Color("#000000", 0.40), new Color("#ffffff", 0.35)),
+      
+      card: Color.dynamic(new Color("#000000", 0.055), new Color("#ffffff", 0.08)),
+      cardBorder: Color.dynamic(new Color("#000000", 0.10), new Color("#ffffff", 0.15)),
+      progressBackground: Color.dynamic(new Color("#000000", 0.10), new Color("#ffffff", 0.12))
     };
   }
 
@@ -154,12 +129,8 @@ class Widget extends DmYY {
   // ==================== 初始化 ====================
   async init() {
     try {
-      this.baseUrl = String(this.settings.baseUrl || "")
-        .trim()
-        .replace(/\/+$/, "");
-
-      this.apiKey = String(this.settings.apiKey || "")
-        .trim();
+      this.baseUrl = String(this.settings.baseUrl || "").trim().replace(/\/+$/, "");
+      this.apiKey = String(this.settings.apiKey || "").trim();
     } catch (e) {
       console.error(`读取配置失败: ${e}`);
       this.baseUrl = "";
@@ -173,18 +144,12 @@ class Widget extends DmYY {
   // ==================== 缓存路径 ====================
   getCachePath() {
     const fm = FileManager.local();
-    const dir = fm.joinPath(
-      fm.documentsDirectory(),
-      "CDT_Monitor_Cache"
-    );
+    const dir = fm.joinPath(fm.documentsDirectory(), "CDT_Monitor_Cache");
 
     return {
       fm,
       dir,
-      path: fm.joinPath(
-        dir,
-        "cdt_status_cache.json"
-      )
+      path: fm.joinPath(dir, "cdt_status_cache.json")
     };
   }
 
@@ -205,12 +170,8 @@ class Widget extends DmYY {
 
     if (fm.fileExists(cache.path)) {
       try {
-        cachedData = JSON.parse(
-          fm.readString(cache.path)
-        );
-        cacheDate = fm.modificationDate(
-          cache.path
-        );
+        cachedData = JSON.parse(fm.readString(cache.path));
+        cacheDate = fm.modificationDate(cache.path);
       } catch (e) {
         cachedData = null;
         cacheDate = null;
@@ -238,10 +199,7 @@ class Widget extends DmYY {
 
       const res = await req.loadJSON();
 
-      if (
-        !res ||
-        !Array.isArray(res.accounts)
-      ) {
+      if (!res || !Array.isArray(res.accounts)) {
         throw new Error("API 返回数据格式异常");
       }
 
@@ -253,10 +211,7 @@ class Widget extends DmYY {
         if (!fm.fileExists(cache.dir)) {
           fm.createDirectory(cache.dir, true);
         }
-        fm.writeString(
-          cache.path,
-          JSON.stringify(res)
-        );
+        fm.writeString(cache.path, JSON.stringify(res));
       } catch (e) {
         console.error(`缓存写入失败: ${e}`);
       }
@@ -290,10 +245,7 @@ class Widget extends DmYY {
 
   // ==================== 数据解析 ====================
   parseData(rawData) {
-    if (
-      !rawData ||
-      !Array.isArray(rawData.accounts)
-    ) {
+    if (!rawData || !Array.isArray(rawData.accounts)) {
       this.serverList = [];
       return;
     }
@@ -301,186 +253,77 @@ class Widget extends DmYY {
     const list = rawData.accounts;
 
     this.serverList = list.map(item => {
-      const usedNum = parseFloat(
-        item.flow_used ??
-        item.used ??
-        0
-      ) || 0;
+      const usedNum = parseFloat(item.flow_used ?? item.used ?? 0) || 0;
+      const limitNum = parseFloat(item.flow_total ?? item.total ?? 200) || 200;
 
-      const limitNum = parseFloat(
-        item.flow_total ??
-        item.total ??
-        200
-      ) || 200;
-
-      let pctNum = parseFloat(
-        item.percentage
-      );
-
+      let pctNum = parseFloat(item.percentage);
       if (!Number.isFinite(pctNum)) {
-        pctNum =
-          limitNum > 0
-            ? (usedNum / limitNum) * 100
-            : 0;
+        pctNum = limitNum > 0 ? (usedNum / limitNum) * 100 : 0;
       }
+      pctNum = Math.max(0, Math.min(100, pctNum));
 
-      pctNum = Math.max(
-        0,
-        Math.min(100, pctNum)
-      );
+      const statusStr = String(item.instance_status ?? item.status ?? "Running");
+      const lowerStatus = statusStr.toLowerCase();
+      const isRunning = lowerStatus.includes("run") || statusStr.includes("运行");
 
-      const statusStr = String(
-        item.instance_status ??
-        item.status ??
-        "Running"
-      );
-
-      const lowerStatus =
-        statusStr.toLowerCase();
-
-      const isRunning =
-        lowerStatus.includes("run") ||
-        statusStr.includes("运行");
-
-      const rawCost =
-        item.monthly_cost ??
-        item.cost ??
-        null;
-
+      const rawCost = item.monthly_cost ?? item.cost ?? null;
       let costDisplay = "";
 
-      if (
-        rawCost !== null &&
-        rawCost !== undefined &&
-        rawCost !== ""
-      ) {
-        const costVal =
-          parseFloat(rawCost);
-
+      if (rawCost !== null && rawCost !== undefined && rawCost !== "") {
+        const costVal = parseFloat(rawCost);
         if (Number.isFinite(costVal)) {
-          const symbol =
-            String(item.currency || "USD")
-              .toUpperCase() === "USD"
-              ? "$"
-              : "¥";
-
-          costDisplay =
-            `${symbol}${costVal.toFixed(2)}`;
+          const symbol = String(item.currency || "USD").toUpperCase() === "USD" ? "$" : "¥";
+          costDisplay = `${symbol}${costVal.toFixed(2)}`;
         }
       }
 
       return {
-        name:
-          item.account ??
-          item.name ??
-          "未命名实例",
-
-        region:
-          item.region_name ??
-          item.region ??
-          "中国香港",
-
-        status:
-          isRunning
-            ? "运行中"
-            : "未运行",
-
+        name: item.account ?? item.name ?? "未命名实例",
+        region: item.region_name ?? item.region ?? "中国香港",
+        status: isRunning ? "运行中" : "未运行",
         isRunning,
         cost: costDisplay,
         cdtUsed: usedNum.toFixed(2),
         cdtLimit: limitNum,
         usedPercent: pctNum.toFixed(2),
-        threshold:
-          parseFloat(
-            item.threshold ??
-            95
-          ) || 95
+        threshold: parseFloat(item.threshold ?? 95) || 95
       };
     });
 
-    const runningCount =
-      this.serverList.filter(
-        item => item.isRunning
-      ).length;
-
-    const totalUsedNum =
-      this.serverList.reduce(
-        (acc, cur) =>
-          acc +
-          (
-            parseFloat(cur.cdtUsed) || 0
-          ),
-        0
-      );
+    const runningCount = this.serverList.filter(item => item.isRunning).length;
+    const totalUsedNum = this.serverList.reduce((acc, cur) => acc + (parseFloat(cur.cdtUsed) || 0), 0);
 
     this.summaryData = {
-      totalInstances:
-        this.serverList.length,
-
-      runningInstances:
-        runningCount,
-
-      totalTraffic:
-        totalUsedNum < 1 &&
-        totalUsedNum > 0
-          ? totalUsedNum.toFixed(2)
-          : totalUsedNum.toFixed(1),
-
-      alerts:
-        this.serverList.filter(
-          item =>
-            parseFloat(item.usedPercent) >=
-            item.threshold
-        ).length
+      totalInstances: this.serverList.length,
+      runningInstances: runningCount,
+      totalTraffic: totalUsedNum < 1 && totalUsedNum > 0 ? totalUsedNum.toFixed(2) : totalUsedNum.toFixed(1),
+      alerts: this.serverList.filter(item => parseFloat(item.usedPercent) >= item.threshold).length
     };
   }
 
 
   // ==================== 进度条 ====================
-  drawProgressBar(
-    percentage,
-    width,
-    height = 4
-  ) {
-    const theme = this.getTheme();
+  drawProgressBar(percentage, width, height = 4) {
     const context = new DrawContext();
     context.size = new Size(width, height);
     context.opaque = false;
     const radius = height / 2;
 
     const bgPath = new Path();
-    bgPath.addRoundedRect(
-      new Rect(0, 0, width, height),
-      radius,
-      radius
-    );
+    bgPath.addRoundedRect(new Rect(0, 0, width, height), radius, radius);
     context.addPath(bgPath);
-    context.setFillColor(theme.progressBackground);
+    // 采用中性灰背景，深浅色均高度兼容
+    context.setFillColor(new Color("#808080", 0.22));
     context.fillPath();
 
     let pctNum = parseFloat(percentage) || 0;
     pctNum = Math.max(0, Math.min(100, pctNum));
 
-    const fillWidth = Math.max(
-      height,
-      Math.min(
-        width,
-        (pctNum / 100) * width
-      )
-    );
-
+    const fillWidth = Math.max(height, Math.min(width, (pctNum / 100) * width));
     const fillPath = new Path();
-    fillPath.addRoundedRect(
-      new Rect(0, 0, fillWidth, height),
-      radius,
-      radius
-    );
+    fillPath.addRoundedRect(new Rect(0, 0, fillWidth, height), radius, radius);
     context.addPath(fillPath);
-    context.setFillColor(
-      pctNum > 90
-        ? new Color("#ff375f")
-        : new Color("#0a84ff")
-    );
+    context.setFillColor(pctNum > 90 ? new Color("#ff375f") : new Color("#0a84ff"));
     context.fillPath();
 
     return context.getImage();
@@ -489,7 +332,6 @@ class Widget extends DmYY {
 
   // ==================== 空状态 ====================
   checkEmpty(widget) {
-    const theme = this.getTheme();
     widget.setPadding(14, 14, 14, 14);
 
     if (!this.baseUrl || !this.apiKey) {
@@ -588,7 +430,7 @@ class Widget extends DmYY {
   };
 
 
-  // ==================== Medium (原版经典布局保持完全不变) ====================
+  // ==================== Medium (原版经典原味) ====================
   renderMedium = async widget => {
     if (this.checkEmpty(widget)) return widget;
     const theme = this.getTheme();
@@ -597,7 +439,7 @@ class Widget extends DmYY {
     const s = this.summaryData;
     const a = this.serverList[0];
 
-    // ---------- 标题 ----------
+    // 1. 标题行
     const header = widget.addStack();
     header.centerAlignContent();
 
@@ -607,7 +449,6 @@ class Widget extends DmYY {
 
     header.addSpacer();
 
-    // ---------- 状态 ----------
     const badge = header.addStack();
     badge.backgroundColor = a.isRunning
       ? new Color("#30d158", 0.15)
@@ -626,7 +467,7 @@ class Widget extends DmYY {
 
     widget.addSpacer(6);
 
-    // ==================== 数据卡片 ====================
+    // 2. 统计卡片
     const statsCard = widget.addStack();
     statsCard.backgroundColor = theme.card;
     statsCard.cornerRadius = 10;
@@ -654,7 +495,7 @@ class Widget extends DmYY {
 
     widget.addSpacer(6);
 
-    // ==================== 主卡片 ====================
+    // 3. 主卡片
     const mainCard = widget.addStack();
     mainCard.layoutVertically();
     mainCard.backgroundColor = theme.card;
@@ -663,7 +504,6 @@ class Widget extends DmYY {
     mainCard.borderWidth = 0.5;
     mainCard.setPadding(8, 12, 8, 12);
 
-    // ---------- 名称 ----------
     const rowTop = mainCard.addStack();
     rowTop.centerAlignContent();
 
@@ -687,7 +527,6 @@ class Widget extends DmYY {
 
     mainCard.addSpacer(3);
 
-    // ---------- 流量 ----------
     const rowData = mainCard.addStack();
     rowData.bottomAlignContent();
 
@@ -701,14 +540,12 @@ class Widget extends DmYY {
 
     mainCard.addSpacer(4);
 
-    // ---------- 进度 ----------
     const pImg = this.drawProgressBar(a.usedPercent, 270, 4);
     const imgW = mainCard.addImage(pImg);
     imgW.imageSize = new Size(270, 4);
 
     mainCard.addSpacer(4);
 
-    // ---------- 底部 ----------
     const rowBottom = mainCard.addStack();
     rowBottom.centerAlignContent();
 
@@ -740,10 +577,9 @@ class Widget extends DmYY {
     widget.setPadding(13, 15, 13, 15);
 
     const s = this.summaryData;
-    const a = this.serverList[0];
     const count = this.serverList.length;
 
-    // ---------- 标题与状态 ----------
+    // 1. 标题行
     const header = widget.addStack();
     header.centerAlignContent();
 
@@ -770,7 +606,7 @@ class Widget extends DmYY {
 
     widget.addSpacer(6);
 
-    // ---------- 顶部统计条 ----------
+    // 2. 汇总条
     const statsCard = widget.addStack();
     statsCard.backgroundColor = theme.card;
     statsCard.cornerRadius = 10;
@@ -796,7 +632,7 @@ class Widget extends DmYY {
     statsCard.addSpacer();
     addStat(statsCard, "阈值告警", `${s.alerts} 项`);
 
-    // 单张卡片组件构造函数
+    // 卡片生成器
     const addCard = (parent, item, isGrid = false, isTwo = false) => {
       const card = parent.addStack();
       card.layoutVertically();
@@ -1131,7 +967,7 @@ class Widget extends DmYY {
           type: "input",
           val: "apiKey",
           placeholder: "cdt_xxxxxxxx",
-          desc: "填写你自己的 API Key（需具有 widget:read 权限）"
+          desc: "填写你自己的 API Key（需具有 widget:read权限）"
         },
         {
           name: "update",
@@ -1188,13 +1024,18 @@ class Widget extends DmYY {
     const widget = new ListWidget();
     await this.getWidgetBackgroundImage(widget);
 
+    // 保证背景跟随系统原生自适应（如果不设背景图）
+    widget.backgroundColor = Color.dynamic(new Color("#ffffff"), new Color("#000000"));
+
+    const size = (config.widgetFamily || this.widgetFamily || "medium").toLowerCase();
+
     let resWidget;
-    if (this.widgetFamily === "medium") {
-      resWidget = await this.renderMedium(widget);
-    } else if (this.widgetFamily === "large") {
+    if (size === "large") {
       resWidget = await this.renderLarge(widget);
-    } else {
+    } else if (size === "small") {
       resWidget = await this.renderSmall(widget);
+    } else {
+      resWidget = await this.renderMedium(widget);
     }
 
     resWidget.url = `scriptable:///run/${encodeURIComponent(Script.name())}`;
