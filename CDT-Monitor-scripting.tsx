@@ -7,8 +7,8 @@ import {
 } from 'scripting';
 
 // ==================== 用户配置区 ====================
-const BASE_URL = "https://cdt.yisaw.com"; // 面板地址
-const API_KEY = "cdt_7DHQnnMUNrRu3F9OCa0SJty0VyqU4GDI7d70jfsjiXU"; // 你的完整 API Key
+const BASE_URL = "https://域名.com"; // 面板地址
+const API_KEY = "cdt_xxxx"; // 你的完整 API Key
 // ====================================================
 
 interface AccountItem {
