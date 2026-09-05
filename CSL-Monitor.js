@@ -10,7 +10,7 @@
  */
 
 /* ============================================================
- * OTA 更新配置
+ * OTA 基础配置
  * ============================================================ */
 
 const SCRIPT_NAME = "CSL Monitor";
@@ -29,82 +29,6 @@ function compareVersions(v1, v2) {
     if (p1 < p2) return -1;
   }
   return 0;
-}
-
-async function checkScriptUpdate(silent = false) {
-  let remoteCode = "";
-  const urls = [RAW_SCRIPT_URL, BACKUP_SCRIPT_URL];
-
-  for (const u of urls) {
-    try {
-      const req = new Request(u);
-      req.method = "GET";
-      req.headers = { "User-Agent": "Mozilla/5.0" };
-      req.timeoutInterval = 8;
-      const res = await req.loadString();
-      if (res && res.includes("@version:")) {
-        remoteCode = res;
-        break;
-      }
-    } catch (e) {}
-  }
-
-  if (!remoteCode) {
-    if (!silent) {
-      const alert = new Alert();
-      alert.title = "检查更新失败";
-      alert.message = "无法连接至 GitHub 获取版本信息，请检查网络连接。";
-      alert.addAction("好的");
-      await alert.presentAlert();
-    }
-    return;
-  }
-
-  const match = remoteCode.match(/@version:\s*([0-9.]+)/i);
-  const remoteVersion = match ? match[1].trim() : "";
-
-  if (remoteVersion && compareVersions(remoteVersion, CURRENT_VERSION) > 0) {
-    const alert = new Alert();
-    alert.title = "发现新版本 🚀";
-    alert.message = `当前版本: v${CURRENT_VERSION}\n最新版本: v${remoteVersion}\n是否立即在线更新脚本？`;
-    alert.addAction("立即更新");
-    alert.addCancelAction("稍后再说");
-    const idx = await alert.presentAlert();
-
-    if (idx === 0) {
-      try {
-        const fm = FileManager.local();
-        let scriptPath = "";
-        try {
-          scriptPath = module.filename;
-        } catch (e) {}
-
-        if (!scriptPath || !fm.fileExists(scriptPath)) {
-          scriptPath = fm.joinPath(fm.documentsDirectory(), `${Script.name()}.js`);
-        }
-
-        fm.writeString(scriptPath, remoteCode);
-
-        const successAlert = new Alert();
-        successAlert.title = "更新成功 🎉";
-        successAlert.message = `脚本已成功更新至 v${remoteVersion}，请重新运行脚本。`;
-        successAlert.addAction("好的");
-        await successAlert.presentAlert();
-      } catch (e) {
-        const errAlert = new Alert();
-        errAlert.title = "写入更新失败";
-        errAlert.message = safeString(e);
-        errAlert.addAction("好的");
-        await errAlert.presentAlert();
-      }
-    }
-  } else if (!silent) {
-    const alert = new Alert();
-    alert.title = "已是最新版本";
-    alert.message = `当前版本 v${CURRENT_VERSION} 已经是最新版本，无需更新。`;
-    alert.addAction("好的");
-    await alert.presentAlert();
-  }
 }
 
 /* ============================================================
@@ -835,8 +759,106 @@ class CSLMonitor extends DmYY {
     });
 
     this.registerAction("检查更新", async () => {
-      await checkScriptUpdate(false);
+      await this.checkScriptUpdate(false);
     }, { name: "arrow.triangle.2.circlepath.circle", color: "#34C759" });
+
+    this.registerAction("重载组件", () => {
+      const fm = FileManager.local();
+      const cachePath = fm.joinPath(fm.cacheDirectory(), "csl_standings_db.json");
+      if (fm.fileExists(cachePath)) {
+        try { fm.remove(cachePath); } catch (e) {}
+      }
+      this.reopenScript();
+    }, { name: "arrow.clockwise", color: "#007AFF" });
+  }
+
+  /* ==========================================================
+   * OTA 检查更新与自动重新拉起 (CDT 同款机制)
+   * ========================================================== */
+  async checkScriptUpdate(silent = false) {
+    let remoteCode = "";
+    const urls = [RAW_SCRIPT_URL, BACKUP_SCRIPT_URL];
+
+    for (const u of urls) {
+      try {
+        const req = new Request(u);
+        req.method = "GET";
+        req.headers = { "User-Agent": "Mozilla/5.0" };
+        req.timeoutInterval = 8;
+        const res = await req.loadString();
+        if (res && res.includes("@version:")) {
+          remoteCode = res;
+          break;
+        }
+      } catch (e) {}
+    }
+
+    if (!remoteCode) {
+      if (!silent) {
+        const alert = new Alert();
+        alert.title = "检查更新失败";
+        alert.message = "无法连接至 GitHub 获取版本信息，请检查网络连接。";
+        alert.addAction("好的");
+        await alert.presentAlert();
+      }
+      return;
+    }
+
+    const match = remoteCode.match(/@version:\s*([0-9.]+)/i);
+    const remoteVersion = match ? match[1].trim() : "";
+
+    if (remoteVersion && compareVersions(remoteVersion, CURRENT_VERSION) > 0) {
+      const alert = new Alert();
+      alert.title = "发现新版本 🚀";
+      alert.message = `当前版本: v${CURRENT_VERSION}\n最新版本: v${remoteVersion}\n是否立即在线更新脚本？`;
+      alert.addAction("立即更新");
+      alert.addCancelAction("稍后再说");
+      const idx = await alert.presentAlert();
+
+      if (idx === 0) {
+        try {
+          const currentScriptPath = module.filename;
+          const isICloud = currentScriptPath && currentScriptPath.includes("Documents/iCloud~");
+          const fm = isICloud ? FileManager.iCloud() : FileManager.local();
+
+          let savePath = currentScriptPath;
+          if (!savePath || !fm.fileExists(savePath)) {
+            savePath = fm.joinPath(fm.documentsDirectory(), `${Script.name()}.js`);
+          }
+
+          // 1. 覆盖写入最新代码
+          fm.writeString(savePath, remoteCode);
+
+          // 2. 清理旧数据缓存
+          const localFM = FileManager.local();
+          const cachePath = localFM.joinPath(localFM.cacheDirectory(), "csl_standings_db.json");
+          if (localFM.fileExists(cachePath)) {
+            try { localFM.remove(cachePath); } catch (e) {}
+          }
+
+          // 3. 提示并自动自重启
+          const successAlert = new Alert();
+          successAlert.title = "更新成功 🎉";
+          successAlert.message = `脚本已成功更新至 v${remoteVersion}，即将自动重新打开。`;
+          successAlert.addAction("好的");
+          await successAlert.presentAlert();
+
+          this.reopenScript();
+        } catch (e) {
+          const errAlert = new Alert();
+          errAlert.title = "写入更新失败";
+          errAlert.message = safeString(e);
+          errAlert.addAction("好的");
+          await errAlert.presentAlert();
+        }
+      }
+    } else if (!silent) {
+      const alert = new Alert();
+      alert.title = "已是最新版本";
+      alert.message = `当前版本 v${CURRENT_VERSION} 已经是最新版本，无需更新。`;
+      alert.addAction("好的");
+      await alert.presentAlert();
+    }
   }
 
   get favoriteTeam() {
@@ -1043,7 +1065,7 @@ class CSLMonitor extends DmYY {
   }
 
   /* ==========================================================
-   * 置顶主队预告胶囊 (修复 1天后 挤压截断)
+   * 置顶主队预告胶囊
    * ========================================================== */
   async drawTopFavoriteBanner(widget, nextMatch, standingsMap) {
     const fav = this.favoriteTeam;
@@ -1237,7 +1259,7 @@ class CSLMonitor extends DmYY {
   }
 
   /* ==========================================================
-   * 焦点战深度指标对决看板 (修复比分与战绩截断)
+   * 焦点战深度指标对决看板
    * ========================================================== */
   async drawSingleMatchDashboard(widget, match, standingsMap, innerPad = 10, rowGap = 5.0) {
     const titleRow = widget.addStack();
@@ -1263,7 +1285,7 @@ class CSLMonitor extends DmYY {
       rank: "-", points: 0, played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0
     };
 
-    // 1. 顶层双方身份条 (防止中间比分截断)
+    // 1. 顶层双方身份条 (防比分截断)
     const heroBar = panel.addStack();
     heroBar.layoutHorizontally();
     heroBar.centerAlignContent();
@@ -1297,7 +1319,7 @@ class CSLMonitor extends DmYY {
 
     heroBar.addSpacer();
 
-    // 中间比分 (固定居中槽位，防折行截断)
+    // 中间比分 (单行居中锁死，自适应缩放)
     const midBox = heroBar.addStack();
     midBox.size = new Size(88, 16);
     midBox.centerAlignContent();
@@ -1340,7 +1362,7 @@ class CSLMonitor extends DmYY {
 
     panel.addSpacer(rowGap + 1.5);
 
-    // 2. 指标对比行 (槽宽由 76 提升到 100，杜绝 11胜 4平 1... 截断)
+    // 2. 指标对比行 (槽宽提至 100，避免 11胜 4平 1... 截断)
     const drawRow = (label, hVal, aVal) => {
       const r = panel.addStack();
       r.layoutHorizontally();
@@ -1837,6 +1859,7 @@ class CSLMonitor extends DmYY {
       await this.drawFullStandings(widget, standings);
     }
 
+    widget.url = `scriptable:///run/${encodeURIComponent(Script.name())}`;
     return widget;
   }
 
