@@ -5,15 +5,8 @@
 /*
  * @name: CSL Monitor
  * @description: 中超比赛监控 - iOS Native Glass UI
- * @version: 1.0.0
+ * @version: 1.0.1
  * @author: yisa
- *
- * 核心特性:
- * - 全场景自适应布局（0场全景榜、1~4场对阵深度分析看板、5~8场大比赛日全景列表）
- * - Color.dynamic 底层动态变色，深浅色模式秒级丝滑切换
- * - 像素级物理对齐与对称排版，严防长队名折行与队徽形变
- * - 本地磁盘多级穿透缓存，保障弱网与离线队徽瞬时加载
- * - 内置 OTA 检查更新与一键在线升级
  */
 
 /* ============================================================
@@ -21,7 +14,7 @@
  * ============================================================ */
 
 const SCRIPT_NAME = "CSL Monitor";
-const CURRENT_VERSION = "1.0.0";
+const CURRENT_VERSION = "1.0.1";
 const RAW_SCRIPT_URL = "https://raw.githubusercontent.com/yisaings/surge/main/CSL-Monitor.js";
 const BACKUP_SCRIPT_URL = "https://testingcf.jsdelivr.net/gh/yisaings/surge@main/CSL-Monitor.js";
 
@@ -154,7 +147,6 @@ await checkAndDownloadDmYY();
 
 const { DmYY, Runing } = importModule("./DmYY");
 
-
 /* ============================================================
  * 安全类型转换
  * ============================================================ */
@@ -189,7 +181,6 @@ function safeError(error) {
     return "Unknown error";
   }
 }
-
 
 /* ============================================================
  * 球队与队标底册
@@ -290,7 +281,6 @@ function getTeamLogoURL(team) {
   );
 }
 
-
 /* ============================================================
  * 北京时间
  * ============================================================ */
@@ -323,7 +313,6 @@ function getWeekday(dateString) {
   const names = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
   return names[date.getDay()] || "";
 }
-
 
 /* ============================================================
  * 网络与图片持久化
@@ -433,7 +422,6 @@ async function preloadLogoImages(standings, matches = []) {
   }
   await Promise.all(tasks);
 }
-
 
 /* ============================================================
  * HTML 与文本解析
@@ -815,7 +803,6 @@ async function findNextMatch(favTeam, currentBeijingDate) {
   return null;
 }
 
-
 /* ============================================================
  * CSL Monitor 主类
  * ============================================================ */
@@ -1056,13 +1043,13 @@ class CSLMonitor extends DmYY {
   }
 
   /* ==========================================================
-   * 置顶主队预告胶囊
+   * 置顶主队预告胶囊 (修复 1天后 挤压截断)
    * ========================================================== */
   async drawTopFavoriteBanner(widget, nextMatch, standingsMap) {
     const fav = this.favoriteTeam;
     if (!fav) return;
 
-    const banner = this.glass(widget, 5.5, 11);
+    const banner = this.glass(widget, 5, 11);
     banner.layoutHorizontally();
     banner.centerAlignContent();
 
@@ -1077,9 +1064,9 @@ class CSLMonitor extends DmYY {
 
       const icon = leftPart.addText("🗓️");
       icon.font = this.font(10);
-      leftPart.addSpacer(4);
+      leftPart.addSpacer(3);
 
-      this.text(leftPart, "主队下场预告", 10, { weight: "bold" });
+      this.text(leftPart, "主队预告", 10, { weight: "bold" });
       leftPart.addSpacer(4);
 
       const cdBadge = leftPart.addStack();
@@ -1089,7 +1076,12 @@ class CSLMonitor extends DmYY {
         new Color("#34C759", 0.12),
         new Color("#34C759", 0.2)
       );
-      this.text(cdBadge, `${nextMatch.offsetDays}天后`, 8, { weight: "bold", color: new Color("#34C759") });
+      this.text(cdBadge, `${nextMatch.offsetDays}天后`, 8.5, {
+        weight: "bold",
+        color: new Color("#34C759"),
+        lineLimit: 1,
+        minimumScaleFactor: 0.65
+      });
 
       banner.addSpacer();
 
@@ -1098,23 +1090,31 @@ class CSLMonitor extends DmYY {
       rightPart.centerAlignContent();
 
       const hLogo = rightPart.addStack();
-      hLogo.size = new Size(14, 14);
-      await this.logo(hLogo, getTeamLogoURL(nextMatch.home), 14, nextMatch.home);
+      hLogo.size = new Size(13, 13);
+      await this.logo(hLogo, getTeamLogoURL(nextMatch.home), 13, nextMatch.home);
       rightPart.addSpacer(3);
-      this.text(rightPart, nextMatch.home.replace(/队$/, ""), 10, { weight: isHome ? "bold" : "regular" });
+      this.text(rightPart, nextMatch.home.replace(/队$/, ""), 9.5, {
+        weight: isHome ? "bold" : "regular",
+        lineLimit: 1,
+        minimumScaleFactor: 0.7
+      });
 
       rightPart.addSpacer(3);
       this.text(rightPart, "VS", 8, { weight: "bold", opacity: 0.35 });
       rightPart.addSpacer(3);
 
-      this.text(rightPart, nextMatch.away.replace(/队$/, ""), 10, { weight: !isHome ? "bold" : "regular" });
+      this.text(rightPart, nextMatch.away.replace(/队$/, ""), 9.5, {
+        weight: !isHome ? "bold" : "regular",
+        lineLimit: 1,
+        minimumScaleFactor: 0.7
+      });
       rightPart.addSpacer(3);
       const aLogo = rightPart.addStack();
-      aLogo.size = new Size(14, 14);
-      await this.logo(aLogo, getTeamLogoURL(nextMatch.away), 14, nextMatch.away);
+      aLogo.size = new Size(13, 13);
+      await this.logo(aLogo, getTeamLogoURL(nextMatch.away), 13, nextMatch.away);
 
-      rightPart.addSpacer(5);
-      this.text(rightPart, `· ${shortDate}`, 9, { opacity: 0.45 });
+      rightPart.addSpacer(4);
+      this.text(rightPart, `· ${shortDate}`, 8.5, { opacity: 0.45 });
 
     } else if (standingsMap && standingsMap[fav]) {
       const data = standingsMap[fav];
@@ -1237,7 +1237,7 @@ class CSLMonitor extends DmYY {
   }
 
   /* ==========================================================
-   * 焦点战深度指标对决看板
+   * 焦点战深度指标对决看板 (修复比分与战绩截断)
    * ========================================================== */
   async drawSingleMatchDashboard(widget, match, standingsMap, innerPad = 10, rowGap = 5.0) {
     const titleRow = widget.addStack();
@@ -1248,7 +1248,7 @@ class CSLMonitor extends DmYY {
     titleRow.addSpacer();
     this.text(titleRow, isFavMatch ? "本轮焦点战" : "赛前多维数据", 10, { opacity: 0.35, weight: "medium" });
 
-    widget.addSpacer(4);
+    widget.addSpacer(3.5);
 
     const panel = this.glass(widget, innerPad, 14);
     panel.layoutVertically();
@@ -1263,7 +1263,7 @@ class CSLMonitor extends DmYY {
       rank: "-", points: 0, played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0
     };
 
-    // 1. 顶层双方身份条 (镜像对齐，双重兜底队标与锁死单行比分)
+    // 1. 顶层双方身份条 (防止中间比分截断)
     const heroBar = panel.addStack();
     heroBar.layoutHorizontally();
     heroBar.centerAlignContent();
@@ -1279,7 +1279,7 @@ class CSLMonitor extends DmYY {
     await this.logo(hLogo, hLogoURL, 18, homeName);
     hCap.addSpacer(4);
 
-    this.text(hCap, homeName.replace(/队$/, ""), 11.5, {
+    this.text(hCap, homeName.replace(/队$/, ""), 11, {
       weight: "bold",
       lineLimit: 1,
       minimumScaleFactor: 0.7
@@ -1297,15 +1297,17 @@ class CSLMonitor extends DmYY {
 
     heroBar.addSpacer();
 
-    // 中间比分 (单行锁定，杜绝折行)
+    // 中间比分 (固定居中槽位，防折行截断)
     const midBox = heroBar.addStack();
-    midBox.layoutHorizontally();
+    midBox.size = new Size(88, 16);
     midBox.centerAlignContent();
-    this.text(midBox, `${h.points}分 VS ${a.points}分`, 10, {
+    const midText = this.text(midBox, `${h.points}分 VS ${a.points}分`, 10, {
       weight: "bold",
       opacity: 0.75,
-      lineLimit: 1
+      lineLimit: 1,
+      minimumScaleFactor: 0.65
     });
+    midText.centerAlignText();
 
     heroBar.addSpacer();
 
@@ -1324,7 +1326,7 @@ class CSLMonitor extends DmYY {
     this.text(aBadge, `#${a.rank}`, 8, { weight: "bold", color: new Color("#34C759") });
     aCap.addSpacer(3);
 
-    this.text(aCap, awayName.replace(/队$/, ""), 11.5, {
+    this.text(aCap, awayName.replace(/队$/, ""), 11, {
       weight: "bold",
       lineLimit: 1,
       minimumScaleFactor: 0.7
@@ -1336,25 +1338,37 @@ class CSLMonitor extends DmYY {
     const aLogoURL = getTeamLogoURL(awayName) || safeString(a.logo) || safeString(match.awayLogo);
     await this.logo(aLogo, aLogoURL, 18, awayName);
 
-    panel.addSpacer(rowGap + 2);
+    panel.addSpacer(rowGap + 1.5);
 
-    // 2. 指标对比行
+    // 2. 指标对比行 (槽宽由 76 提升到 100，杜绝 11胜 4平 1... 截断)
     const drawRow = (label, hVal, aVal) => {
       const r = panel.addStack();
       r.layoutHorizontally();
       r.centerAlignContent();
 
-      const l = this.text(r, safeString(hVal), 11, { weight: "medium" });
-      l.size = new Size(76, 17);
+      const leftBox = r.addStack();
+      leftBox.size = new Size(100, 16);
+      leftBox.centerAlignContent();
+      const l = this.text(leftBox, safeString(hVal), 10.5, {
+        weight: "medium",
+        lineLimit: 1,
+        minimumScaleFactor: 0.7
+      });
       l.leftAlignText();
 
       r.addSpacer();
-      const m = this.text(r, label, 9, { opacity: 0.45 });
+      const m = this.text(r, label, 8.5, { opacity: 0.45, lineLimit: 1 });
       m.centerAlignText();
       r.addSpacer();
 
-      const rt = this.text(r, safeString(aVal), 11, { weight: "medium" });
-      rt.size = new Size(76, 17);
+      const rightBox = r.addStack();
+      rightBox.size = new Size(100, 16);
+      rightBox.centerAlignContent();
+      const rt = this.text(rightBox, safeString(aVal), 10.5, {
+        weight: "medium",
+        lineLimit: 1,
+        minimumScaleFactor: 0.7
+      });
       rt.rightAlignText();
     };
 
@@ -1372,9 +1386,9 @@ class CSLMonitor extends DmYY {
     const aWinRate = a.played > 0 ? Math.round((a.wins / a.played) * 100) : 0;
     drawRow("赛季胜率", `${hWinRate}%`, `${aWinRate}%`);
 
-    panel.addSpacer(rowGap + 2);
+    panel.addSpacer(rowGap + 1.5);
 
-    // 3. 底部势能提示槽 (水平绝对居中)
+    // 3. 底部势能提示槽
     const footerContainer = panel.addStack();
     footerContainer.layoutHorizontally();
     footerContainer.centerAlignContent();
@@ -1383,7 +1397,7 @@ class CSLMonitor extends DmYY {
     const footerBar = footerContainer.addStack();
     footerBar.layoutHorizontally();
     footerBar.centerAlignContent();
-    footerBar.setPadding(4.5, 12, 4.5, 12);
+    footerBar.setPadding(3.5, 12, 3.5, 12);
     footerBar.cornerRadius = 6;
     footerBar.backgroundColor = Color.dynamic(
       new Color("#000000", 0.03),
@@ -1394,7 +1408,7 @@ class CSLMonitor extends DmYY {
     const leader = h.points >= a.points ? homeName.replace(/队$/, "") : awayName.replace(/队$/, "");
     const diffDesc = diff === 0 ? "两队积分持平 势均力敌" : `${leader} 积分领先优势 ${diff} 分`;
 
-    const tip = this.text(footerBar, `⚡ ${diffDesc}`, 9, { opacity: 0.65, weight: "medium", lineLimit: 1 });
+    const tip = this.text(footerBar, `⚡ ${diffDesc}`, 8.5, { opacity: 0.65, weight: "medium", lineLimit: 1 });
     tip.centerAlignText();
 
     footerContainer.addSpacer();
@@ -1643,7 +1657,7 @@ class CSLMonitor extends DmYY {
    * ========================================================== */
   async renderLarge() {
     const widget = new ListWidget();
-    widget.setPadding(13, 14, 13, 14);
+    widget.setPadding(13, 14, 12, 14);
     this.setupBackground(widget);
 
     const date = safeString(this.widgetDate);
@@ -1775,16 +1789,16 @@ class CSLMonitor extends DmYY {
           boardPad = 9;
           boardRowGap = 4.2;
         } else if (totalMatches === 4) {
-          topGap = 4;
-          cardGap = 3.5;
-          middleGap = 5;
-          cardPad = 4.5;
-          boardPad = 7.5;
-          boardRowGap = 3.0;
+          topGap = 3.5;
+          cardGap = 3.0;
+          middleGap = 4.0;
+          cardPad = 4.0;
+          boardPad = 7.0;
+          boardRowGap = 2.5;
         }
 
         if (!hasFavMatchToday) {
-          widget.addSpacer(4);
+          widget.addSpacer(3.5);
           await this.drawTopFavoriteBanner(widget, nextMatch, standingsMap);
           widget.addSpacer(topGap);
         } else {
@@ -1830,7 +1844,6 @@ class CSLMonitor extends DmYY {
     return await this.renderLarge();
   }
 }
-
 
 /* ============================================================
  * 启动与异常保护
