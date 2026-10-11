@@ -1,0 +1,11 @@
+#!name=NodeSeek签到
+#!desc=NodeSeek 论坛每日签到领鸡腿：先抓 Token，再每天定时签到
+#!arguments=定时签到:3 0 * * *,禁用脚本:,禁用 MITM:
+#!arguments-desc=定时签到：Cron表达式，默认每天早上 08:15 执行。\n禁用脚本：禁用获取 Token 脚本，输入 # 表示禁用。\n禁用 MITM：禁用 MITM 主机名，输入 # 表示禁用。
+
+[Script]
+%禁用脚本%NodeSeek获取Token = type=http-response,pattern=^https:\/\/www\.nodeseek\.com\/api\/account\/getInfo\/.+\?readme=1&signature=1&phone=1,requires-body=1,script-path=https://gist.githubusercontent.com/Sliverkiss/2b5acc2c4960dd06618c6912302c2c7f/raw/nodeseek.js,timeout=60,script-update-interval=86400
+NodeSeek每日签到 = type=cron,cronexp="%定时签到%",wake-system=1,script-path=https://gist.githubusercontent.com/Sliverkiss/2b5acc2c4960dd06618c6912302c2c7f/raw/nodeseek.js,timeout=60,script-update-interval=86400
+
+[MITM]
+hostname = %APPEND% %禁用 MITM%, www.nodeseek.com
