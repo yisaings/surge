@@ -4,8 +4,8 @@
 
 /*
  * @name: CSL Monitor
- * @description: 中超比赛监控 - iOS Native Glass UI
- * @version: 1.0.1
+ * @description: 中超比赛监控 - iOS Native Glass UI（仅支持大尺寸小组件）
+ * @version: 1.2.0
  * @author: yisa
  */
 
@@ -14,7 +14,7 @@
  * ============================================================ */
 
 const SCRIPT_NAME = "CSL Monitor";
-const CURRENT_VERSION = "1.0.1";
+const CURRENT_VERSION = "1.2.0";
 const RAW_SCRIPT_URL = "https://raw.githubusercontent.com/yisaings/surge/main/CSL-Monitor.js";
 const BACKUP_SCRIPT_URL = "https://testingcf.jsdelivr.net/gh/yisaings/surge@main/CSL-Monitor.js";
 
@@ -175,9 +175,13 @@ const GLOBAL_LOGOS = {};
 
 function normalizeTeamText(text) {
   let value = decodeHTML(safeString(text)).replace(/\s+/g, " ").trim();
-  const keys = Object.keys(TEAM_ALIASES);
+  // 修复: 长别名优先匹配; 若文本已包含规范名则跳过, 避免 "浙江队" 被洗成 "浙江队队"
+  const keys = Object.keys(TEAM_ALIASES).sort((a, b) => b.length - a.length);
   for (const key of keys) {
-    value = value.split(safeString(key)).join(safeString(TEAM_ALIASES[key]));
+    const target = safeString(TEAM_ALIASES[key]);
+    if (!value.includes(target)) {
+      value = value.split(safeString(key)).join(target);
+    }
   }
   return value;
 }
@@ -236,6 +240,26 @@ function getWeekday(dateString) {
   const date = new Date(safeString(dateString) + "T00:00:00+08:00");
   const names = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
   return names[date.getDay()] || "";
+}
+
+function getBeijingTimeHM() {
+  try {
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Asia/Shanghai",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+      hourCycle: "h23"
+    }).formatToParts(new Date());
+    let hh = "", mm = "";
+    for (const p of parts) {
+      if (p.type === "hour") hh = safeString(p.value);
+      if (p.type === "minute") mm = safeString(p.value);
+    }
+    return hh && mm ? hh + ":" + mm : "";
+  } catch (e) {
+    return "";
+  }
 }
 
 /* ============================================================
@@ -421,7 +445,8 @@ function getImageURL(imgTag) {
 function extractAllImages(html) {
   return extractImages(html)
     .map(getImageURL)
-    .filter(url => !url && /^https?:\/\//i.test(safeString(url)));
+    // 修复: 原先 !url && 导致永远返回空数组, 队标自动发现整段失效
+    .filter(url => url && /^https?:\/\//i.test(safeString(url)));
 }
 
 function findTeams(text) {
@@ -694,12 +719,49 @@ function saveCachedStandings(standings) {
   } catch (e) {}
 }
 
+// 从积分榜已赛场次推算当前轮数 (取众数, 并列取大者)
+function getCurrentRoundFromStandings(standings) {
+  if (!Array.isArray(standings) || standings.length === 0) return "";
+  const counts = {};
+  for (const s of standings) {
+    const p = Number(s.played) || 0;
+    if (p > 0 && p <= 40) counts[p] = (counts[p] || 0) + 1;
+  }
+  let best = 0, bestCount = 0;
+  for (const k of Object.keys(counts)) {
+    const n = Number(k);
+    if (counts[k] > bestCount || (counts[k] === bestCount && n > best)) {
+      bestCount = counts[k];
+      best = n;
+    }
+  }
+  return best || "";
+}
+
+// 日期字符串加减天数 (YYYY-MM-DD)
+function addDaysStr(dateStr, n) {
+  try {
+    const [y, m, d] = safeString(dateStr).split("-").map(Number);
+    const dt = new Date(y, m - 1, d + n);
+    const mm = String(dt.getMonth() + 1).padStart(2, "0");
+    const dd = String(dt.getDate()).padStart(2, "0");
+    return `${dt.getFullYear()}-${mm}-${dd}`;
+  } catch (e) {
+    return safeString(dateStr);
+  }
+}
+
 async function findNextMatch(favTeam, currentBeijingDate) {
   if (!favTeam) return null;
 
+  // 以小组件当前日期 (含测试日期) 为基准, 不再永远按真实今天
+  const base = /^\d{4}-\d{2}-\d{2}$/.test(safeString(currentBeijingDate))
+    ? safeString(currentBeijingDate)
+    : getBeijingDate();
+
   const offsets = [1, 2, 3, 4, 5, 6, 7];
   const promises = offsets.map(offset => {
-    const targetDate = getBeijingDate(offset);
+    const targetDate = addDaysStr(base, offset);
     return fetchString(SINA_HOME + targetDate, 3).then(html => ({
       date: targetDate,
       offset: offset,
@@ -728,9 +790,10 @@ async function findNextMatch(favTeam, currentBeijingDate) {
 }
 
 /* ============================================================
- * CSL Monitor 主类
+ * CSL Monitor 主类 (仅大尺寸小组件)
  * ============================================================ */
 
+// 测试日期选项: "恢复今天" + 未来14天 (MM-DD 周X)
 class CSLMonitor extends DmYY {
   constructor(arg) {
     super(arg, {
@@ -738,6 +801,41 @@ class CSLMonitor extends DmYY {
       light: { bgColor: "#F2F5F3" },
       dark: { bgColor: "#0D110F" }
     });
+
+    // 覆写 DmYY 的外观设置, 末尾追加调试项 (藏在里面, 不单独成组)
+    const origSetWidgetConfig = this.setWidgetConfig.bind(this);
+    this.setWidgetConfig = async () => {
+      const origRender = this.renderAppView.bind(this);
+      this.renderAppView = async (sections) => {
+        sections.push({
+          title: "调试",
+          menu: [
+            {
+              icon: { name: "flask.fill", color: "#8C8C8C" },
+              type: "switch",
+              title: "启用测试日期",
+              desc: "打开后按下方日期渲染, 关闭恢复当天",
+              val: "debugEnable",
+              name: "debugEnable"
+            },
+            {
+              icon: { name: "calendar", color: "#8C8C8C" },
+              type: "date",
+              title: "测试日期",
+              desc: "需先打开上方开关",
+              val: "debugDate",
+              name: "debugDate"
+            }
+          ]
+        });
+        return origRender(sections);
+      };
+      try {
+        await origSetWidgetConfig();
+      } finally {
+        this.renderAppView = origRender;
+      }
+    };
 
     this.registerAction("基础外观设置", async () => {
       await this.setWidgetConfig();
@@ -873,6 +971,13 @@ class CSLMonitor extends DmYY {
   }
 
   get widgetDate() {
+    // 测试日期总开关: 关闭则直接用当天, 不受测试日期影响
+    try {
+      const enabled = safeString(this.settings && this.settings.debugEnable).trim();
+      if (enabled !== "true") return getBeijingDate();
+      const override = safeString(this.settings && this.settings.debugDate).trim();
+      if (/^\d{4}-\d{2}-\d{2}$/.test(override)) return override;
+    } catch (e) {}
     return getBeijingDate();
   }
 
@@ -944,16 +1049,10 @@ class CSLMonitor extends DmYY {
     stack.cornerRadius = radius;
     stack.setPadding(Number(padding), Number(padding), Number(padding), Number(padding));
 
-    stack.backgroundColor = Color.dynamic(
-      new Color("#FFFFFF", 0.68),
-      new Color("#FFFFFF", 0.045)
-    );
+    stack.backgroundColor = Color.dynamic(new Color("#FFFFFF", 0.92), new Color("#FFFFFF", 0.045));
 
     stack.borderWidth = 0.5;
-    stack.borderColor = Color.dynamic(
-      new Color("#FFFFFF", 0.9),
-      new Color("#FFFFFF", 0.08)
-    );
+    stack.borderColor = Color.dynamic(new Color("#000000", 0.08), new Color("#FFFFFF", 0.08));
 
     return stack;
   }
@@ -971,15 +1070,9 @@ class CSLMonitor extends DmYY {
     titleBadge.centerAlignContent();
     titleBadge.setPadding(3, 7, 3, 7);
     titleBadge.cornerRadius = 7;
-    titleBadge.backgroundColor = Color.dynamic(
-      new Color("#34C759", 0.12),
-      new Color("#34C759", 0.16)
-    );
+    titleBadge.backgroundColor = Color.dynamic(new Color("#34C759", 0.12), new Color("#34C759", 0.16));
     titleBadge.borderWidth = 0.5;
-    titleBadge.borderColor = Color.dynamic(
-      new Color("#34C759", 0.2),
-      new Color("#34C759", 0.25)
-    );
+    titleBadge.borderColor = Color.dynamic(new Color("#34C759", 0.2), new Color("#34C759", 0.25));
 
     const icon = titleBadge.addText("⚽");
     icon.font = this.font(10);
@@ -992,10 +1085,7 @@ class CSLMonitor extends DmYY {
       const rBadge = header.addStack();
       rBadge.setPadding(2, 6, 2, 6);
       rBadge.cornerRadius = 5;
-      rBadge.backgroundColor = Color.dynamic(
-        new Color("#000000", 0.05),
-        new Color("#FFFFFF", 0.08)
-      );
+      rBadge.backgroundColor = Color.dynamic(new Color("#000000", 0.05), new Color("#FFFFFF", 0.08));
 
       this.text(rBadge, `第 ${round} 轮`, 10, { weight: "bold", opacity: 0.85 });
       header.addSpacer(6);
@@ -1016,15 +1106,9 @@ class CSLMonitor extends DmYY {
       favBadge.centerAlignContent();
       favBadge.setPadding(2, 6, 2, 6);
       favBadge.cornerRadius = 6;
-      favBadge.backgroundColor = Color.dynamic(
-        new Color("#000000", 0.05),
-        new Color("#FFFFFF", 0.08)
-      );
+      favBadge.backgroundColor = Color.dynamic(new Color("#000000", 0.05), new Color("#FFFFFF", 0.08));
       favBadge.borderWidth = 0.5;
-      favBadge.borderColor = Color.dynamic(
-        new Color("#000000", 0.06),
-        new Color("#FFFFFF", 0.1)
-      );
+      favBadge.borderColor = Color.dynamic(new Color("#000000", 0.06), new Color("#FFFFFF", 0.1));
 
       const favLogoBox = favBadge.addStack();
       favLogoBox.size = new Size(13, 13);
@@ -1043,21 +1127,14 @@ class CSLMonitor extends DmYY {
           color: new Color("#34C759")
         });
       }
-    } else {
-      const currentR = round || (standingsMap && standingsMap["成都蓉城"] ? standingsMap["成都蓉城"].played : 24);
+    } else if (round) {
       const progressBadge = header.addStack();
       progressBadge.setPadding(2, 6, 2, 6);
       progressBadge.cornerRadius = 6;
-      progressBadge.backgroundColor = Color.dynamic(
-        new Color("#000000", 0.05),
-        new Color("#FFFFFF", 0.08)
-      );
+      progressBadge.backgroundColor = Color.dynamic(new Color("#000000", 0.05), new Color("#FFFFFF", 0.08));
       progressBadge.borderWidth = 0.5;
-      progressBadge.borderColor = Color.dynamic(
-        new Color("#000000", 0.06),
-        new Color("#FFFFFF", 0.1)
-      );
-      this.text(progressBadge, `第 ${currentR} 轮 / 共 30 轮`, 9.5, {
+      progressBadge.borderColor = Color.dynamic(new Color("#000000", 0.06), new Color("#FFFFFF", 0.1));
+      this.text(progressBadge, `第 ${round} 轮 / 共 30 轮`, 9.5, {
         weight: "medium",
         opacity: 0.75
       });
@@ -1075,35 +1152,44 @@ class CSLMonitor extends DmYY {
     banner.layoutHorizontally();
     banner.centerAlignContent();
 
+    // 左侧绿条
+    const accent = banner.addStack();
+    accent.size = new Size(3, 18);
+    accent.cornerRadius = 1.5;
+    accent.backgroundColor = new Color("#34C759");
+    banner.addSpacer(8);
+
     if (nextMatch) {
       const isHome = normalizeTeamName(nextMatch.home) === fav;
       const mDateParts = nextMatch.matchDate.split("-");
       const shortDate = `${parseInt(mDateParts[1])}/${parseInt(mDateParts[2])}`;
+      const dateTime = nextMatch.time ? `${shortDate} ${nextMatch.time}` : shortDate;
 
       const leftPart = banner.addStack();
       leftPart.layoutHorizontally();
       leftPart.centerAlignContent();
 
-      const icon = leftPart.addText("🗓️");
-      icon.font = this.font(10);
-      leftPart.addSpacer(3);
-
-      this.text(leftPart, "主队预告", 10, { weight: "bold" });
-      leftPart.addSpacer(4);
+      this.text(leftPart, "主队预告", 11, { weight: "bold" });
+      leftPart.addSpacer(5);
 
       const cdBadge = leftPart.addStack();
-      cdBadge.setPadding(1, 4, 1, 4);
-      cdBadge.cornerRadius = 3;
-      cdBadge.backgroundColor = Color.dynamic(
-        new Color("#34C759", 0.12),
-        new Color("#34C759", 0.2)
-      );
-      this.text(cdBadge, `${nextMatch.offsetDays}天后`, 8.5, {
+      cdBadge.setPadding(2, 6, 2, 6);
+      cdBadge.cornerRadius = 4;
+      cdBadge.backgroundColor = Color.dynamic(new Color("#34C759", 0.14), new Color("#34C759", 0.22));
+      this.text(cdBadge, `${nextMatch.offsetDays}天后`, 9, {
         weight: "bold",
         color: new Color("#34C759"),
         lineLimit: 1,
         minimumScaleFactor: 0.65
       });
+
+      leftPart.addSpacer(5);
+      const dtBadge = leftPart.addStack();
+      dtBadge.setPadding(2, 6, 2, 6);
+      dtBadge.cornerRadius = 4;
+      dtBadge.backgroundColor = Color.dynamic(new Color("#000000", 0.05), new Color("#FFFFFF", 0.08));
+      const dtText = this.text(dtBadge, dateTime, 8.5, { weight: "bold", opacity: 0.6, lineLimit: 1, minimumScaleFactor: 0.7 });
+      dtText.centerAlignText();
 
       banner.addSpacer();
 
@@ -1112,31 +1198,30 @@ class CSLMonitor extends DmYY {
       rightPart.centerAlignContent();
 
       const hLogo = rightPart.addStack();
-      hLogo.size = new Size(13, 13);
-      await this.logo(hLogo, getTeamLogoURL(nextMatch.home), 13, nextMatch.home);
-      rightPart.addSpacer(3);
-      this.text(rightPart, nextMatch.home.replace(/队$/, ""), 9.5, {
+      hLogo.size = new Size(14, 14);
+      await this.logo(hLogo, getTeamLogoURL(nextMatch.home), 14, nextMatch.home);
+      rightPart.addSpacer(4);
+      this.text(rightPart, nextMatch.home.replace(/队$/, ""), 10.5, {
         weight: isHome ? "bold" : "regular",
+        color: isHome ? new Color("#34C759") : null,
         lineLimit: 1,
-        minimumScaleFactor: 0.7
+        minimumScaleFactor: 0.65
       });
-
-      rightPart.addSpacer(3);
-      this.text(rightPart, "VS", 8, { weight: "bold", opacity: 0.35 });
-      rightPart.addSpacer(3);
-
-      this.text(rightPart, nextMatch.away.replace(/队$/, ""), 9.5, {
-        weight: !isHome ? "bold" : "regular",
-        lineLimit: 1,
-        minimumScaleFactor: 0.7
-      });
-      rightPart.addSpacer(3);
-      const aLogo = rightPart.addStack();
-      aLogo.size = new Size(13, 13);
-      await this.logo(aLogo, getTeamLogoURL(nextMatch.away), 13, nextMatch.away);
 
       rightPart.addSpacer(4);
-      this.text(rightPart, `· ${shortDate}`, 8.5, { opacity: 0.45 });
+      this.text(rightPart, "VS", 8.5, { weight: "bold", opacity: 0.35 });
+      rightPart.addSpacer(4);
+
+      this.text(rightPart, nextMatch.away.replace(/队$/, ""), 10.5, {
+        weight: !isHome ? "bold" : "regular",
+        color: !isHome ? new Color("#34C759") : null,
+        lineLimit: 1,
+        minimumScaleFactor: 0.65
+      });
+      rightPart.addSpacer(4);
+      const aLogo = rightPart.addStack();
+      aLogo.size = new Size(14, 14);
+      await this.logo(aLogo, getTeamLogoURL(nextMatch.away), 14, nextMatch.away);
 
     } else if (standingsMap && standingsMap[fav]) {
       const data = standingsMap[fav];
@@ -1153,32 +1238,38 @@ class CSLMonitor extends DmYY {
    * 比赛卡片 (全面撑开，垂直内边距自适应)
    * ========================================================== */
   async drawCleanMatchCard(widget, match, isFavorite, verticalPadding = 6) {
-    const card = this.glass(widget, 0, 12);
-    card.setPadding(verticalPadding, 10, verticalPadding, 10);
-    card.layoutHorizontally();
-    card.centerAlignContent();
+    // 外层纵向: 保证卡片撑满 widget 宽度
+    const cardOuter = widget.addStack();
+    cardOuter.layoutVertically();
+    cardOuter.cornerRadius = 12;
+    cardOuter.setPadding(0, 0, 0, 0);
+    cardOuter.backgroundColor = Color.dynamic(new Color("#FFFFFF", 0.92), new Color("#FFFFFF", 0.045));
+    cardOuter.borderWidth = 0.5;
+    cardOuter.borderColor = Color.dynamic(new Color("#000000", 0.08), new Color("#FFFFFF", 0.08));
 
     if (isFavorite) {
-      card.borderWidth = 1.2;
-      card.borderColor = new Color("#34C759", 0.8);
-      card.backgroundColor = Color.dynamic(
-        new Color("#34C759", 0.10),
-        new Color("#34C759", 0.16)
-      );
+      cardOuter.borderWidth = 1.2;
+      cardOuter.borderColor = new Color("#34C759", 0.8);
+      cardOuter.backgroundColor = Color.dynamic(new Color("#34C759", 0.10), new Color("#34C759", 0.16));
     }
+
+    // 内层横向: 内容居中 (弹性 spacer 在撑满的容器里才有效)
+    const card = cardOuter.addStack();
+    card.layoutHorizontally();
+    card.centerAlignContent();
+    card.setPadding(verticalPadding, 10, verticalPadding, 10);
+
+    card.addSpacer(); // 弹性, 两端对等居中
 
     const homeName = normalizeTeamName(match.home).replace(/队$/, "");
     const awayName = normalizeTeamName(match.away).replace(/队$/, "");
 
     // 1. 开球时间 / 状态
     const timeBox = card.addStack();
-    timeBox.size = new Size(40, 18);
+    timeBox.size = new Size(36, 18);
     timeBox.centerAlignContent();
     timeBox.cornerRadius = 4;
-    timeBox.backgroundColor = Color.dynamic(
-      new Color("#000000", 0.05),
-      new Color("#FFFFFF", 0.07)
-    );
+    timeBox.backgroundColor = Color.dynamic(new Color("#000000", 0.05), new Color("#FFFFFF", 0.07));
 
     if (match.score) {
       const finText = this.text(timeBox, "完赛", 9, { opacity: 0.55, weight: "medium" });
@@ -1191,7 +1282,7 @@ class CSLMonitor extends DmYY {
       tmText.centerAlignText();
     }
 
-    card.addSpacer(8);
+    card.addSpacer(6);
 
     // 2. 主队名
     const homeNameBox = card.addStack();
@@ -1210,11 +1301,11 @@ class CSLMonitor extends DmYY {
     hLogo.centerAlignContent();
     await this.logo(hLogo, getTeamLogoURL(homeName), 18, homeName);
 
-    card.addSpacer(8);
+    card.addSpacer(6);
 
     // 4. 正中央 VS / 比分
     const vsBox = card.addStack();
-    vsBox.size = new Size(32, 18);
+    vsBox.size = new Size(28, 18);
     vsBox.centerAlignContent();
 
     if (match.score) {
@@ -1234,7 +1325,7 @@ class CSLMonitor extends DmYY {
       vsText.centerAlignText();
     }
 
-    card.addSpacer(8);
+    card.addSpacer(6);
 
     // 5. 客队队标
     const aLogo = card.addStack();
@@ -1242,7 +1333,7 @@ class CSLMonitor extends DmYY {
     aLogo.centerAlignContent();
     await this.logo(aLogo, getTeamLogoURL(awayName), 18, awayName);
 
-    card.addSpacer(8);
+    card.addSpacer(6);
 
     // 6. 客队名
     const awayNameBox = card.addStack();
@@ -1255,7 +1346,7 @@ class CSLMonitor extends DmYY {
     });
     aText.leftAlignText();
 
-    card.addSpacer();
+    card.addSpacer(); // 弹性, 两端对等居中
   }
 
   /* ==========================================================
@@ -1266,9 +1357,10 @@ class CSLMonitor extends DmYY {
     titleRow.layoutHorizontally();
     titleRow.centerAlignContent();
     const isFavMatch = this.isFavoriteMatch(match);
+    const isFuture = match.offsetDays > 0;
     this.text(titleRow, isFavMatch ? "主队对战深度解析" : "焦点交锋对战深度解析", 12, { weight: "bold" });
     titleRow.addSpacer();
-    this.text(titleRow, isFavMatch ? "本轮焦点战" : "赛前多维数据", 10, { opacity: 0.35, weight: "medium" });
+    this.text(titleRow, isFavMatch ? (isFuture ? "下场前瞻" : "本轮焦点战") : "赛前多维数据", 10, { opacity: 0.35, weight: "medium" });
 
     widget.addSpacer(3.5);
 
@@ -1311,10 +1403,7 @@ class CSLMonitor extends DmYY {
     const hBadge = hCap.addStack();
     hBadge.setPadding(1, 3.5, 1, 3.5);
     hBadge.cornerRadius = 3;
-    hBadge.backgroundColor = Color.dynamic(
-      new Color("#34C759", 0.12),
-      new Color("#34C759", 0.2)
-    );
+    hBadge.backgroundColor = Color.dynamic(new Color("#34C759", 0.12), new Color("#34C759", 0.2));
     this.text(hBadge, `#${h.rank}`, 8, { weight: "bold", color: new Color("#34C759") });
 
     heroBar.addSpacer();
@@ -1341,10 +1430,7 @@ class CSLMonitor extends DmYY {
     const aBadge = aCap.addStack();
     aBadge.setPadding(1, 3.5, 1, 3.5);
     aBadge.cornerRadius = 3;
-    aBadge.backgroundColor = Color.dynamic(
-      new Color("#34C759", 0.12),
-      new Color("#34C759", 0.2)
-    );
+    aBadge.backgroundColor = Color.dynamic(new Color("#34C759", 0.12), new Color("#34C759", 0.2));
     this.text(aBadge, `#${a.rank}`, 8, { weight: "bold", color: new Color("#34C759") });
     aCap.addSpacer(3);
 
@@ -1362,51 +1448,97 @@ class CSLMonitor extends DmYY {
 
     panel.addSpacer(rowGap + 1.5);
 
-    // 2. 指标对比行 (槽宽提至 100，避免 11胜 4平 1... 截断)
-    const drawRow = (label, hVal, aVal) => {
+    // 2. 指标对比行 (数值 + 双向对比条, 等宽固定保证中心对称)
+    const drawRow = (label, hVal, aVal, hNum, aNum) => {
       const r = panel.addStack();
       r.layoutHorizontally();
       r.centerAlignContent();
 
+      r.addSpacer(); // 弹性居中
+
       const leftBox = r.addStack();
-      leftBox.size = new Size(100, 16);
+      leftBox.size = new Size(56, 16);
       leftBox.centerAlignContent();
       const l = this.text(leftBox, safeString(hVal), 10.5, {
         weight: "medium",
         lineLimit: 1,
         minimumScaleFactor: 0.7
       });
-      l.leftAlignText();
+      l.centerAlignText();
 
-      r.addSpacer();
-      const m = this.text(r, label, 8.5, { opacity: 0.45, lineLimit: 1 });
+      r.addSpacer(5);
+
+      const barW = 50;
+      const total = (Number(hNum) + Number(aNum)) || 1;
+      const hProp = Math.max(0.08, Math.min(0.92, Number(hNum) / total));
+      const barBgColor = Color.dynamic(new Color("#000000", 0.06), new Color("#FFFFFF", 0.08));
+
+      const lBarBg = r.addStack();
+      lBarBg.size = new Size(barW, 4);
+      lBarBg.cornerRadius = 2;
+      lBarBg.backgroundColor = barBgColor;
+      const lFillW = Math.round(barW * hProp);
+      const lPad = lBarBg.addStack();
+      lPad.size = new Size(barW - lFillW, 4);
+      const lFill = lBarBg.addStack();
+      lFill.size = new Size(lFillW, 4);
+      lFill.cornerRadius = 2;
+      lFill.backgroundColor = new Color("#34C759");
+
+      r.addSpacer(5);
+      const labelBox = r.addStack();
+      labelBox.size = new Size(60, 16);
+      labelBox.centerAlignContent();
+      const m = this.text(labelBox, label, 8.5, { opacity: 0.45, lineLimit: 1 });
       m.centerAlignText();
-      r.addSpacer();
+      r.addSpacer(5);
+
+      const rBarBg = r.addStack();
+      rBarBg.size = new Size(barW, 4);
+      rBarBg.cornerRadius = 2;
+      rBarBg.backgroundColor = barBgColor;
+      const rFillW = Math.round(barW * (1 - hProp));
+      const rFill = rBarBg.addStack();
+      rFill.size = new Size(rFillW, 4);
+      rFill.cornerRadius = 2;
+      rFill.backgroundColor = new Color("#0A84FF");
+      const rPad = rBarBg.addStack();
+      rPad.size = new Size(barW - rFillW, 4);
+
+      r.addSpacer(5);
 
       const rightBox = r.addStack();
-      rightBox.size = new Size(100, 16);
+      rightBox.size = new Size(56, 16);
       rightBox.centerAlignContent();
       const rt = this.text(rightBox, safeString(aVal), 10.5, {
         weight: "medium",
         lineLimit: 1,
         minimumScaleFactor: 0.7
       });
-      rt.rightAlignText();
+      rt.centerAlignText();
+
+      r.addSpacer(); // 弹性居中
     };
 
-    drawRow("已赛场次", `${h.played} 场`, `${a.played} 场`);
-    panel.addSpacer(rowGap);
-    drawRow("胜 / 平 / 负", `${h.wins}胜 ${h.draws}平 ${h.losses}负`, `${a.wins}胜 ${a.draws}平 ${a.losses}负`);
+    drawRow("胜 / 平 / 负", `${h.wins}胜 ${h.draws}平 ${h.losses}负`, `${a.wins}胜 ${a.draws}平 ${a.losses}负`, h.wins, a.wins);
     panel.addSpacer(rowGap);
 
     const hGD = h.goalsFor - h.goalsAgainst;
     const aGD = a.goalsFor - a.goalsAgainst;
-    drawRow("进球 / 净胜", `${h.goalsFor} (${hGD > 0 ? "+" + hGD : hGD})`, `${a.goalsFor} (${aGD > 0 ? "+" + aGD : aGD})`);
+    drawRow("进球 / 净胜", `${h.goalsFor} (${hGD > 0 ? "+" + hGD : hGD})`, `${a.goalsFor} (${aGD > 0 ? "+" + aGD : aGD})`, h.goalsFor, a.goalsFor);
+    panel.addSpacer(rowGap);
+
+    const hAvgFor = h.played > 0 ? (h.goalsFor / h.played).toFixed(1) : "0.0";
+    const aAvgFor = a.played > 0 ? (a.goalsFor / a.played).toFixed(1) : "0.0";
+    drawRow("场均进球", `${hAvgFor}`, `${aAvgFor}`, parseFloat(hAvgFor), parseFloat(aAvgFor));
+    panel.addSpacer(rowGap);
+
+    drawRow("失球数", `${h.goalsAgainst}`, `${a.goalsAgainst}`, h.goalsAgainst, a.goalsAgainst);
     panel.addSpacer(rowGap);
 
     const hWinRate = h.played > 0 ? Math.round((h.wins / h.played) * 100) : 0;
     const aWinRate = a.played > 0 ? Math.round((a.wins / a.played) * 100) : 0;
-    drawRow("赛季胜率", `${hWinRate}%`, `${aWinRate}%`);
+    drawRow("赛季胜率", `${hWinRate}%`, `${aWinRate}%`, hWinRate, aWinRate);
 
     panel.addSpacer(rowGap + 1.5);
 
@@ -1421,10 +1553,7 @@ class CSLMonitor extends DmYY {
     footerBar.centerAlignContent();
     footerBar.setPadding(3.5, 12, 3.5, 12);
     footerBar.cornerRadius = 6;
-    footerBar.backgroundColor = Color.dynamic(
-      new Color("#000000", 0.03),
-      new Color("#FFFFFF", 0.04)
-    );
+    footerBar.backgroundColor = Color.dynamic(new Color("#000000", 0.03), new Color("#FFFFFF", 0.04));
 
     const diff = Math.abs(h.points - a.points);
     const leader = h.points >= a.points ? homeName.replace(/队$/, "") : awayName.replace(/队$/, "");
@@ -1440,9 +1569,9 @@ class CSLMonitor extends DmYY {
    * 无比赛日：今日暂无比赛面板
    * ========================================================== */
   async drawNoMatch(widget, nextMatch, standingsMap) {
-    widget.addSpacer(6);
+    widget.addSpacer(10);
 
-    const box = this.glass(widget, 8, 14);
+    const box = this.glass(widget, 10, 14);
     box.layoutHorizontally();
     box.centerAlignContent();
 
@@ -1466,11 +1595,8 @@ class CSLMonitor extends DmYY {
       const cdBadge = leftTextStack.addStack();
       cdBadge.setPadding(1.5, 4.5, 1.5, 4.5);
       cdBadge.cornerRadius = 4;
-      cdBadge.backgroundColor = Color.dynamic(
-        new Color("#34C759", 0.12),
-        new Color("#34C759", 0.2)
-      );
-      
+      cdBadge.backgroundColor = Color.dynamic(new Color("#34C759", 0.12), new Color("#34C759", 0.2));
+
       this.text(cdBadge, `${nextMatch.offsetDays}天后比赛`, 9, {
         weight: "bold",
         color: new Color("#34C759"),
@@ -1522,10 +1648,7 @@ class CSLMonitor extends DmYY {
       const timeBadge = rightBox.addStack();
       timeBadge.setPadding(2, 5, 2, 5);
       timeBadge.cornerRadius = 4;
-      timeBadge.backgroundColor = Color.dynamic(
-        new Color("#000000", 0.05),
-        new Color("#FFFFFF", 0.08)
-      );
+      timeBadge.backgroundColor = Color.dynamic(new Color("#000000", 0.05), new Color("#FFFFFF", 0.08));
       this.text(timeBadge, `${shortDate} ${nextMatch.time || "待定"}`, 8, {
         opacity: 0.6,
         weight: "medium"
@@ -1538,10 +1661,7 @@ class CSLMonitor extends DmYY {
       statBadge.centerAlignContent();
       statBadge.setPadding(3, 8, 3, 8);
       statBadge.cornerRadius = 6;
-      statBadge.backgroundColor = Color.dynamic(
-        new Color("#000000", 0.04),
-        new Color("#FFFFFF", 0.06)
-      );
+      statBadge.backgroundColor = Color.dynamic(new Color("#000000", 0.04), new Color("#FFFFFF", 0.06));
 
       this.text(statBadge, `已赛 ${data.played} 轮`, 10, { opacity: 0.6 });
       statBadge.addSpacer(6);
@@ -1552,7 +1672,7 @@ class CSLMonitor extends DmYY {
   /* ==========================================================
    * 16 强全景积分榜
    * ========================================================== */
-  async drawStandingItem(parent, item) {
+  async drawStandingItem(parent, item, isFav) {
     const row = parent.addStack();
     row.layoutHorizontally();
     row.centerAlignContent();
@@ -1560,6 +1680,7 @@ class CSLMonitor extends DmYY {
     const r = Number(item.rank);
 
     const indicator = row.addStack();
+    // 主队: 排名竖线直接变绿 (同宽, 保持对齐)
     indicator.size = new Size(2.5, 12);
     indicator.cornerRadius = 1.25;
 
@@ -1573,15 +1694,12 @@ class CSLMonitor extends DmYY {
     } else if (r === 15 || r === 16) {
       indicator.backgroundColor = new Color("#EF4444");
       numColor = new Color("#DC2626");
+    } else if (isFav) {
+      indicator.backgroundColor = new Color("#34C759");
+      numColor = Color.dynamic(new Color("#17201A", 0.62), new Color("#FFFFFF", 0.45));
     } else {
-      indicator.backgroundColor = Color.dynamic(
-        new Color("#000000", 0.08),
-        new Color("#FFFFFF", 0.12)
-      );
-      numColor = Color.dynamic(
-        new Color("#17201A", 0.45),
-        new Color("#FFFFFF", 0.45)
-      );
+      indicator.backgroundColor = Color.dynamic(new Color("#000000", 0.08), new Color("#FFFFFF", 0.12));
+      numColor = Color.dynamic(new Color("#17201A", 0.62), new Color("#FFFFFF", 0.45));
     }
 
     row.addSpacer(4);
@@ -1609,9 +1727,12 @@ class CSLMonitor extends DmYY {
 
     row.addSpacer(5);
 
-    const teamText = this.text(row, safeString(item.team).replace(/队$/, ""), 10, {
-      weight: r <= 3 ? "bold" : "regular",
-      color: r >= 15 ? Color.dynamic(new Color("#17201A", 0.7), new Color("#FFFFFF", 0.7)) : null,
+    const textCol = row.addStack();
+    textCol.layoutVertically();
+
+    const teamText = this.text(textCol, safeString(item.team).replace(/队$/, ""), 10, {
+      weight: (r <= 3 || isFav) ? "bold" : "regular",
+      color: r >= 15 ? Color.dynamic(new Color("#17201A", 0.85), new Color("#FFFFFF", 0.7)) : null,
       lineLimit: 1
     });
 
@@ -1626,10 +1747,10 @@ class CSLMonitor extends DmYY {
     return row;
   }
 
-  async drawFullStandings(widget, standings) {
+  async drawFullStandings(widget, standings, updateLabel = "", favTeam = "") {
     if (!standings || standings.length === 0) return;
 
-    widget.addSpacer(6);
+    widget.addSpacer(10);
 
     const title = widget.addStack();
     title.layoutHorizontally();
@@ -1637,11 +1758,16 @@ class CSLMonitor extends DmYY {
 
     this.text(title, "联赛积分榜", 12, { weight: "bold" });
     title.addSpacer();
-    this.text(title, "1 - 16", 10, { opacity: 0.35, weight: "medium" });
+    if (updateLabel) {
+      const cupIcon = title.addText("🏆");
+      cupIcon.font = this.font(10);
+      title.addSpacer(3);
+      this.text(title, `更新于 ${updateLabel}`, 10, { opacity: 0.35, weight: "medium" });
+    }
 
-    widget.addSpacer(4);
+    widget.addSpacer(6);
 
-    const box = this.glass(widget, 9, 15);
+    const box = this.glass(widget, 12, 15);
     box.layoutHorizontally();
 
     const left = box.addStack();
@@ -1649,18 +1775,16 @@ class CSLMonitor extends DmYY {
 
     const leftItems = standings.slice(0, 8);
     for (let i = 0; i < leftItems.length; i++) {
-      await this.drawStandingItem(left, leftItems[i]);
-      if (i < leftItems.length - 1) left.addSpacer(4.5);
+      const normName = normalizeTeamName(leftItems[i].team);
+      await this.drawStandingItem(left, leftItems[i], normName === favTeam && !!favTeam);
+      if (i < leftItems.length - 1) left.addSpacer(5);
     }
 
     box.addSpacer(10);
 
     const divider = box.addStack();
-    divider.size = new Size(1, 195);
-    divider.backgroundColor = Color.dynamic(
-      new Color("#000000", 0.05),
-      new Color("#FFFFFF", 0.08)
-    );
+    divider.size = new Size(1, 204);
+    divider.backgroundColor = Color.dynamic(new Color("#000000", 0.05), new Color("#FFFFFF", 0.08));
 
     box.addSpacer(10);
 
@@ -1669,8 +1793,9 @@ class CSLMonitor extends DmYY {
 
     const rightItems = standings.slice(8, 16);
     for (let i = 0; i < rightItems.length; i++) {
-      await this.drawStandingItem(right, rightItems[i]);
-      if (i < rightItems.length - 1) right.addSpacer(4.5);
+      const normName = normalizeTeamName(rightItems[i].team);
+      await this.drawStandingItem(right, rightItems[i], normName === favTeam && !!favTeam);
+      if (i < rightItems.length - 1) right.addSpacer(5);
     }
   }
 
@@ -1679,7 +1804,7 @@ class CSLMonitor extends DmYY {
    * ========================================================== */
   async renderLarge() {
     const widget = new ListWidget();
-    widget.setPadding(13, 14, 12, 14);
+    widget.setPadding(10, 16, 11, 16);
     this.setupBackground(widget);
 
     const date = safeString(this.widgetDate);
@@ -1728,10 +1853,8 @@ class CSLMonitor extends DmYY {
     if (matches.length > 0 && matches[0].round) {
       round = matches[0].round;
     } else {
-      const roundMatch = safeString(dailyHTML).match(/(?:中超\s*)?第\s*(\d{1,2})\s*轮/);
-      if (roundMatch) {
-        round = parseInt(roundMatch[1], 10);
-      }
+      // 无比赛日: 从积分榜已赛场次推算, 不再从整页 HTML 里正则硬抓 (之前会误抓到"第6轮")
+      round = getCurrentRoundFromStandings(standings);
     }
 
     await this.drawHeader(widget, round, date, standingsMap);
@@ -1744,14 +1867,8 @@ class CSLMonitor extends DmYY {
 
       const totalMatches = matches.length;
 
+      // 按开球时间顺序排列, 不再把主队比赛顶置 (避免误导时间); 主队卡片仍用绿框高亮
       const sortedMatches = [...matches];
-      if (hasFavMatchToday) {
-        sortedMatches.sort((a, b) => {
-          const aIsFav = normalizeTeamName(a.home) === favTeam || normalizeTeamName(a.away) === favTeam;
-          const bIsFav = normalizeTeamName(b.home) === favTeam || normalizeTeamName(b.away) === favTeam;
-          return (bIsFav ? 1 : 0) - (aIsFav ? 1 : 0);
-        });
-      }
 
       /* ----------------------------------------------------
        * 分流 A: 超级比赛日 ( > 4 场比赛 )
@@ -1770,7 +1887,13 @@ class CSLMonitor extends DmYY {
 
         const displayCount = Math.min(totalMatches, 8);
         const cardPad = displayCount === 5 ? 8.5 : (displayCount === 6 ? 6.5 : 4.5);
-        const cardGap = displayCount === 5 ? 10.0 : (displayCount === 6 ? 6.5 : 3.5);
+        // 卡片间距动态计算, 顶部留适度空白、底部留白, 不顶格不裁切 (按360px保守估算)
+        const cardH = cardPad * 2 + 18;
+        const fixedH = 9 + 22 + 6 + 17 + 6 + 10; // padding + header + spacers + title
+        const dynamicGap = displayCount > 1
+          ? Math.max(3.5, (360 - fixedH - displayCount * cardH) / (displayCount - 1))
+          : 0;
+        const cardGap = Math.min(dynamicGap, 10);
 
         for (let i = 0; i < displayCount; i++) {
           await this.drawCleanMatchCard(widget, sortedMatches[i], this.isFavoriteMatch(sortedMatches[i]), cardPad);
@@ -1802,21 +1925,28 @@ class CSLMonitor extends DmYY {
           middleGap = 12;
           cardPad = 8;
           boardPad = 11;
-          boardRowGap = 5.5;
+          boardRowGap = 4;
         } else if (totalMatches === 3) {
           topGap = 6;
-          cardGap = 6;
+          cardGap = 5;
+          middleGap = 7;
+          cardPad = 6;
+          boardPad = 8;
+          boardRowGap = 3.5;
+        } else if (totalMatches === 4) {
+          topGap = 5;
+          cardGap = 5;
           middleGap = 8;
           cardPad = 6;
           boardPad = 9;
-          boardRowGap = 4.2;
-        } else if (totalMatches === 4) {
-          topGap = 3.5;
-          cardGap = 3.0;
-          middleGap = 4.0;
-          cardPad = 4.0;
-          boardPad = 7.0;
-          boardRowGap = 2.5;
+          boardRowGap = 3.5;
+          // 有预告条时再收紧, 防止超高
+          if (!hasFavMatchToday) {
+            cardPad = 5;
+            middleGap = 5;
+            boardPad = 8;
+            boardRowGap = 2;
+          }
         }
 
         if (!hasFavMatchToday) {
@@ -1842,7 +1972,12 @@ class CSLMonitor extends DmYY {
             normalizeTeamName(m.home) === favTeam ||
             normalizeTeamName(m.away) === favTeam
           );
-        } else {
+        } else if (nextMatch && nextMatch.home && nextMatch.away) {
+          // 无主队比赛时, 看板固定用主队下场比赛 (不再随机)
+          focusMatch = nextMatch;
+        }
+
+        if (!focusMatch) {
           const nowMinutes = new Date().getMinutes();
           const randIndex = (Math.floor(nowMinutes / 5) + Math.floor(Math.random() * totalMatches)) % totalMatches;
           focusMatch = sortedMatches[randIndex];
@@ -1856,7 +1991,7 @@ class CSLMonitor extends DmYY {
     } else {
       // 无比赛日：全景积分榜模式
       await this.drawNoMatch(widget, nextMatch, standingsMap);
-      await this.drawFullStandings(widget, standings);
+      await this.drawFullStandings(widget, standings, getBeijingTimeHM(), favTeam);
     }
 
     widget.url = `scriptable:///run/${encodeURIComponent(Script.name())}`;
