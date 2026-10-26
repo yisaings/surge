@@ -1,5 +1,6 @@
 #!name=中国联通去广告
 #!desc=移出部分广告
+#!category=【yisa】Sgmodule
 
 [Rule]
 # 移除开屏广告
