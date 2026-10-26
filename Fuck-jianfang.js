@@ -1,4 +1,4 @@
-// ==================== [Fuck茧房] 防风控全功能版 (Web + iPhone + iPad) ====================
+// ==================== [Fuck茧房] 官方原版纯净满血版 (Web + iPhone + iPad) ====================
 
 let mode = 'popular';
 let upmasterName = '老番茄';
@@ -10,7 +10,7 @@ if (typeof $argument !== 'undefined') {
     if (upMatch) upmasterName = decodeURIComponent(upMatch[1]).trim();
 }
 
-// 检查模式或UP主是否发生变更，若变更则清空当前主池，立即生效新模式
+// 切换模式或更换UP主时，自动清空旧缓存池，下拉刷新立即生效
 let lastConfig = $persistentStore.read('fj_last_config') || '';
 let currentConfig = `${mode}_${upmasterName}`;
 let videoPool = [];
@@ -26,11 +26,9 @@ let shownBvidsCache = JSON.parse($persistentStore.read('fj_shown_bvids') || '[]'
 let shownBvids = new Set(shownBvidsCache);
 let backupPool = JSON.parse($persistentStore.read('fj_backup_pool') || '[]');
 
-// 常用分区 TID（动画、音乐、舞蹈、游戏、知识、科技、运动、汽车、生活、美食、动物、时尚、娱乐、影视）
 const REGION_TIDS = [1, 3, 129, 4, 36, 188, 234, 223, 160, 211, 217, 155, 5, 181];
-
 const MODE_LABELS = {
-    popular: "热门破壁",
+    popular: "打破茧房",
     fresh: "新号探索",
     weekly: "每周必看",
     crossregion: "跨区漫游",
@@ -42,7 +40,7 @@ function fetchSurge(url) {
     return new Promise((resolve) => {
         $httpClient.get({
             url: url,
-            timeout: 3.5,
+            timeout: 3,
             headers: {
                 "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
                 "Referer": "https://www.bilibili.com/",
@@ -58,135 +56,98 @@ function fetchSurge(url) {
     });
 }
 
-function normalizeVideo(v) {
-    return {
-        bvid: v.bvid,
-        aid: v.aid || v.id,
-        cid: v.cid || 0,
-        title: (v.title || '').replace(/<[^>]+>/g, ''), // 去除搜索接口自带的 <em> 高亮标签
-        pic: (v.pic || v.cover || '').replace(/^http:\/\//, 'https://').replace(/^\/\//, 'https://'),
-        owner: { name: v.owner?.name || v.author || '未知UP', mid: v.owner?.mid || v.mid || 0 },
-        stat: { view: v.stat?.view || v.play || 0, danmaku: v.stat?.danmaku || v.video_review || 0 },
-        duration: typeof v.duration === 'number' ? v.duration : parseDuration(v.duration),
-        pubdate: v.pubdate || v.created || Math.floor(Date.now() / 1000)
-    };
-}
-
-function parseDuration(durStr) {
-    if (!durStr || typeof durStr !== 'string') return 180;
-    let parts = durStr.split(':').map(Number);
-    return parts.length === 2 ? parts[0] * 60 + parts[1] : 180;
-}
-
-function pushUniqueVideos(list) {
+function pushToPool(list) {
     let poolBvids = new Set(videoPool.map(v => v.bvid));
-    list.forEach(raw => {
-        let v = normalizeVideo(raw);
-        if (v.bvid && !shownBvids.has(v.bvid) && !poolBvids.has(v.bvid)) {
-            videoPool.push(v);
-            poolBvids.add(v.bvid);
+    list.forEach(v => {
+        let bvid = v.bvid;
+        let aid = v.aid || v.id;
+        if (bvid && aid && !shownBvids.has(bvid) && !poolBvids.has(bvid)) {
+            videoPool.push({
+                bvid: bvid,
+                aid: aid,
+                cid: v.cid || 0,
+                title: (v.title || '').replace(/<[^>]+>/g, ''),
+                pic: (v.pic || v.cover || '').replace(/^http:\/\//, 'https://').replace(/^\/\//, 'https://'),
+                owner: { name: v.owner?.name || v.author || '', mid: v.owner?.mid || v.mid || 0 },
+                stat: { view: v.stat?.view || v.play || 0, danmaku: v.stat?.danmaku || v.video_review || 0 },
+                duration: typeof v.duration === 'number' ? v.duration : 180,
+                pubdate: v.pubdate || v.created || 0
+            });
+            poolBvids.add(bvid);
         }
     });
 }
 
-// 1. 热门池
 async function fillPopular() {
     let startPage = Math.floor(Math.random() * 8) + 1;
     let urls = [0, 1, 2, 3].map(i => `https://api.bilibili.com/x/web-interface/popular?ps=20&pn=${startPage + i}`);
     let results = await Promise.all(urls.map(url => fetchSurge(url)));
-    results.forEach(res => {
-        if (res?.code === 0 && res.data?.list) pushUniqueVideos(res.data.list);
-    });
+    results.forEach(res => { if (res?.code === 0 && res.data?.list) pushToPool(res.data.list); });
 }
 
-// 2. 新号探索模式
 async function fillFresh() {
     let baseIdx = Math.floor(Math.random() * 8) + 1;
     let urls = [0, 1, 2, 3].map(i => `https://api.bilibili.com/x/web-interface/index/top/feed/rcmd?ps=20&fresh_idx=${baseIdx + i}&fresh_type=4`);
     let results = await Promise.all(urls.map(url => fetchSurge(url)));
     results.forEach(res => {
         if (res?.code === 0 && res.data?.item) {
-            let validItems = res.data.item.filter(item => item.goto === 'av' && item.bvid);
-            pushUniqueVideos(validItems);
+            pushToPool(res.data.item.filter(item => item.goto === 'av'));
         }
     });
 }
 
-// 3. 每周必看模式（随机抽取历史期数）
 async function fillWeekly() {
     let listRes = await fetchSurge('https://api.bilibili.com/x/web-interface/popular/series/list');
-    let numbers = listRes?.data?.list?.map(item => item.number) || [250, 251, 252, 253, 254, 255];
-    let pickedNums = numbers.sort(() => Math.random() - 0.5).slice(0, 3);
-    let urls = pickedNums.map(num => `https://api.bilibili.com/x/web-interface/popular/series/one?number=${num}`);
-    let results = await Promise.all(urls.map(url => fetchSurge(url)));
-    results.forEach(res => {
-        if (res?.code === 0 && res.data?.list) pushUniqueVideos(res.data.list);
-    });
+    let numbers = listRes?.data?.list?.map(item => item.number) || [250, 251, 252, 253, 254];
+    let picked = numbers.sort(() => Math.random() - 0.5).slice(0, 3);
+    let results = await Promise.all(picked.map(n => fetchSurge(`https://api.bilibili.com/x/web-interface/popular/series/one?number=${n}`)));
+    results.forEach(res => { if (res?.code === 0 && res.data?.list) pushToPool(res.data.list); });
 }
 
-// 4. 跨分区漫游模式
 async function fillCrossRegion() {
-    let pickedTids = [...REGION_TIDS].sort(() => Math.random() - 0.5).slice(0, 4);
-    let urls = pickedTids.map(tid => `https://api.bilibili.com/x/web-interface/dynamic/region?ps=15&rid=${tid}`);
-    let results = await Promise.all(urls.map(url => fetchSurge(url)));
-    results.forEach(res => {
-        if (res?.code === 0 && res.data?.archives) pushUniqueVideos(res.data.archives);
-    });
+    let picked = [...REGION_TIDS].sort(() => Math.random() - 0.5).slice(0, 4);
+    let results = await Promise.all(picked.map(tid => fetchSurge(`https://api.bilibili.com/x/web-interface/dynamic/region?ps=15&rid=${tid}`)));
+    results.forEach(res => { if (res?.code === 0 && res.data?.archives) pushToPool(res.data.archives); });
 }
 
-// 5. 冷门优质模式（筛选播放量适中但互动高的分区动态或入站必刷混排）
 async function fillNiche() {
-    let pickedTids = [...REGION_TIDS].sort(() => Math.random() - 0.5).slice(0, 4);
-    let urls = pickedTids.map(tid => `https://api.bilibili.com/x/web-interface/ranking/v2?rid=${tid}&type=all`);
-    let results = await Promise.all(urls.map(url => fetchSurge(url)));
+    let picked = [...REGION_TIDS].sort(() => Math.random() - 0.5).slice(0, 4);
+    let results = await Promise.all(picked.map(tid => fetchSurge(`https://api.bilibili.com/x/web-interface/ranking/v2?rid=${tid}&type=all`)));
     results.forEach(res => {
         if (res?.code === 0 && res.data?.list) {
-            // 取榜单后半段（避开头部大热门，挖掘腰部优质内容）
-            let nicheList = res.data.list.slice(20, 60).sort(() => Math.random() - 0.5).slice(0, 15);
-            pushUniqueVideos(nicheList);
+            pushToPool(res.data.list.slice(20, 60).sort(() => Math.random() - 0.5).slice(0, 15));
         }
     });
 }
 
-// 6. UP主及关联探索模式
 async function fillUpmaster() {
-    let searchUrl = `https://api.bilibili.com/x/web-interface/search/type?search_type=video&keyword=${encodeURIComponent(upmasterName)}&page=1`;
-    let res = await fetchSurge(searchUrl);
-    if (res?.code === 0 && Array.isArray(res.data?.result)) {
-        pushUniqueVideos(res.data.result);
-    } else {
-        await fillPopular();
-    }
+    let res = await fetchSurge(`https://api.bilibili.com/x/web-interface/search/type?search_type=video&keyword=${encodeURIComponent(upmasterName)}&page=1`);
+    if (res?.code === 0 && Array.isArray(res.data?.result)) pushToPool(res.data.result);
+    else await fillPopular();
 }
 
 async function fillPool() {
     let beforeCount = videoPool.length;
 
-    switch (mode) {
-        case 'fresh': await fillFresh(); break;
-        case 'weekly': await fillWeekly(); break;
-        case 'crossregion': await fillCrossRegion(); break;
-        case 'niche': await fillNiche(); break;
-        case 'upmaster': await fillUpmaster(); break;
-        default: await fillPopular(); break;
-    }
+    if (mode === 'fresh') await fillFresh();
+    else if (mode === 'weekly') await fillWeekly();
+    else if (mode === 'crossregion') await fillCrossRegion();
+    else if (mode === 'niche') await fillNiche();
+    else if (mode === 'upmaster') await fillUpmaster();
+    else await fillPopular();
 
-    // 乱序打散，避免同一批次拉取的同分区视频扎堆出现
     videoPool.sort(() => Math.random() - 0.5);
 
     if (videoPool.length <= beforeCount && videoPool.length < 20) {
-        console.log("[Fuck茧房] API 拉取受限或已见底，启用备用粮仓！");
         shownBvids.clear();
         if (backupPool.length > 0) {
-            let shuffledBackup = [...backupPool].sort(() => Math.random() - 0.5);
-            videoPool.push(...shuffledBackup);
+            videoPool.push(...[...backupPool].sort(() => Math.random() - 0.5));
         }
     } else if (videoPool.length > beforeCount) {
-        let newBackup = [...videoPool, ...backupPool];
         let uniqueBackup = [];
         let tempSet = new Set();
-        for (let v of newBackup) {
-            if (v.bvid && !tempSet.has(v.bvid)) {
+        for (let v of [...videoPool, ...backupPool]) {
+            if (!tempSet.has(v.bvid)) {
                 tempSet.add(v.bvid);
                 uniqueBackup.push(v);
             }
@@ -197,14 +158,14 @@ async function fillPool() {
 }
 
 function buildFeedItem(video) {
-    let reasonText = MODE_LABELS[mode] || "打破茧房";
+    let label = MODE_LABELS[mode] || "打破茧房";
     return {
         id: video.aid, bvid: video.bvid, cid: video.cid, goto: 'av',
         uri: 'https://www.bilibili.com/video/' + video.bvid,
         pic: video.pic || video.cover, pic_4_3: video.pic || video.cover, title: video.title,
         duration: video.duration, pubdate: video.pubdate,
         owner: video.owner, stat: video.stat,
-        rcmd_reason: { reason_type: 1, content: reasonText },
+        rcmd_reason: { reason_type: 1, content: label },
         show_info: 1, pos: 0, is_stock: 0, enable_vt: 0
     };
 }
@@ -214,34 +175,32 @@ function buildAppFeedItem(video, isPad) {
     let viewCount = video.stat?.view || video.view || 0;
     if (viewCount > 10000) viewCount = (viewCount / 10000).toFixed(1) + "万";
     let danmakuCount = String(video.stat?.danmaku || video.danmaku || 0);
-    let reasonText = MODE_LABELS[mode] || "打破茧房";
+    let label = MODE_LABELS[mode] || "打破茧房";
 
     let appCard = {
         card_type: "small_cover_v2",
         card_goto: "av", goto: "av", title: video.title,
         cover: video.pic || video.cover,
-        uri: `bilibili://video/${video.aid}?bvid=${video.bvid}&cid=${video.cid || 0}`,
+        uri: `bilibili://video/${video.aid}?bvid=${video.bvid}&cid=${video.cid}`,
         param: String(video.aid),
         args: { up_id: video.owner?.mid || 0, up_name: upName, rid: video.aid, aid: video.aid },
         desc_button: { text: upName, type: 1 },
         cover_left_text_1: String(viewCount),
         cover_left_text_2: danmakuCount,
         cover_left_icon_1: 1, cover_left_icon_2: 3,
-        rcmd_reason: reasonText,
-        rcmd_reason_style: { text: reasonText, text_color: "#FF6633", bg_color: "#FFF1ED", border_color: "#FFF1ED", bg_style: 1 },
-        player_args: { aid: video.aid, cid: video.cid || 0, duration: video.duration, type: "av" },
+        rcmd_reason: label,
+        rcmd_reason_style: { text: label, text_color: "#FF6633", bg_color: "#FFF1ED", border_color: "#FFF1ED", bg_style: 1 },
+        player_args: { aid: video.aid, cid: video.cid, duration: video.duration, type: "av" },
         three_point_v2: [{ title: "添加至稍后再看", type: "watch_later" }]
     };
 
     if (isPad) {
-        let dur = video.duration || 0;
-        appCard.cover_right_text = `${Math.floor(dur / 60)}:${(dur % 60).toString().padStart(2, '0')}`;
+        appCard.cover_right_text = `${Math.floor(video.duration / 60)}:${(video.duration % 60).toString().padStart(2, '0')}`;
         appCard.desc = upName;
     }
     return appCard;
 }
 
-// ================= 主拦截逻辑 =================
 async function main() {
     let body = $response.body;
     let reqUrl = $request.url;
@@ -256,8 +215,7 @@ async function main() {
 
         if (obj?.code === 0 && targetList) {
             let needCount = targetList.filter(card => card.goto === 'av').length;
-
-            if (videoPool.length < needCount + 25) {
+            if (videoPool.length < needCount + 30) {
                 await fillPool();
             }
 
@@ -270,9 +228,8 @@ async function main() {
                 }
             }
 
-            $persistentStore.write(JSON.stringify(videoPool.slice(0, 120)), 'fj_video_pool');
-            $persistentStore.write(JSON.stringify(Array.from(shownBvids).slice(-200)), 'fj_shown_bvids');
-
+            $persistentStore.write(JSON.stringify(videoPool), 'fj_video_pool');
+            $persistentStore.write(JSON.stringify(Array.from(shownBvids).slice(-150)), 'fj_shown_bvids');
             body = JSON.stringify(obj);
         }
     } catch (e) {
