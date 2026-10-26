@@ -2,6 +2,7 @@
 #!desc=NodeSeek 论坛每日签到领鸡腿，模块参数可调整签到时间。\n登录网站后点击个人名称查看个人名片即可获取Token.
 #!arguments=定时签到:3 0 * * *,禁用脚本:NodeSeek[Token],禁用MITM:hostname
 #!arguments-desc=定时签到：Cron表达式，默认每天早上 00:03 执行。\n\n禁用脚本：禁用获取Token脚本，输入 # 表示禁用。\n\n禁用MITM：禁用MITM主机名，输入 # 表示禁用。
+#!category=【yisa】Sgmodule
 
 [Script]
 NodeSeek[签到] = type=cron,cronexp="{{{定时签到}}}",wake-system=1,script-path=https://gist.githubusercontent.com/Sliverkiss/2b5acc2c4960dd06618c6912302c2c7f/raw/nodeseek.js,timeout=60,script-update-interval=86400
