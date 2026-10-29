@@ -1,0 +1,11 @@
+#!name=修改大会员购买界面酷币
+#!desc=修改大会员界面的酷币数量，实现“0元”显示的UI效果（仅供本地UI自慰测试）
+#!author=AI
+
+[Script]
+# 拦截目标域名的响应并执行 JS 脚本
+修改酷币数量 = type=http-response, pattern=^https?:\/\/learnywhere\.cn\/.*, requires-body=1, max-size=0, script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/bbdc/bbdc.js
+
+[MITM]
+# 开启该域名的 HTTPS 解密
+hostname = %APPEND% learnywhere.cn
