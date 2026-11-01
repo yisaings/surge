@@ -3,9 +3,11 @@
 #!category=【yisa】Sgmodule
 
 [Script]
-EZVIZ天气空白 = type=http-response,pattern=^https://api\.ys7\.com/v3/weather/,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=1
+EZVIZ清缓存社区 = type=http-request,pattern=^https://api\.ys7\.com/v3/videoclips/community/(banner|tab|position),script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=0
+EZVIZ清缓存首页配置 = type=http-request,pattern=^https://api\.ys7\.com/v3/devices/homepage/basic,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=0
+EZVIZ清缓存商城 = type=http-request,pattern=^https://m\.ys7\.com/default/(index-waterfall-tab-list|rn-index),script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=0
 EZVIZ服务专区整卡清空 = type=http-response,pattern=^https://api\.ys7\.com/v3/entrance/vas/service/info,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=1
-EZVIZ云盘空间置空 = type=http-response,pattern=^https://api\.ys7\.com/v3/clouds/cloudspace/spaceInfo,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=1
+EZVIZ云盘汇总置空 = type=http-response,pattern=^https://api\.ys7\.com/v3/clouds/cloudspace/spaceInfo,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=1
 EZVIZ服务入口清空 = type=http-response,pattern=^https://api\.ys7\.com/v3/config/service/entrance/component/info,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=1
 EZVIZ对话清空 = type=http-response,pattern=^https://api\.ys7\.com/v3/intelligent-bot/bot/,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=1
 EZVIZ家庭会话清空 = type=http-response,pattern=^https://api\.ys7\.com/v3/terminal/communication/im/chat/page,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=1
