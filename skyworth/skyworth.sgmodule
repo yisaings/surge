@@ -1,5 +1,6 @@
 #!name=创维智慧云精简（脚本返空版）
 #!desc=创维智慧云首页轮播 banner 消失
+#!category=【yisa】Sgmodule
 
 [Script]
 创维轮播接口返空 = type=http-response,pattern=^https://app\.skyworthdigitaliot\.com/skyworthOperation/v1/appOperation/allBannerConfig,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/skyworth/skyworth-empty.js,requires-body=true
