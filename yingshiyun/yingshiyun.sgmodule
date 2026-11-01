@@ -17,6 +17,13 @@ EZVIZ商城页空白 = type=http-response,pattern=^https://m\.ys7\.com/default/r
 EZVIZ社区清空 = type=http-response,pattern=^https://api\.ys7\.com/v3/videoclips/community/,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=1
 EZVIZ我的界面精简 = type=http-response,pattern=^https://api\.ys7\.com/v3/valueadded/operation/config/master/station,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=1
 
+[Rewrite]
+^https://api\.ys7\.com/api/ads - reject
+^https://i\.ys7\.com/api/user/tabList - reject-dict
+^https://api\.ys7\.com/v3/config/service/entrance/bannerInfo - reject-dict
+^https://api\.ys7\.com/v3/intelligent-app/apps/linkage - reject-dict
+^https://api\.ys7\.com/v3/configurations/gray/info\?grayTypes=185 - reject-dict
+^https://api\.ys7\.com/v3/videoclips/square/video/query - reject-dict
 
 [MITM]
-hostname = api.ys7.com, m.ys7.com
+hostname = api.ys7.com, m.ys7.com, i.ys7.com
