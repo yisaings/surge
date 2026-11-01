@@ -1,15 +1,14 @@
 #!name=萤石云视频精简
-#!desc=萤石云视频 VideoGo：首页天气不显示，服务专区清空，云存储卡片去掉，对话/社区内容清空、商城页空白，我的界面只留管理中心、服务中心、工具。底部对话/商城/社区三个按钮是 App 原生写死的，脚本删不掉按钮，只能掏空内容。
-#!category=【yisa】Sgmodule
-
-#!category=【yisa】Sgmodule
+#!desc=萤石云视频 VideoGo：服务专区整卡与云盘汇总清空，对话/社区内容清空、商城瀑布流清空，我的界面只留管理中心、服务中心、工具；并清掉社区/首页配置/商城的缓存校验头，强制回全量再掏空。底部对话/商城/社区三个按钮是 App 原生写死的，脚本删不掉按钮，只能掏空内容。天气本版恢复原样（接口层去不掉，空白字段照样报获取失败）。
+#!category=Sgmodule
 
 [Script]
-# 提示：Surge 的请求体参数标准写法为 requires-body=true，不能写数字 0/1
-EZVIZ清缓存社区 = type=http-request,pattern=^https://api\.ys7\.com/v3/videoclips/community/(banner|tab|position),script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=true
-EZVIZ清缓存首页配置 = type=http-request,pattern=^https://api\.ys7\.com/v3/devices/homepage/basic,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=true
+# 清缓存规则只删请求头、不读请求体，所以不写 requires-body（默认 false）；写 true 反而是白白缓存整个请求体
+EZVIZ清缓存社区 = type=http-request,pattern=^https://api\.ys7\.com/v3/videoclips/community/(banner|tab|position),script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js
+EZVIZ清缓存首页配置 = type=http-request,pattern=^https://api\.ys7\.com/v3/devices/homepage/basic,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js
+EZVIZ清缓存商城 = type=http-request,pattern=^https://m\.ys7\.com/default/(index-waterfall-tab-list|rn-index),script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js
 
-# 响应体净化规则（全部统一使用 requires-body=true）
+# 响应体净化规则：要改 body，必须 requires-body=true
 EZVIZ服务专区整卡清空 = type=http-response,pattern=^https://api\.ys7\.com/v3/entrance/vas/service/info,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=true
 EZVIZ云盘汇总置空 = type=http-response,pattern=^https://api\.ys7\.com/v3/clouds/cloudspace/spaceInfo,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=true
 EZVIZ服务入口清空 = type=http-response,pattern=^https://api\.ys7\.com/v3/config/service/entrance/component/info,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=true
