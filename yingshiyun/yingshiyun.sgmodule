@@ -1,0 +1,15 @@
+#!name=萤石云视频精简
+#!desc=萤石云视频 VideoGo：首页天气不显示，服务专区清空，云存储卡片去掉，对话/社区内容清空、商城页空白，我的界面只留管理中心、服务中心、工具。底部对话/商城/社区三个按钮是 App 原生写死的，脚本删不掉按钮，只能掏空内容。
+#!category=【yisa】Sgmodule
+
+[Script]
+EZVIZ天气去掉 = type=http-response,pattern=^https://api\.ys7\.com/v3/weather/,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,arg,requires-body=1
+EZVIZ服务专区清空 = type=http-response,pattern=^https://api\.ys7\.com/v3/config/service/entrance/component/info,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=1
+EZVIZ云存储卡片去掉 = type=http-response,pattern=^https://api\.ys7\.com/v3/entrance/vas/service/info,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=1
+EZVIZ对话列表清空 = type=http-response,pattern=^https://api\.ys7\.com/v3/intelligent-bot/bot/conversation/list,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=1
+EZVIZ社区清空 = type=http-response,pattern=^https://api\.ys7\.com/v3/videoclips/community/,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=1
+EZVIZ商城页空白 = type=http-response,pattern=^https://m\.ys7\.com/default/rn-index,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=1
+EZVIZ我的界面精简 = type=http-response,pattern=^https://api\.ys7\.com/v3/valueadded/operation/config/master/station,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=1
+
+[MITM]
+hostname = api.ys7.com, m.ys7.com
