@@ -6,7 +6,7 @@
 
 [Script]
 # 拦截 Web 端与 App 端首页推荐流，注入反茧房视频池
-Fuck茧房 = type=http-response,pattern=^https:\/\/(app|api)\.bilibili\.com\/x\/(v2\/feed\/index|web-interface\/(index\/top\/feed\/rcmd|rcmd)),requires-body=1,max-size=-1,timeout=10,script-path=https://raw.githubusercontent.com/yisaings/surge/main/Fuck-jianfang.js,argument=mode={{{运行模式}}}&upmaster_name={{{UP主名称}}}
+Fuck茧房 = type=http-response,pattern=^https:\/\/(app|api)\.bilibili\.com\/x\/(v2\/feed\/index|web-interface\/(index\/top\/feed\/rcmd|rcmd)),requires-body=1,max-size=-1,timeout=10,script-path=https://raw.githubusercontent.com/yisaings/surge/main/bilibili/Fuck-jianfang.js,argument=mode={{{运行模式}}}&upmaster_name={{{UP主名称}}}
 
 [MITM]
 hostname = %APPEND% api.bilibili.com, app.bilibili.com
