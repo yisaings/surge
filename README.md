@@ -8,25 +8,17 @@
 
 ## 目录结构
 
-```
-10010/
-  10010NoAds.sgmodule      中国联通去广告
-  Get-10010-Cookie.sgmodule  联通 Cookie 获取
-bbdc/
-  bbdc.js / bbdc.sgmodule  延长不背单词本地 VIP 时间
-bilibili/
-  Fuck-jianfang.js / Fuck-jianfang.sgmodule  哔哩哔哩推荐流替换
-dongqiudi/
-  dongqiudi.list           懂球帝去广告规则
-nodeseek/
-  NodeSeekDailyBonus.sgmodule  NodeSeek 每日签到
-skyworth/
-  skyworth-empty.js / skyworth.sgmodule  创维智慧云精简（脚本返空版）
-yingshiyun/
-  yingshiyun-ad.js / yingshiyun.sgmodule  萤石云视频精简
-CSL-Monitor.js             中超比赛监控 Scriptable 小组件
-CDT-Monitor-scriptable.js / CDT-Monitor-scripting.tsx  CDT Monitor 配套文件
-```
+| 目录 | 内容 |
+| --- | --- |
+| `10010/` | 中国联通去广告、联通 Cookie 获取 |
+| `bbdc/` | 延长不背单词本地 VIP 时间 |
+| `bilibili/` | 哔哩哔哩推荐流替换 |
+| `dongqiudi/` | 懂球帝去广告规则 |
+| `nodeseek/` | NodeSeek 每日签到 |
+| `skyworth/` | 创维智慧云精简（脚本返空版） |
+| `yingshiyun/` | 萤石云视频精简 |
+| `CSL-Monitor.js` | 中超比赛监控 Scriptable 小组件 |
+| `CDT-Monitor-scriptable.js` / `CDT-Monitor-scripting.tsx` | CDT Monitor 配套文件 |
 
 ---
 
