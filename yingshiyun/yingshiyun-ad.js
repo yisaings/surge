@@ -1,25 +1,26 @@
-// 萤石云视频 VideoGo 7.9.5 去广告/精简 v2（2026-11-01 截图反馈后修正）
-// 抓包：2026-11-01-163315.har（227 条）＋ 17:05 五张截图
+// 萤石云视频 VideoGo 7.9.5 去广告/精简 v3（2026-11-01 17:26 新抓包后修正）
 //
-// 修正说明（v1 错在哪）：
-// - 天气返回失败码会显示“天气获取失败，点击重试”，更难看。v2 改为返回 code 200
-//   但所有天气字段为空串，天气条显示空白，不再报失败。天气条本身是首页顶部
-//   原生写死的区域，接口层只能让它空白，没法把那块高度也收掉。
-// - 首页“服务专区”卡片不是 component/info 那排入口，而是 entrance/vas/service/info
-//   的增值卡片列表（智能识别/增值畅享卡/电话提醒…），v1 只删了“云存储”一张，
-//   整卡还在。v2 直接清空整个列表；云盘 tab 的数据来自 clouds spaceInfo，一并置空。
-//   注意：spaceInfo 置空后如果“我的·云盘相册”打不开，告诉我，我把 spaceInfo 这条撤掉。
-// - 对话页的行不是 conversation/list，而是 system-bots（设备消息/系统通知）＋
-//   im/chat/page（我的家庭）＋ unifiedmsg/summary（消息预览与未读数），v2 一并清空。
-// - 商城页的真正内容是 index-waterfall-tab-list（分类/横幅/商品瀑布流），
-//   光空白 rn-index 没用，v2 把 waterfall 的 tabs 清空。
-// - 社区页：精选流已空（暂无内容是对的），顶部图标/横幅/分类 tab 来自
-//   community/banner、position、tab，这三个接口在 v1 抓包里没有响应体，
-//   v2 按通用规则掏空（list/tabs 字段置空），若还残留就得新抓包定位。
-// - 对话页顶部“数字大脑”横幅在 v1 抓包里没有任何响应体含这串文字（疑似缓存），
-//   本版未动它；想去掉的话，打开对话页时新抓一次包发我。
-// - 底部对话/商城/社区三个按钮是 App 原生写死的，脚本删不掉按钮，只能掏空内容。
-// - 我的界面：只留管理中心、服务中心、工具（v1 已生效，本版保持）。
+// v2 出的问题（新包实证）：
+// 1. “我的”页崩成 [ModuleMyRevision]：v2 的 spaceInfo 分支把 spaceInfoDetail 也置空了
+//    （indexOf("spaceInfo") 会命中 spaceInfoDetail），而“我的”页很可能读 Detail
+//    来渲染云盘相册入口，null 直接把整个“我的” RN 模块拖崩。v1 没动这条时“我的”
+//    是好的。v3：Detail 一律原样放行，只动 spaceInfo 汇总（汇总体里
+//    spaceDetailInfo 原本就是 null，动它等于没动）。
+// 2. 天气：v2 的空白字段照样被 App 判为获取失败，照样显示“天气获取失败，点击重试”。
+//    接口层去不掉这块天气条（它是首页顶部原生区域），v3 先把天气恢复原样，
+//    不再报难看的失败；彻底去掉要等 homepage/basic 的真实结构。
+// 3. 社区顶部图标/横幅/分类 tab 还在：新包证实 community/banner、tab、position
+//    三次全是 304（If-None-Match 命中缓存），App 直接用缓存，脚本根本看不到响应体。
+//    homepage/basic、商城瀑布流、rn-index 同样全是 304/无请求（商城纯缓存）。
+//    v3 加 http-request 规则清掉这几处的 If-None-Match / If-Modified-Since，
+//    强制服务器回 200 全量，再由 http-response 掏空。
+// 4. homepage/basic 本版不改内容（只清缓存），下次抓包里能看到它的真实结构，
+//    到时再看天气条和服务专区外壳（标题栏＋“我的智能服务”）能不能从配置里关掉。
+// 5. 仍未定位（两次包里都没有）：对话顶部“数字大脑”横幅（文字不在任何响应体里），
+//    以及对话里“我的家庭”那行（chat/page 清空后还在，疑似 IM 本地缓存）。
+//    这两处先不动，等缓存清掉后的新包再看。
+// 6. 底部对话/商城/社区三个按钮是 App 原生写死的，脚本删不掉按钮，只能掏空内容。
+// 7. 我的界面：只留管理中心、服务中心、工具（v1 起已生效，本版保持）。
 
 var url = $request.url;
 
@@ -40,36 +41,39 @@ function emptyLists(d) {
 }
 
 try {
+  // ---- http-request 阶段：清掉缓存校验头，强制回 200 全量 ----
+  if (typeof $response === "undefined" || !$response || typeof $response.body === "undefined") {
+    var hh = $request.headers || {};
+    delete hh["If-None-Match"]; delete hh["if-none-match"];
+    delete hh["If-Modified-Since"]; delete hh["if-modified-since"];
+    $done({ headers: hh });
+  } else {
+
   var body = $response.body || "";
 
-  // ---- 1. 天气：返回成功但全空，不报“获取失败” ----
-  if (url.indexOf("api.ys7.com/v3/weather/") !== -1) {
-    done({
-      condition: { condition: "", humidity: "", icon: "", temp: "", updatetime: "",
-        windDir: "", windLevel: "", tips: "", sunRise: "", sunSet: "", pressure: "" },
-      city: { cityId: 0, name: "", enName: "", pyName: null, provinceCn: "", dname: "" },
-      meta: { code: 200, message: "操作成功", moreInfo: null }
-    });
-  }
-  // ---- 2. 首页服务专区整卡：增值卡片列表清空 ----
-  else if (url.indexOf("api.ys7.com/v3/entrance/vas/service/info") !== -1) {
+  // ---- 首页服务专区整卡：增值卡片列表清空 ----
+  if (url.indexOf("api.ys7.com/v3/entrance/vas/service/info") !== -1) {
     var v = JSON.parse(body);
     v.entranceVasServiceList = [];
     done(v);
   }
-  // ---- 2b. 云盘 tab：空间信息置空 ----
+  // ---- 云盘汇总：只动 spaceInfo 本体，Detail 原样放行（防“我的”页崩） ----
   else if (url.indexOf("api.ys7.com/v3/clouds/cloudspace/spaceInfo") !== -1) {
-    var sp = JSON.parse(body);
-    sp.spaceDetailInfo = null;
-    done(sp);
+    if (url.indexOf("spaceInfoDetail") !== -1) {
+      $done({});
+    } else {
+      var sp = JSON.parse(body);
+      sp.spaceDetailInfo = null;
+      done(sp);
+    }
   }
-  // ---- 2c. 首页服务入口那排（v1 的，保留） ----
+  // ---- 首页服务入口那排 ----
   else if (url.indexOf("api.ys7.com/v3/config/service/entrance/component/info") !== -1) {
     var c = JSON.parse(body);
     c.componentInfoList = [];
     done(c);
   }
-  // ---- 3. 对话页：系统机器人、家庭会话、消息汇总一并清空 ----
+  // ---- 对话页：系统机器人、家庭会话、消息汇总一并清空 ----
   else if (url.indexOf("api.ys7.com/v3/intelligent-bot/bot/system-bots") !== -1) {
     var sb = JSON.parse(body);
     sb.data = [];
@@ -100,7 +104,7 @@ try {
     done({ meta: { code: 200, message: "success", moreInfo: {}, success: true },
       data: { count: 0, unreadCount: 0 } });
   }
-  // ---- 4. 商城页：瀑布流 tabs 清空；RN 页壳返回空数据 ----
+  // ---- 商城页：瀑布流 tabs 清空；RN 页壳返回空数据 ----
   else if (url.indexOf("m.ys7.com/default/index-waterfall-tab-list") !== -1) {
     var w = JSON.parse(body);
     if (w.data && Array.isArray(w.data.tabs)) w.data.tabs = [];
@@ -109,13 +113,13 @@ try {
   else if (url.indexOf("m.ys7.com/default/rn-index") !== -1 && url.indexOf("biz=EzMallIndex") !== -1) {
     done({ code: 200, res: {}, status: true, msg: "", data: {}, error: null, redirect: null });
   }
-  // ---- 5. 社区页：精选流、横幅、位置、分类 tab 通用掏空 ----
+  // ---- 社区页：精选流、横幅、位置、分类 tab 通用掏空 ----
   else if (url.indexOf("api.ys7.com/v3/videoclips/community/") !== -1) {
     var cm = JSON.parse(body);
     if (cm.data !== undefined) cm.data = emptyLists(cm.data);
     done(cm);
   }
-  // ---- 6. 我的界面：只留管理中心、服务中心、工具 ----
+  // ---- 我的界面：只留管理中心、服务中心、工具 ----
   else if (url.indexOf("api.ys7.com/v3/valueadded/operation/config/master/station") !== -1) {
     var st = JSON.parse(body);
     var keep = ["管理中心", "服务中心", "工具"];
@@ -129,6 +133,7 @@ try {
   else {
     $done({});
   }
+  } // end else: http-response phase
 } catch (e) {
   $done({});
 }
