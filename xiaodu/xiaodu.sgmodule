@@ -6,6 +6,7 @@
 小度精简 = type=http-response,pattern=^https://xiaodu\.baidu\.com/xiaoduapp/v3/module/index$,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/xiaodu/xiaodu-ad.js
 小度精简 = type=http-response,pattern=^https://xiaodu\.baidu\.com/xiaoduapp/v1/index/index/flashScreen$,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/xiaodu/xiaodu-ad.js
 小度精简 = type=http-response,pattern=^https://xiaodu\.baidu\.com/xiaoduapp/v1/client/getDidpConf,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/xiaodu/xiaodu-ad.js
+小度精简 = type=http-response,pattern=^https://xiaodu\.baidu\.com/xiaoduapp/v3/square/getResourceTab,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/xiaodu/xiaodu-ad.js
 小度精简 = type=http-response,pattern=^https://xiaodu\.baidu\.com/appserver/gateway/app/v1$,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/xiaodu/xiaodu-ad.js
 
 [MITM]
