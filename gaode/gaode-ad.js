@@ -1,4 +1,9 @@
-// 高德地图精简 v2（2026-11-03，据 004612 新抓包补齐）
+// 高德地图精简 v3（2026-11-03，据 010517 新抓包补齐；v2 已实机生效）
+// v3 新增：探索页 af-ai-search 的三个模块全清（quickLink 分类行、weather 天气卡、
+//   rankEntry 榜单），探索只剩原生搜索框；其余 v2 规则全保留。
+// 注意：搜索页（searchHomeStandard）的分类行（美食/酒店/景点门票/加油充电/超划算/
+//   扫街榜）在三份抓包里从未出现在任何响应体中——af-search 只回 history 模块，
+//   该行属本地缓存/原生兜底，脚本无响应可滤，见模块说明。
 // 目标：只保留地图功能，打车/酒店等服务入口全清。
 // v1 保留：工具栏只留骑行/公交地铁/步行/离线地图/收藏夹；
 //   地图图层清酒店/营销类图标；contentFeed 推荐流清空；
@@ -7,13 +12,11 @@
 //   首页 AI 流 home_qs：PmtContainer（AI 叫车卡）与精选榜单 feed 置空，
 //     只保留常去地点那一行；思考过程 loading 行直接丢弃；
 //   探索 AI 流 home_explore：整条流返回空（游记/攻略卡片全没）；
-//   探索榜单入口 af-ai-search 的 rankEntry（美食榜/景点榜/酒店榜）清空，
-//     分类行 quickLink 与天气不动；
 //   内容中心 ContentCenter 的 waterfall 列表清空；
 //   我的页 nodefaasv3：cardList 只留足迹、导航语音/车标、入口行三组，
 //     达人任务、勋章、好友动态、活动卡片、猜你喜欢、通知卡全部去掉。
 // 不动：地图瓦片、搜索、天气、定位、导航、消息分类、安全上报、
-//   首页工具栏、探索分类行、我的入口行（含借钱等，见模块说明）。
+//   首页工具栏、我的入口行（含借钱等，见模块说明）。
 // 底部 tab（首页/探索/长按说话/打车/我的）两次抓包均无对应接口，属原生，动不了。
 // 异常一律原样放行。
 (function () {
@@ -108,10 +111,14 @@
       $done({ body: JSON.stringify(obj) }); return;
     }
 
-    // ---- 探索榜单入口：清空（分类行与天气不动） ----
+    // ---- 探索页：三个模块全清（分类行、天气卡、榜单入口） ----
     if (url.indexOf('m5.amap.com/ws/c3frontend/af-ai-search/search') !== -1) {
-      var rk = obj.data && obj.data.modules && obj.data.modules.rankEntry;
-      if (rk) rk.data = [];
+      var ms = obj.data && obj.data.modules;
+      if (ms) {
+        if (ms.quickLink && ms.quickLink.data && Array.isArray(ms.quickLink.data.list)) ms.quickLink.data.list = [];
+        if (ms.rankEntry) ms.rankEntry.data = [];
+        if (ms.weather) ms.weather.data = {};
+      }
       $done({ body: JSON.stringify(obj) }); return;
     }
 
