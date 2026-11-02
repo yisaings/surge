@@ -1,0 +1,12 @@
+#!name=小度精简
+#!desc=小度 App 精简：首页只留回家看看+小度通话；去开屏、会员、金币、商城、广告。底部栏与分区页见说明。
+#!category=【yisa】Sgmodule
+
+[Script]
+小度精简 = type=http-response,pattern=^https://xiaodu\.baidu\.com/xiaoduapp/v3/module/index$,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/xiaodu/xiaodu-ad.js
+小度精简 = type=http-response,pattern=^https://xiaodu\.baidu\.com/xiaoduapp/v1/index/index/flashScreen$,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/xiaodu/xiaodu-ad.js
+小度精简 = type=http-response,pattern=^https://xiaodu\.baidu\.com/xiaoduapp/v1/client/getDidpConf,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/xiaodu/xiaodu-ad.js
+小度精简 = type=http-response,pattern=^https://xiaodu\.baidu\.com/appserver/gateway/app/v1$,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/xiaodu/xiaodu-ad.js
+
+[MITM]
+hostname = %APPEND% xiaodu.baidu.com
