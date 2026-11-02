@@ -1,14 +1,19 @@
 #!name=高德精简
-#!desc=高德地图精简 v1：只保留地图功能；工具栏只留骑行/公交地铁/步行/离线地图/收藏夹；清酒店/营销图层、推荐信息流、推广资源与打车后台接口
+#!desc=高德地图精简 v2：只保留地图功能；工具栏只留骑行/公交地铁/步行/离线地图/收藏夹；清首页与探索 AI 流、榜单入口、内容中心、我的页营销卡、酒店/营销图层、推荐信息流、推广资源与打车后台接口
 #!category=【yisa】Sgmodule
 
 
 [Script]
 高德精简 = type=http-response,pattern=^https://m5\.amap\.com/ws/shield/scene/recommend,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/gaode/gaode-ad.js
 高德精简 = type=http-response,pattern=^https://m5\.amap\.com/ws/info_bff/contentFeed,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/gaode/gaode-ad.js
+高德精简 = type=http-response,pattern=^https://m5\.amap\.com/ws/info_bff/ContentCenter,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/gaode/gaode-ad.js
+高德精简 = type=http-response,pattern=^https://m5\.amap\.com/ws/c3frontend/af-ai-search/search,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/gaode/gaode-ad.js
+高德精简 = type=http-response,pattern=^https://m5\.amap\.com/ws/shield/dsp/profile/index/nodefaasv3,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/gaode/gaode-ad.js
 高德精简 = type=http-response,pattern=^https://m5\.amap\.com/ws/faas/amap-navigation/main-page-aiqs,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/gaode/gaode-ad.js
 高德精简 = type=http-response,pattern=^https://m5-zb\.amap\.com/ws/,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/gaode/gaode-ad.js
+高德精简 = type=http-response,pattern=^https://ai\.amap\.com/v1/ai_rec/home_explore,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/gaode/gaode-ad.js
+高德精简 = type=http-response,pattern=^https://ai\.amap\.com/v1/ai_rec/home_qs,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/gaode/gaode-ad.js
 
 
 [MITM]
-hostname = %APPEND% m5.amap.com, m5-zb.amap.com
+hostname = %APPEND% m5.amap.com, m5-zb.amap.com, ai.amap.com
