@@ -59,7 +59,7 @@
 
 🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/10010/10010NoAds.sgmodule`
 
-- v7（MITM 不变，更新模块即可）：v6 全部，另清商城漏网的 brandZone（品牌列与商品列表唯一活源）与 terminalGoods/region。首页只留话费 / 流量 / 语音用量行，脚手架与顶栏全清；商城清空；我的页只留基本信息。
+- v8（MITM 不变，本次新增规则、必须删模块重装）：v7 全部，另修两处——我的页菜单改 moduleConfigFlag=true＋各楼层关旗标使菜单为空（直接清空会触发 H5 内置默认菜单）；商城 brandZone 与 terminalGoods/region 补上规则（v7 只改了 JS、漏加规则，故未生效）。首页只留话费 / 流量 / 语音用量行，脚手架与顶栏全清；商城清空；我的页只留基本信息。
 
 ### 5. 联通 Cookie 获取
 
