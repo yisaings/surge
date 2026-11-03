@@ -1,5 +1,5 @@
 #!name=百度地图去广告
-#!desc=百度地图精简 v1：只留地图/导航/搜索，去打车/酒店/电商/营销/广告（高德同款口径）
+#!desc=百度地图精简 v2：只留地图/导航/搜索，去打车/酒店/电商/营销/广告及周边 AI 推荐（高德同款口径）
 #!category=【yisa】Sgmodule
 
 
@@ -31,6 +31,10 @@
 百度地图车主 = type=http-response,pattern=^https://carowner\.baidu\.com/carownerui/api/pass/get,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidumap/baidumap-ad.js
 百度地图积分墙 = type=http-response,pattern=^https://integralwall\.baidu\.com/integralwall/interact/check,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidumap/baidumap-ad.js
 百度地图广告配置 = type=http-response,pattern=^https://afdconf\.baidu\.com/afd/platform,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidumap/baidumap-ad.js
+百度地图AI推荐首页 = type=http-response,pattern=^https://newclient\.map\.baidu\.com/aimode-router/homepage,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidumap/baidumap-ad.js
+百度地图AI场景入口 = type=http-response,pattern=^https://newclient\.map\.baidu\.com/aiagent/aiAgent/scene,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidumap/baidumap-ad.js
+百度地图周边POI推荐 = type=http-response,pattern=^https://newclient\.map\.baidu\.com/feed-server/nearby/poi_rec,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidumap/baidumap-ad.js
+百度地图赏金任务提示 = type=http-response,pattern=^https://newclient\.map\.baidu\.com/contributor-bus/bounty/tips,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidumap/baidumap-ad.js
 
 
 [MITM]
