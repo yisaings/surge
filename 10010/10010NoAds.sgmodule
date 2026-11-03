@@ -1,5 +1,5 @@
 #!name=中国联通去广告
-#!desc=联通去广告 v7：v6 全部 + 商城漏清的 brandZone 与 terminalGoods/region 一并清空（商城唯一活源）；MITM 不变，更新模块即可
+#!desc=联通去广告 v8：v7 全部 + 我的页菜单改 moduleConfigFlag=true 使菜单为空（清空会触发 H5 默认菜单）；商城 brandZone 与 terminalGoods/region 补规则；本次新增规则，必须删模块重装
 #!category=【yisa】Sgmodule
 
 
@@ -39,6 +39,8 @@
 联通商城活动 = type=http-response, pattern=^https://card\.10010\.com/mall-access/homePage/v25/topTab/activityShow, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
 联通商城终端 = type=http-response, pattern=^https://card\.10010\.com/mall-access/homePage/v25/topTerminalShow, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
 联通商城品牌 = type=http-response, pattern=^https://m\.10010\.com/mall-access/mall/homePage/brandFloor, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通商城品牌区 = type=http-response, pattern=^https://card\.10010\.com/mall-access/homePage/v25/query/brandZone, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通商城终端分区 = type=http-response, pattern=^https://m\.10010\.com/mall-access/query/terminalGoods/region, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
 联通商城浮窗横幅 = type=http-response, pattern=^https://m\.10010\.com/mall-access/query/FlowWindowAndBanner, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
 联通商城搜索推荐 = type=http-response, pattern=^https://card\.10010\.com/mall-access/searchRecommend, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
 联通我的页楼层配置 = type=http-response, pattern=^https://m\.client\.10010\.com/clientMyPage/v1/api/aggregateFloorConfig, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
