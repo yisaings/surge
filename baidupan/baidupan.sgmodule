@@ -1,5 +1,5 @@
 #!name=百度网盘去广告
-#!desc=百度网盘去广告 v2：v1 的开屏/弹窗/引导/上报全保留，新增只留网盘基本模块（金刚区只留相册/视频/文档/音频/备份/同步，新工具区只留文件工具）；传输/下载/上传/分享/会员状态不动（去广告范围，不破 SVIP）
+#!desc=百度网盘去广告 v3：v2 的开屏/弹窗/引导/金刚区/工具区/上报全保留，新增我的页 SVIP 卡、任务系统卡、游戏中心整区清掉；头像、我的收藏一排图标、空间卡不动（去广告范围，不破 SVIP）
 #!category=【yisa】Sgmodule
 
 
@@ -8,6 +8,9 @@
 百度网盘活动弹窗 = type=http-response, pattern=^https://pan\.baidu\.com/act/api/activityentry, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidupan/baidupan-ad.js
 百度网盘公告引导 = type=http-response, pattern=^https://pan\.baidu\.com/api/notice/list, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidupan/baidupan-ad.js
 百度网盘金刚区 = type=http-response, pattern=^https://pan\.baidu\.com/feed/kingkongdistrict, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidupan/baidupan-ad.js
+百度网盘 SVIP 卡 = type=http-response, pattern=^https://pan\.baidu\.com/rest/2\.0/membership/user, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidupan/baidupan-ad.js
+百度网盘任务系统卡 = type=http-response, pattern=^https://pan\.baidu\.com/coins/center/notice, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidupan/baidupan-ad.js
+百度网盘游戏中心 = type=http-response, pattern=^https://pan\.baidu\.com/act/v2/gamecenter/, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidupan/baidupan-ad.js
 
 
 [URL Rewrite]
