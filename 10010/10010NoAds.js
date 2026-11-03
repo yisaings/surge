@@ -1,3 +1,9 @@
+// 中国联通去广告 v4（2026-11-03 晚，Yi 新口径：首页只留话费/流量行、商城清空、我的页只留基本信息）：
+// - 首页脚手架 pageContent 全清；顶栏 homeMenuItems/homeTopMenuItems 全清；专属优惠右栏 pageList 也清；
+// - 首页用量行 queryUserInfoSeven 只留 fee/flow/voice 三项，point/云盘/云机清掉，顶层三项资源不动；
+// - 商城：smartHome/tabs/文创/顶图/活动/终端/品牌/浮窗横幅/搜索推荐全部清空（瀑布流与首页商品 v3 已清）；
+// - 我的页：楼层配置关旗标、楼层数据全清、设备左右全清、积分数据全清、钱包四格全清；
+//   只留 getMyUnicomDate（头像/等级基本信息）与 newUserInfo 套餐本身配置不动。
 // 中国联通去广告 v2：旧版 v1 的 [Body Rewrite] + jq 写法 Surge 不认、会静默忽略，
 // 本版改用 http-response 脚本重写 JSON，域名级拦截走 [Rule]。
 // v3 新增（依据 2026-11-03 20:03 新抓包，1400 条；v2 已实证生效，新包里 v2 接口体已是清空后状态）：
@@ -32,9 +38,13 @@ if (obj) {
       if (Array.isArray(obj.data.bottomList)) obj.data.bottomList = [];
     }
   } else if (url.indexOf('queryIndexExclusiveOffers') !== -1) {
-    if (obj.data && Array.isArray(obj.data.left)) {
-      obj.data.left.forEach(function (it) {
-        if (Array.isArray(it.pageList)) it.pageList = [];
+    if (obj.data) {
+      ['left', 'right'].forEach(function (side) {
+        if (Array.isArray(obj.data[side])) {
+          obj.data[side].forEach(function (it) {
+            if (Array.isArray(it.pageList)) it.pageList = [];
+          });
+        }
       });
     }
   } else if (url.indexOf('queryOMO') !== -1) {
@@ -48,10 +58,9 @@ if (obj) {
       obj['HomeFusion.backGroundQuery'].result = [];
     }
   } else if (url.indexOf('clientIndex/v1/api/navHome') !== -1) {
-    if (obj.datas && Array.isArray(obj.datas.homeTopMenuItems)) {
-      obj.datas.homeTopMenuItems = obj.datas.homeTopMenuItems.filter(function (it) {
-        return it.menuName !== '通通' && it.menuName !== '签到';
-      });
+    if (obj.datas) {
+      if (Array.isArray(obj.datas.homeTopMenuItems)) obj.datas.homeTopMenuItems = [];
+      if (Array.isArray(obj.datas.homeMenuItems)) obj.datas.homeMenuItems = [];
     }
   } else if (url.indexOf('copywritingAdvertisement') !== -1) {
     if (obj.data && Array.isArray(obj.data.pageList)) {
@@ -82,10 +91,7 @@ if (obj) {
     obj['113000004'] = [];
   } else if (url.indexOf('queryNewHomePageidShowData') !== -1) {
     if (obj.data && Array.isArray(obj.data) && obj.data[0] && Array.isArray(obj.data[0].pageContent)) {
-      var drop = ['特惠购机模块', '爆款套餐模块', '靓号种草模块', '极速宽带模块', '瀑布流模块'];
-      obj.data[0].pageContent = obj.data[0].pageContent.filter(function (m) {
-        return drop.indexOf(m.name) === -1;
-      });
+      obj.data[0].pageContent = [];
     }
   } else if (url.indexOf('mall-access/query/waterfallFlow') !== -1) {
     if (obj.data && obj.data.res && Array.isArray(obj.data.res.pageList)) {
@@ -101,22 +107,61 @@ if (obj) {
       if (Array.isArray(obj.data.goodsList)) obj.data.goodsList = [];
     }
   } else if (url.indexOf('myPoints') !== -1) {
-    if (obj.data && Array.isArray(obj.data.goodsList)) obj.data.goodsList = [];
+    obj.data = {};
   } else if (url.indexOf('myWallet') !== -1) {
     if (obj.data) {
+      obj.data.firstPlace = {};
       obj.data.secendPlace = {};
       obj.data.thirdPlace = {};
+      obj.data.fourPlace = {};
     }
   } else if (url.indexOf('newUserInfo') !== -1) {
     if (obj.data) obj.data.myPackagePackageZone = {};
   } else if (url.indexOf('getDeviceInfo') !== -1) {
-    if (obj.data && Array.isArray(obj.data.rightData)) obj.data.rightData = [];
+    if (obj.data) {
+      if (Array.isArray(obj.data.rightData)) obj.data.rightData = [];
+      obj.data.leftData = {};
+    }
   } else if (url.indexOf('precisionKeyAndActivity') !== -1) {
     if (obj.data && Array.isArray(obj.data.goods)) obj.data.goods = [];
   } else if (url.indexOf('aggregateFloorData') !== -1) {
-    if (obj.data && obj.data.couponCollectionCenter && Array.isArray(obj.data.couponCollectionCenter.data)) {
-      obj.data.couponCollectionCenter.data = [];
+    obj.data = {};
+  } else if (url.indexOf('aggregateFloorConfig') !== -1) {
+    if (obj.data) {
+      obj.data.moduleFlag = false;
+      obj.data.moduleConfigFlag = false;
     }
+  } else if (url.indexOf('queryUserInfoSeven') !== -1) {
+    if (obj.data && Array.isArray(obj.data.dataList)) {
+      obj.data.dataList = obj.data.dataList.filter(function (it) {
+        return it.type === 'fee' || it.type === 'flow' || it.type === 'voice';
+      });
+    }
+  } else if (url.indexOf('mobileserviceNine/api/v1/index/queryCfig') !== -1) {
+    if (obj.data) obj.data.pageListItem = Array.isArray(obj.data.pageListItem) ? [] : {};
+  } else if (url.indexOf('queryBroadbandRenewalData') !== -1) {
+    obj.data = null;
+  } else if (url.indexOf('mall-access/homePage/v25/query/smartHome') !== -1) {
+    obj.data = {};
+  } else if (url.indexOf('mall-access/homePage/v25/query/tabs') !== -1) {
+    obj.data = [];
+  } else if (url.indexOf('mall-access/homePage/v25/query/unicomCulture') !== -1) {
+    obj.data = {};
+  } else if (url.indexOf('mall-access/homePage/v25/topBanner') !== -1) {
+    obj.data = {};
+  } else if (url.indexOf('mall-access/homePage/v25/topTab/activityShow') !== -1) {
+    if (obj.data) {
+      if (Array.isArray(obj.data.tabList)) obj.data.tabList = [];
+      if (Array.isArray(obj.data.activityShowList)) obj.data.activityShowList = [];
+    }
+  } else if (url.indexOf('mall-access/homePage/v25/topTerminalShow') !== -1) {
+    obj.data = [];
+  } else if (url.indexOf('mall-access/mall/homePage/brandFloor') !== -1) {
+    obj.data = [];
+  } else if (url.indexOf('mall-access/query/FlowWindowAndBanner') !== -1) {
+    obj.data = {};
+  } else if (url.indexOf('mall-access/searchRecommend') !== -1) {
+    obj.data = [];
   }
   $done({ body: JSON.stringify(obj) });
 } else {
