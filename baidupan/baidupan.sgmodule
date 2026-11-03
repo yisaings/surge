@@ -1,0 +1,31 @@
+#!name=百度网盘去广告
+#!desc=百度网盘去广告 v2：v1 的开屏/弹窗/引导/上报全保留，新增只留网盘基本模块（金刚区只留相册/视频/文档/音频/备份/同步，新工具区只留文件工具）；传输/下载/上传/分享/会员状态不动（去广告范围，不破 SVIP）
+#!category=【yisa】Sgmodule
+
+
+[Script]
+百度网盘开屏配置 = type=http-response, pattern=^https://pan\.baidu\.com/api/getsyscfg, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidupan/baidupan-ad.js
+百度网盘活动弹窗 = type=http-response, pattern=^https://pan\.baidu\.com/act/api/activityentry, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidupan/baidupan-ad.js
+百度网盘公告引导 = type=http-response, pattern=^https://pan\.baidu\.com/api/notice/list, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidupan/baidupan-ad.js
+百度网盘金刚区 = type=http-response, pattern=^https://pan\.baidu\.com/feed/kingkongdistrict, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidupan/baidupan-ad.js
+
+
+[URL Rewrite]
+^https://update\.pan\.baidu\.com/statistics _ reject
+^https://diskapi\.baidu\.com/rest/2\.0/netdisk/log _ reject
+^https://pan\.baidu\.com/api/operate/trace/set _ reject
+^https://cpc-service-square\.58iclick\.com/ _ reject
+^https://cpc-service-square\.yunxish\.com/ _ reject
+^https://cpc-service-square\.iggrowth\.cn/ _ reject
+^https://bz-ipdx\.baidu\.com/ _ reject
+^https://logrcv\.yunxish\.com/ _ reject
+^https://usr-api\.yunxish\.com/ _ reject
+^https://service\.yunxish\.com/ _ reject
+^https://tracelog-debug\.yunxish\.com/ _ reject
+^https://sessions\.bugsnag\.com/ _ reject
+^https://mssdk\.volces\.com/ri/report_otob _ reject
+^https://tdid\.m\.qq\.com/event/report _ reject
+
+
+[MITM]
+hostname = %APPEND% pan.baidu.com, update.pan.baidu.com, diskapi.baidu.com, cpc-service-square.58iclick.com, cpc-service-square.yunxish.com, cpc-service-square.iggrowth.cn, bz-ipdx.baidu.com, logrcv.yunxish.com, usr-api.yunxish.com, service.yunxish.com, tracelog-debug.yunxish.com, sessions.bugsnag.com, mssdk.volces.com, tdid.m.qq.com
