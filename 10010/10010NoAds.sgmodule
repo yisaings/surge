@@ -1,5 +1,5 @@
 #!name=中国联通去广告
-#!desc=联通去广告 v8：v7 全部 + 我的页菜单改 moduleConfigFlag=true 使菜单为空（清空会触发 H5 默认菜单）；商城 brandZone 与 terminalGoods/region 补规则；本次新增规则，必须删模块重装
+#!desc=联通去广告 v8：v7 全部 + 我的页菜单改 moduleConfigFlag=true 使菜单为空（清空会触发 H5 默认菜单）；商城 brandZone 与 terminalGoods/region 补规则；MITM 不变，更新模块即可
 #!category=【yisa】Sgmodule
 
 
