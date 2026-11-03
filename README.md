@@ -12,6 +12,7 @@
 | --- | --- |
 | `10010/` | 中国联通去广告、联通 Cookie 获取 |
 | `manmanbuy/` | 慢慢买去红包弹窗 |
+| `smzdm/` | 什么值得买去红包 |
 | `baidumap/` | 百度地图精简 |
 | `baidupan/` | 百度网盘精简 |
 | `bilibili/` | 哔哩哔哩推荐流替换 |
@@ -144,7 +145,13 @@
 
 🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/manmanbuy/manmanbuy.sgmodule`
 
-### 17. Scriptable 小组件
+### 17. 什么值得买去红包
+
+去掉首页天天领红包卡、好价横幅红包卡与详情页京东红包链接，不动正常爆料、好价列表与详情页购买链路。
+
+🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/smzdm/smzdm.sgmodule`
+
+### 18. Scriptable 小组件
 
 - **CSL Monitor**（`CSL-Monitor.js`，v1.2.0）：中超比赛监控，仅支持大尺寸小组件。
 - **CDT Monitor**（`CDT-Monitor-scriptable.js` / `CDT-Monitor-scripting.tsx`）：与 CDT Monitor 配套的 Scriptable 文件。
