@@ -11,6 +11,7 @@
 | 目录 | 内容 |
 | --- | --- |
 | `10010/` | 中国联通去广告、联通 Cookie 获取 |
+| `manmanbuy/` | 慢慢买去红包弹窗 |
 | `baidumap/` | 百度地图精简 |
 | `baidupan/` | 百度网盘精简 |
 | `bilibili/` | 哔哩哔哩推荐流替换 |
@@ -137,7 +138,13 @@
 - 清开屏、首页会员横幅与芒果视频卡及 AI 入戏入口、我的页活动中心、工具箱权益优惠 tab、发现页全部娱乐 tab、会员权益展示、弹窗与 mixpanel 上报。
 - 不动文件 / 备份 / 相册 / 工具与会员入口。
 
-### 16. Scriptable 小组件
+### 16. 慢慢买去红包弹窗
+
+关双 11 红包总开关（hongbaoconfig_3642）与折扣页淘宝超级红包卡，不动商品、比价、历史价格等业务。
+
+🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/manmanbuy/manmanbuy.sgmodule`
+
+### 17. Scriptable 小组件
 
 - **CSL Monitor**（`CSL-Monitor.js`，v1.2.0）：中超比赛监控，仅支持大尺寸小组件。
 - **CDT Monitor**（`CDT-Monitor-scriptable.js` / `CDT-Monitor-scripting.tsx`）：与 CDT Monitor 配套的 Scriptable 文件。
