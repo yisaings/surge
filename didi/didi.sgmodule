@@ -1,0 +1,18 @@
+#!name=滴滴精简
+#!desc=滴滴出行精简 v1：只留打车；顶部只留出行 tab；清首页营销轮播、领券横幅、车主招募挂件、日常运营活动卡、公交乘车码、扫一扫；拦广告图床与广告上报；不动叫车卡、进行中订单、底部 tab
+#!category=【yisa】Sgmodule
+
+
+[Script]
+滴滴精简 = type=http-response,pattern=^https://conf\.diditaxi\.com\.cn/homepage/v1/core,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/didi/didi-ad.js
+滴滴精简 = type=http-response,pattern=^https://conf\.diditaxi\.com\.cn/homepage/v1/other/fast,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/didi/didi-ad.js
+滴滴精简 = type=http-response,pattern=^https://conf\.diditaxi\.com\.cn/homepage/v1/other/slow,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/didi/didi-ad.js
+
+
+[URL Rewrite]
+^https://img-ys011\.didistatic\.com/static/ad_oss/ _ reject
+^https://adtrack\.xiaojukeji\.com/trackx _ reject
+
+
+[MITM]
+hostname = %APPEND% conf.diditaxi.com.cn, img-ys011.didistatic.com, adtrack.xiaojukeji.com
