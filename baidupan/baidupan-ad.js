@@ -1,5 +1,6 @@
 // 百度网盘去广告 v3：v2 的开屏/弹窗/引导/金刚区/工具区/上报全部保留
 // 新增：我的页 SVIP 卡、任务系统卡、游戏中心整区清掉
+// v3.1：五处 data 由 {} 改置 null，赌 App 把“无数据”当成“不渲染整区”而不是“渲染空框”
 // 保留：头像、我的AI点数/我的资产、我的收藏一排图标、空间卡、传输/下载/上传/分享/会员状态/P2P 配置/激励视频
 // 底部库库 AI tab 是原生写死、接口够不着，动不了
 var KINGKONG_KEEP = ['相册', '视频', '文档', '音频', '备份', '同步'];
@@ -45,18 +46,18 @@ function processBaiduPan(url, body) {
       if (kept.length !== obj.data.data.length) { obj.data.data = kept; changed = true; }
     }
   } else if (url.indexOf('/rest/2.0/membership/user') !== -1 && url.indexOf('method=usercard') !== -1) {
-    // 我的页 SVIP 卡（标题/特权/等级福利/老朋友特惠/立即续费）整卡清掉
+    // 我的页 SVIP 卡：data 置 null（不是 {}），赌 App 把“无数据”当成“不渲染整区”
     // 只清 usercard 这一个方法，会员状态/头像/配额走别的接口，不动
-    if (obj.data) { obj.data = {}; changed = true; }
+    if (obj.data) { obj.data = null; changed = true; }
   } else if (url.indexOf('/coins/center/notice') !== -1) {
-    // 任务系统卡（领奖励/下载券/空间气泡）整卡清掉
-    if (obj.data) { obj.data = {}; changed = true; }
+    // 任务系统卡：data 置 null，赌 App 不渲染整区
+    if (obj.data) { obj.data = null; changed = true; }
   } else if (url.indexOf('/act/v2/gamecenter/gametaskinfo') !== -1 || url.indexOf('/act/v2/gamecenter/recommend') !== -1) {
-    // 游戏中心：玩寻道任务、猜你爱玩清掉
-    if (obj.data) { obj.data = {}; changed = true; }
+    // 游戏中心：玩寻道任务、猜你爱玩 data 置 null，赌 App 不渲染整区
+    if (obj.data) { obj.data = null; changed = true; }
   } else if (url.indexOf('/act/v2/gamecenter/historyplay') !== -1) {
-    // 游戏中心：最近在玩清掉（data 本来就是数组，保持数组类型）
-    if (obj.data) { obj.data = []; changed = true; }
+    // 游戏中心：最近在玩 data 置 null（原来是数组，null 比空数组更可能让整区消失）
+    if (obj.data) { obj.data = null; changed = true; }
   }
   return changed ? JSON.stringify(obj) : body;
 }
