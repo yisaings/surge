@@ -53,6 +53,7 @@
 
 - 替换 B 站首页推荐流，打破信息茧房。
 - 长按模块可调运行模式：`popular`（热门池）、`crossregion`（跨分区）、`niche`（冷门优质）、`weekly`（每周必看）、`fresh`（新号模式）、`upmaster`（UP 主画像，需配合 UP 主名称）。
+- 来源致谢：核心逻辑移植与启发自 [lixing23/Fuck-jianfang](https://github.com/lixing23/Fuck-jianfang)。
 
 ### 4. 中国联通去广告
 
