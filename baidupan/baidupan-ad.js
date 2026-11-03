@@ -1,6 +1,7 @@
-// 百度网盘去广告 v2：v1 的开屏/弹窗/引导/上报全部保留，新增只留网盘基本模块
-// 金刚区只留相册/视频/文档/音频/备份/同步；新工具区只留文件工具
-// 传输、下载、上传、分享、会员状态、P2P 配置、激励视频全部不动
+// 百度网盘去广告 v3：v2 的开屏/弹窗/引导/金刚区/工具区/上报全部保留
+// 新增：我的页 SVIP 卡、任务系统卡、游戏中心整区清掉
+// 保留：头像、我的AI点数/我的资产、我的收藏一排图标、空间卡、传输/下载/上传/分享/会员状态/P2P 配置/激励视频
+// 底部库库 AI tab 是原生写死、接口够不着，动不了
 var KINGKONG_KEEP = ['相册', '视频', '文档', '音频', '备份', '同步'];
 function processBaiduPan(url, body) {
   var obj = JSON.parse(body);
@@ -43,6 +44,19 @@ function processBaiduPan(url, body) {
       var kept = obj.data.data.filter(function (x) { return KINGKONG_KEEP.indexOf(x.name) !== -1; });
       if (kept.length !== obj.data.data.length) { obj.data.data = kept; changed = true; }
     }
+  } else if (url.indexOf('/rest/2.0/membership/user') !== -1 && url.indexOf('method=usercard') !== -1) {
+    // 我的页 SVIP 卡（标题/特权/等级福利/老朋友特惠/立即续费）整卡清掉
+    // 只清 usercard 这一个方法，会员状态/头像/配额走别的接口，不动
+    if (obj.data) { obj.data = {}; changed = true; }
+  } else if (url.indexOf('/coins/center/notice') !== -1) {
+    // 任务系统卡（领奖励/下载券/空间气泡）整卡清掉
+    if (obj.data) { obj.data = {}; changed = true; }
+  } else if (url.indexOf('/act/v2/gamecenter/gametaskinfo') !== -1 || url.indexOf('/act/v2/gamecenter/recommend') !== -1) {
+    // 游戏中心：玩寻道任务、猜你爱玩清掉
+    if (obj.data) { obj.data = {}; changed = true; }
+  } else if (url.indexOf('/act/v2/gamecenter/historyplay') !== -1) {
+    // 游戏中心：最近在玩清掉（data 本来就是数组，保持数组类型）
+    if (obj.data) { obj.data = []; changed = true; }
   }
   return changed ? JSON.stringify(obj) : body;
 }
