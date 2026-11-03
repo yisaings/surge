@@ -1,0 +1,13 @@
+#!name=什么值得买去红包
+#!desc=去掉首页天天领红包卡、好价横幅红包卡与详情页京东红包链接，只留正常内容。
+#!category=【yisa】Sgmodule
+
+
+[Script]
+smzdm-home = type=http-response, pattern=^https://homepage-api\.smzdm\.com/v3/home, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/smzdm/smzdm-ad.js
+smzdm-haojia-list = type=http-response, pattern=^https://haojia-api\.smzdm\.com/home/list, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/smzdm/smzdm-ad.js
+smzdm-preload = type=http-response, pattern=^https://haojia-cdn\.smzdm\.com/preload/, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/smzdm/smzdm-ad.js
+
+
+[MITM]
+hostname = %APPEND% homepage-api.smzdm.com, haojia-api.smzdm.com, haojia-cdn.smzdm.com
