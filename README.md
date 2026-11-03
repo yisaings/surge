@@ -59,7 +59,7 @@
 
 🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/10010/10010NoAds.sgmodule`
 
-- v6（MITM 不变，更新模块即可）：v5 全部，另修我的页楼层行——只改旗标不够（楼层对象仍带图标），直接清空整份楼层配置。首页只留话费 / 流量 / 语音用量行，脚手架与顶栏全清；商城清空；我的页只留基本信息。
+- v7（MITM 不变，更新模块即可）：v6 全部，另清商城漏网的 brandZone（品牌列与商品列表唯一活源）与 terminalGoods/region。首页只留话费 / 流量 / 语音用量行，脚手架与顶栏全清；商城清空；我的页只留基本信息。
 
 ### 5. 联通 Cookie 获取
 
