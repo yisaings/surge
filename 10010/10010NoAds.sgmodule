@@ -1,5 +1,5 @@
 #!name=中国联通去广告
-#!desc=联通去广告 v2：清首页瀑布流/营销位/专属优惠/OMO/浮窗/顶栏通通签到/推送消息/弹窗、我的页广告文案与推荐、搜索发现与热词，拦 smartad 打点与 m1.ad 广告图域；不动业务接口与图片 CDN
+#!desc=联通去广告 v3：v2 全部 + 首页脚手架营销模块、商城瀑布流与首页商品、服务提醒、我的页彩铃/积分商品/钱包借钱备用金/套餐升级卡/设备推广/精准营销/神券；MITM 新增 m.10010.com 与 card.10010.com，需删模块重装
 #!category=【yisa】Sgmodule
 
 
@@ -17,6 +17,17 @@
 联通517活动 = type=http-response, pattern=^https://m\.client\.10010\.com/clientIndex/v1/api/query517Active, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
 联通搜索发现 = type=http-response, pattern=^https://m\.client\.10010\.com/search_service/tyfbSearch/searchDiscoverListExpress, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
 联通搜索热词 = type=http-response, pattern=^https://m\.client\.10010\.com/search_service/search/searchScrollWord, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通首页脚手架 = type=http-response, pattern=^https://m\.10010\.com/decoration-data/scaffold/queryNewHomePageidShowData, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通商城瀑布流 = type=http-response, pattern=^https://(card\.10010\.com|m\.10010\.com)/mall-access/query/waterfallFlow, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通商城首页 = type=http-response, pattern=^https://(card\.10010\.com|m\.10010\.com)/mall-order/query/newFirstPage, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通服务提醒 = type=http-response, pattern=^https://m\.client\.10010\.com/clientIndex/v1/api/serviceReminder, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通我的页彩铃 = type=http-response, pattern=^https://m\.client\.10010\.com/clientMyPage/v1/api/myColorfulRingtone, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通我的页积分商品 = type=http-response, pattern=^https://m\.client\.10010\.com/clientMyPage/v1/api/myPoints, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通我的页钱包 = type=http-response, pattern=^https://m\.client\.10010\.com/clientMyPage/v1/api/myWallet, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通套餐升级卡 = type=http-response, pattern=^https://m\.client\.10010\.com/clientMyPage/v1/api/newUserInfo, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通我的设备推广 = type=http-response, pattern=^https://m\.client\.10010\.com/clientMyPage/v1/api/getDeviceInfo, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通精准营销 = type=http-response, pattern=^https://m\.client\.10010\.com/clientMyPage/v1/api/precisionKeyAndActivity, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通神券 = type=http-response, pattern=^https://m\.client\.10010\.com/clientMyPage/v1/api/aggregateFloorData, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
 
 
 [Rule]
@@ -25,4 +36,4 @@ DOMAIN,m1.ad.10010.com,REJECT
 
 
 [MITM]
-hostname = %APPEND% m.client.10010.com
+hostname = %APPEND% m.client.10010.com, m.10010.com, card.10010.com
