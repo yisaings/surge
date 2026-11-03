@@ -1,5 +1,5 @@
 #!name=中国联通去广告
-#!desc=联通去广告 v5：v4 全部 + 我的页楼层行逐层关 configFlag（只关总旗标 App 仍按各楼层渲染）；MITM 不变，更新模块即可
+#!desc=联通去广告 v6：v5 全部 + 我的页楼层配置整份清空（只改旗标不够，楼层对象仍带图标）；MITM 不变，更新模块即可
 #!category=【yisa】Sgmodule
 
 
