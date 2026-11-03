@@ -1,4 +1,4 @@
-// 中国联通去广告 v7（2026-11-03 晚，核实 205332 包：v6 已跑到，商城唯一活源是此前漏清的 brandZone，另清 terminalGoods/region；首页/我的页其余残留标题在该包中 0 命中，属 App 持久缓存）：
+// 中国联通去广告 v8（2026-11-03 晚，核实 211417 重装包：我的页默认菜单在 H5 包里、清空会触发兜底，故改 moduleConfigFlag=true＋各楼层关旗标使菜单为空；商城 brandZone/terminalGoods 补规则）：
 // 中国联通去广告 v4（2026-11-03 晚，Yi 新口径：首页只留话费/流量行、商城清空、我的页只留基本信息）：
 // - 首页脚手架 pageContent 全清；顶栏 homeMenuItems/homeTopMenuItems 全清；专属优惠右栏 pageList 也清；
 // - 首页用量行 queryUserInfoSeven 只留 fee/flow/voice 三项，point/云盘/云机清掉，顶层三项资源不动；
@@ -135,9 +135,19 @@ if (obj) {
     // v7：同包实证——terminalGoods/region 的 subsidyRegion/subRegion1 仍带完整分区数据，属商城分区内容，随商城一并清空。
     obj.data = {};
   } else if (url.indexOf('aggregateFloorConfig') !== -1) {
-    // v6：v5 只改旗标实证不够——新包里各楼层对象仍带图标名与图标地址，App 可能按对象存在与否渲染而非按旗标，
-    // 且 Yi 已确认更新模块并冷启动后屏幕仍无变化，故直接把整份配置清空，让 App 网络层无图标可渲染。
-    obj.data = {};
+    // v8：v6/v7 的 data={} 是错的——我的页 H5（myinfo12 chunk）逻辑是：moduleConfigFlag 为真时按各楼层 configFlag 组装菜单，
+    // 为假或数据为空时菜单保持不动（初次即 H5 内置默认菜单 setDefaultMenuData：领券中心/我的礼包/我的订单/浏览记录/购物车），
+    // 所以清空反而触发默认菜单、重装也清不掉（默认菜单在 JS 包里，不在缓存里）。
+    // 正确做法：moduleConfigFlag=true 让服务端分支跑起来，同时各楼层 configFlag=false，使组装出的菜单为空数组，行消失。
+    obj.data = {
+      moduleFlag: false,
+      moduleConfigFlag: true,
+      browsingHistory: { configFlag: false },
+      couponCollectionCenter: { configFlag: false },
+      myOrder: { configFlag: false },
+      myPacks: { configFlag: false },
+      shoppingCart: { configFlag: false }
+    };
   } else if (url.indexOf('queryUserInfoSeven') !== -1) {
     if (obj.data && Array.isArray(obj.data.dataList)) {
       obj.data.dataList = obj.data.dataList.filter(function (it) {
