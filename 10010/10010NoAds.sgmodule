@@ -1,16 +1,28 @@
 #!name=中国联通去广告
-#!desc=移出部分广告
+#!desc=联通去广告 v2：清首页瀑布流/营销位/专属优惠/OMO/浮窗/顶栏通通签到/推送消息/弹窗、我的页广告文案与推荐、搜索发现与热词，拦 smartad 打点与 m1.ad 广告图域；不动业务接口与图片 CDN
 #!category=【yisa】Sgmodule
 
+
+[Script]
+联通首页瀑布流 = type=http-response, pattern=^https://m\.client\.10010\.com/clientIndex/api/v1/index/queryIndexWaterfall, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通首页营销位 = type=http-response, pattern=^https://m\.client\.10010\.com/mobileserviceNine/api/v1/homeService/getServiceHomeMarketingBits, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通专属优惠 = type=http-response, pattern=^https://m\.client\.10010\.com/clientIndex/api/v1/index/queryIndexExclusiveOffers, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通OMO = type=http-response, pattern=^https://m\.client\.10010\.com/clientIndex/api/v1/index/queryOMO, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通首页浮窗 = type=http-response, pattern=^https://m\.client\.10010\.com/clientIndex/homefusion/fuInter, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通顶栏 = type=http-response, pattern=^https://m\.client\.10010\.com/clientIndex/v1/api/navHome, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通我的页广告文案 = type=http-response, pattern=^https://m\.client\.10010\.com/clientMyPage/v1/api/copywritingAdvertisement, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通我的页推荐 = type=http-response, pattern=^https://m\.client\.10010\.com/clientMyPage/v1/api/myRecommend, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通推送消息 = type=http-response, pattern=^https://m\.client\.10010\.com/clientIndex/v1/api/queryPushMessage, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通弹窗 = type=http-response, pattern=^https://m\.client\.10010\.com/mobileService/activity/homePopUpActivityNew\.htm, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通517活动 = type=http-response, pattern=^https://m\.client\.10010\.com/clientIndex/v1/api/query517Active, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通搜索发现 = type=http-response, pattern=^https://m\.client\.10010\.com/search_service/tyfbSearch/searchDiscoverListExpress, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通搜索热词 = type=http-response, pattern=^https://m\.client\.10010\.com/search_service/search/searchScrollWord, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+
+
 [Rule]
-# 移除开屏广告
+DOMAIN,smartad.10010.com,REJECT
 DOMAIN,m1.ad.10010.com,REJECT
 
-[Body Rewrite]
-http-response-jq ^https:\/\/m\.client\.10010\.com\/clientIndex\/v1\/api\/navHome '.datas.homeTopMenuItems |= map(select(.menuName != "通通" and .menuName != "签到"))'
-http-response-jq ^https:\/\/m\.client\.10010\.com\/clientIndex\/homefusion\/fuInter 'del(.["HomeFusion.fuchuangAdv_A8"], .["HomeFusion.bottomLabel"])'
-http-response-jq ^https:\/\/m\.client\.10010\.com\/search_service\/tyfbSearch\/searchDiscoverListExpress '.data = []'
-http-response-jq ^https:\/\/m\.client\.10010\.com\/search_service\/search\/searchScrollWord '.["113000004"] = []'
 
 [MITM]
 hostname = %APPEND% m.client.10010.com
