@@ -1,5 +1,6 @@
-// 百度网盘去广告 v3：v2 的开屏/弹窗/引导/金刚区/工具区/上报全部保留
-// 新增：我的页 SVIP 卡、任务系统卡、游戏中心整区清掉
+// 百度网盘去广告 v4：v3.2 全部保留，新增游戏卡片清掉
+// 纠正：玩寻道卡来源是 gamematerial（gamefly_175566=寻道大千），不是 gametaskinfo
+// （gametaskinfo 只是通用升级步数，里面根本没有玩寻道；旧版说它是玩寻道是错的）
 // v3.1 null 实验已回滚：data 置 null 会让 App 回落到缓存的原始卡片（SVIP 字样回来），比 {} 更糟，故改回 {}
 // 保留：头像、我的AI点数/我的资产、我的收藏一排图标、空间卡、传输/下载/上传/分享/会员状态/P2P 配置/激励视频
 // 底部库库 AI tab 是原生写死、接口够不着，动不了
@@ -58,6 +59,9 @@ function processBaiduPan(url, body) {
   } else if (url.indexOf('/act/v2/gamecenter/historyplay') !== -1) {
     // 游戏中心：最近在玩清空（data 本来就是数组，保持数组类型）
     if (obj.data) { obj.data = []; changed = true; }
+  } else if (url.indexOf('/act/v2/gamecenter/gamematerial') !== -1) {
+    // 游戏中心：游戏卡片清掉（寻道大千/青云诀之伏魔等，玩寻道卡就从这里来）
+    if (obj.data) { obj.data = {}; changed = true; }
   }
   return changed ? JSON.stringify(obj) : body;
 }
