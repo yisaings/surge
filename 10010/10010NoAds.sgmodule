@@ -1,5 +1,5 @@
 #!name=中国联通去广告
-#!desc=联通去广告 v3：v2 全部 + 首页脚手架营销模块、商城瀑布流与首页商品、服务提醒、我的页彩铃/积分商品/钱包借钱备用金/套餐升级卡/设备推广/精准营销/神券；MITM 新增 m.10010.com 与 card.10010.com，需删模块重装
+#!desc=联通去广告 v4：v3 全部 + 首页只留话费/流量行（脚手架与顶栏全清）、商城清空、我的页只留基本信息；MITM 不变，更新模块即可
 #!category=【yisa】Sgmodule
 
 
@@ -22,13 +22,26 @@
 联通商城首页 = type=http-response, pattern=^https://(card\.10010\.com|m\.10010\.com)/mall-order/query/newFirstPage, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
 联通服务提醒 = type=http-response, pattern=^https://m\.client\.10010\.com/clientIndex/v1/api/serviceReminder, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
 联通我的页彩铃 = type=http-response, pattern=^https://m\.client\.10010\.com/clientMyPage/v1/api/myColorfulRingtone, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
-联通我的页积分商品 = type=http-response, pattern=^https://m\.client\.10010\.com/clientMyPage/v1/api/myPoints, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通我的页积分 = type=http-response, pattern=^https://m\.client\.10010\.com/clientMyPage/v1/api/myPoints, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
 联通我的页钱包 = type=http-response, pattern=^https://m\.client\.10010\.com/clientMyPage/v1/api/myWallet, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
 联通套餐升级卡 = type=http-response, pattern=^https://m\.client\.10010\.com/clientMyPage/v1/api/newUserInfo, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
-联通我的设备推广 = type=http-response, pattern=^https://m\.client\.10010\.com/clientMyPage/v1/api/getDeviceInfo, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通我的设备 = type=http-response, pattern=^https://m\.client\.10010\.com/clientMyPage/v1/api/getDeviceInfo, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
 联通精准营销 = type=http-response, pattern=^https://m\.client\.10010\.com/clientMyPage/v1/api/precisionKeyAndActivity, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
-联通神券 = type=http-response, pattern=^https://m\.client\.10010\.com/clientMyPage/v1/api/aggregateFloorData, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通我的页楼层数据 = type=http-response, pattern=^https://m\.client\.10010\.com/clientMyPage/v1/api/aggregateFloorData, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
 
+联通首页用量行 = type=http-response, pattern=^https://m\.client\.10010\.com/mobileserviceimportant/home/queryUserInfoSeven, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通首页配置 = type=http-response, pattern=^https://m\.client\.10010\.com/mobileserviceNine/api/v1/index/queryCfig, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通宽带续约提醒 = type=http-response, pattern=^https://m\.client\.10010\.com/clientIndex/v1/api/queryBroadbandRenewalData, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通商城智能区 = type=http-response, pattern=^https://card\.10010\.com/mall-access/homePage/v25/query/smartHome, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通商城标签 = type=http-response, pattern=^https://card\.10010\.com/mall-access/homePage/v25/query/tabs, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通商城文创 = type=http-response, pattern=^https://card\.10010\.com/mall-access/homePage/v25/query/unicomCulture, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通商城顶图 = type=http-response, pattern=^https://card\.10010\.com/mall-access/homePage/v25/topBanner, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通商城活动 = type=http-response, pattern=^https://card\.10010\.com/mall-access/homePage/v25/topTab/activityShow, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通商城终端 = type=http-response, pattern=^https://card\.10010\.com/mall-access/homePage/v25/topTerminalShow, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通商城品牌 = type=http-response, pattern=^https://m\.10010\.com/mall-access/mall/homePage/brandFloor, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通商城浮窗横幅 = type=http-response, pattern=^https://m\.10010\.com/mall-access/query/FlowWindowAndBanner, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通商城搜索推荐 = type=http-response, pattern=^https://card\.10010\.com/mall-access/searchRecommend, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通我的页楼层配置 = type=http-response, pattern=^https://m\.client\.10010\.com/clientMyPage/v1/api/aggregateFloorConfig, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
 
 [Rule]
 DOMAIN,smartad.10010.com,REJECT
