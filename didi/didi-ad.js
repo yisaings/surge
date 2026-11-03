@@ -3,6 +3,7 @@
 // fast：删日常运营活动卡、公交乘车码、扫一扫；删营销轮播、超级横幅、车主招募挂件、猜你喜欢
 // slow：删领券横幅；叫车卡与进行中订单不动
 // usercenter（我的页）：删会员卡、营销卡、企业服务卡；工具只留我的收藏/滴滴支付/地图反馈；钱包只留优惠卡券/账单月结；下方推广卡只留安全中心；头像与订单相关不动
+// mget（开屏弹窗）：resapi/activity/mget 的 data.pas_start_page（启动页海报弹窗，图片+短链，文字在图里）清空；其他资源键不动
 function processDiDi() {
   var url = $request.url;
   var obj;
@@ -77,6 +78,10 @@ function processDiDi() {
           });
         }
       });
+    }
+  } else if (url.indexOf('/resapi/activity/mget') !== -1) {
+    if (data.pas_start_page) {
+      data.pas_start_page = [];
     }
   }
 
