@@ -8,6 +8,10 @@ tianyiyunpan-home = type=http-response, pattern=^https://api\.cloud\.189\.cn/bff
 tianyiyunpan-banners = type=http-response, pattern=^https://api\.cloud\.189\.cn/guns/getPageBanners\.action, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/tianyiyunpan/tianyiyunpan-ad.js
 tianyiyunpan-rec-cards = type=http-response, pattern=^https://api\.cloud\.189\.cn/guns/collectLabelCard/getRecCollectLabelCardList\.action, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/tianyiyunpan/tianyiyunpan-ad.js
 tianyiyunpan-ask = type=http-response, pattern=^https://api\.cloud\.189\.cn/sealeverScene/getDefaultAskListV2, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/tianyiyunpan/tianyiyunpan-ad.js
+tianyiyunpan-mypage-rec = type=http-response, pattern=^https://api\.cloud\.189\.cn/guns/getMyPageRecommendedPositionList\.action, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/tianyiyunpan/tianyiyunpan-ad.js
+tianyiyunpan-privilege = type=http-response, pattern=^https://api\.cloud\.189\.cn/privilege/listConfigPrivilege, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/tianyiyunpan/tianyiyunpan-ad.js
+tianyiyunpan-subscribe = type=http-response, pattern=^https://api\.cloud\.189\.cn/(open/)?share/(getOwnerSubscribeShare|getRecResourceShare)\.action, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/tianyiyunpan/tianyiyunpan-ad.js
+tianyiyunpan-ai-template = type=http-response, pattern=^https://api\.cloud\.189\.cn/guns/ai/getTemplateByTagChannel\.action, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/tianyiyunpan/tianyiyunpan-ad.js
 
 
 [MITM]
