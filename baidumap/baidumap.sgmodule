@@ -1,0 +1,37 @@
+#!name=百度地图去广告
+#!desc=百度地图精简 v1：只留地图/导航/搜索，去打车/酒店/电商/营销/广告（高德同款口径）
+#!category=【yisa】Sgmodule
+
+
+[URL Rewrite]
+^https://newclient\.map\.baidu\.com/client/crossmarketing/ _ reject
+^https://newclient\.map\.baidu\.com/stats/transparent\.gif _ reject
+^https://appnavi\.baidu\.com/statistics/send _ reject
+^https://ulogimap\.baidu\.com/ _ reject
+^https://daup\.map\.baidu\.com/ _ reject
+^https://nsclick\.baidu\.com/ _ reject
+^https://bz-ipdx\.baidu\.com/ _ reject
+^https://mores\.toponad\.com/ _ reject
+^https://.*statisticslinks\.com/ _ reject
+^https://.*yunxish\.com/ _ reject
+^https://cpc-service-square\.iggrowth\.cn/ _ reject
+
+
+[Script]
+百度地图phpui2广告 = type=http-response,pattern=newclient\.map\.baidu\.com/client/phpui2/.*qt=ads,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidumap/baidumap-ad.js
+百度地图通知栏 = type=http-response,pattern=^https://newclient\.map\.baidu\.com/client/noticebar/get,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidumap/baidumap-ad.js
+百度地图附近信息流 = type=http-response,pattern=^https://newclient\.map\.baidu\.com/feed-server/feed/nearby_flow,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidumap/baidumap-ad.js
+百度地图我的页 = type=http-response,pattern=^https://newclient\.map\.baidu\.com/usercenter/mine/page,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidumap/baidumap-ad.js
+百度地图首页笔记 = type=http-response,pattern=^https://newclient\.map\.baidu\.com/feed/govui/rich_content,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidumap/baidumap-ad.js
+百度地图附近页 = type=http-response,pattern=^https://newclient\.map\.baidu\.com/living/nearby/api,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidumap/baidumap-ad.js
+百度地图悬浮球 = type=http-response,pattern=^https://newclient\.map\.baidu\.com/widget/floatballadd,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidumap/baidumap-ad.js
+百度地图打车 = type=http-response,pattern=^https://yongche\.baidu\.com/,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidumap/baidumap-ad.js
+百度地图电商广告 = type=http-response,pattern=^https://ecom\.map\.baidu\.com/ad-ops/,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidumap/baidumap-ad.js
+百度地图酒店 = type=http-response,pattern=^https://maphotel\.baidu\.com/hotel_visible/nearbyfeed,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidumap/baidumap-ad.js
+百度地图车主 = type=http-response,pattern=^https://carowner\.baidu\.com/carownerui/api/pass/get,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidumap/baidumap-ad.js
+百度地图积分墙 = type=http-response,pattern=^https://integralwall\.baidu\.com/integralwall/interact/check,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidumap/baidumap-ad.js
+百度地图广告配置 = type=http-response,pattern=^https://afdconf\.baidu\.com/afd/platform,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidumap/baidumap-ad.js
+
+
+[MITM]
+hostname = %APPEND% newclient.map.baidu.com, yongche.baidu.com, ecom.map.baidu.com, maphotel.baidu.com, carowner.baidu.com, integralwall.baidu.com, afdconf.baidu.com, appnavi.baidu.com, ulogimap.baidu.com, daup.map.baidu.com, nsclick.baidu.com, bz-ipdx.baidu.com, mores.toponad.com, *.statisticslinks.com, *.yunxish.com, cpc-service-square.iggrowth.cn
