@@ -1,3 +1,4 @@
+// 中国联通去广告 v5（2026-11-03 晚，核实 202429 包：楼层配置总旗标不够，须逐层关 configFlag）：
 // 中国联通去广告 v4（2026-11-03 晚，Yi 新口径：首页只留话费/流量行、商城清空、我的页只留基本信息）：
 // - 首页脚手架 pageContent 全清；顶栏 homeMenuItems/homeTopMenuItems 全清；专属优惠右栏 pageList 也清；
 // - 首页用量行 queryUserInfoSeven 只留 fee/flow/voice 三项，point/云盘/云机清掉，顶层三项资源不动；
@@ -130,6 +131,13 @@ if (obj) {
     if (obj.data) {
       obj.data.moduleFlag = false;
       obj.data.moduleConfigFlag = false;
+      // v4 只关总旗标实证不够：App 按各楼层 configFlag 渲染，须逐个关掉
+      ['browsingHistory', 'couponCollectionCenter', 'myOrder', 'myPacks', 'shoppingCart'].forEach(function (k) {
+        if (obj.data[k]) {
+          obj.data[k].configFlag = false;
+          obj.data[k].dataFlag = false;
+        }
+      });
     }
   } else if (url.indexOf('queryUserInfoSeven') !== -1) {
     if (obj.data && Array.isArray(obj.data.dataList)) {
