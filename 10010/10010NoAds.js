@@ -1,4 +1,4 @@
-// 中国联通去广告 v6（2026-11-03 晚，核实 203154 包：v5 已跑到且 Yi 已冷启动仍无变化，楼层对象仍带图标故直接清空整份配置）：
+// 中国联通去广告 v7（2026-11-03 晚，核实 205332 包：v6 已跑到，商城唯一活源是此前漏清的 brandZone，另清 terminalGoods/region；首页/我的页其余残留标题在该包中 0 命中，属 App 持久缓存）：
 // 中国联通去广告 v4（2026-11-03 晚，Yi 新口径：首页只留话费/流量行、商城清空、我的页只留基本信息）：
 // - 首页脚手架 pageContent 全清；顶栏 homeMenuItems/homeTopMenuItems 全清；专属优惠右栏 pageList 也清；
 // - 首页用量行 queryUserInfoSeven 只留 fee/flow/voice 三项，point/云盘/云机清掉，顶层三项资源不动；
@@ -126,6 +126,13 @@ if (obj) {
   } else if (url.indexOf('precisionKeyAndActivity') !== -1) {
     if (obj.data && Array.isArray(obj.data.goods)) obj.data.goods = [];
   } else if (url.indexOf('aggregateFloorData') !== -1) {
+    obj.data = {};
+  } else if (url.indexOf('mall-access/homePage/v25/query/brandZone') !== -1) {
+    // v7：205332 包实证——商城截图的品牌列与商品列表唯一活源就是 brandZone（brandNameList + goodsInfoList，含 iPhone Air 等），
+    // 此前 v3/v4 只清了 smartHome/tabs/brandFloor 等，漏了这一路，故商城整页仍在。直接清空。
+    obj.data = {};
+  } else if (url.indexOf('mall-access/query/terminalGoods/region') !== -1) {
+    // v7：同包实证——terminalGoods/region 的 subsidyRegion/subRegion1 仍带完整分区数据，属商城分区内容，随商城一并清空。
     obj.data = {};
   } else if (url.indexOf('aggregateFloorConfig') !== -1) {
     // v6：v5 只改旗标实证不够——新包里各楼层对象仍带图标名与图标地址，App 可能按对象存在与否渲染而非按旗标，
