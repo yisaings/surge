@@ -7,6 +7,7 @@
 smzdm-home = type=http-response, pattern=^https://homepage-api\.smzdm\.com/v3/home, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/smzdm/smzdm-ad.js
 smzdm-haojia-list = type=http-response, pattern=^https://haojia-api\.smzdm\.com/home/list, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/smzdm/smzdm-ad.js
 smzdm-preload = type=http-response, pattern=^https://haojia-cdn\.smzdm\.com/preload/, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/smzdm/smzdm-ad.js
+smzdm-detail = type=http-response, pattern=^https://haojia-api\.smzdm\.com/detail/, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/smzdm/smzdm-ad.js
 
 
 [MITM]
