@@ -1,5 +1,5 @@
 #!name=联通云盘精简
-#!desc=联通云盘精简 v1：清开屏、首页会员横幅与芒果视频卡、我的页活动中心、工具箱权益优惠 tab、弹窗与 mixpanel 上报；不动文件/备份/相册/工具与会员入口
+#!desc=联通云盘精简 v2：清开屏、首页会员横幅与芒果视频卡及 AI 入戏入口、我的页活动中心、工具箱权益优惠 tab、发现页全部娱乐 tab、会员权益展示、弹窗与 mixpanel 上报；不动文件/备份/相册/工具与会员入口
 #!category=【yisa】Sgmodule
 
 
@@ -9,6 +9,8 @@
 联通云盘我的页 = type=http-response, pattern=^https://s\.pan\.wo\.cn/api/bff/resource/query/mine-resource/app, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/woyunpan/woyunpan-ad.js
 联通云盘工具箱 = type=http-response, pattern=^https://s\.pan\.wo\.cn/api/bff/app/home/toolboxs, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/woyunpan/woyunpan-ad.js
 联通云盘弹窗 = type=http-response, pattern=^https://s\.pan\.wo\.cn/api/bff/resource/query/popupAndFlow, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/woyunpan/woyunpan-ad.js
+联通云盘发现页 = type=http-response, pattern=^https://s\.pan\.wo\.cn/api/bff/discovery/page/tab/list, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/woyunpan/woyunpan-ad.js
+联通云盘会员权益 = type=http-response, pattern=^https://s\.pan\.wo\.cn/api/bff/membershipBenefit/V2/displayMembershipBenefit, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/woyunpan/woyunpan-ad.js
 
 
 [URL Rewrite]
