@@ -1,5 +1,6 @@
-// 百度地图去广告 v1：只留地图/导航/搜索
-// 命中规则见 baidumap.sgmodule；未列出的接口（瓦片、定位、导航、路线、搜索历史、语音、phpui2 rgc 地图数据）一律不动。
+// 百度地图去广告 v2：只留地图/导航/搜索
+// v2 新增：周边 AI 推荐（aimode/aiAgent/poi_rec）、我的页语音/运动/车标商店、领打车金、赏金任务提示。
+// 命中规则见 baidumap.sgmodule；未列出的接口（瓦片、定位、导航、路线、搜索历史、语音、phpui2 rgc 地图数据、附近 POI 渲染）一律不动。
 function processBaiduMap(url, body) {
   try {
     // 1. phpui2 广告（我的页横幅/活动横幅/图标）：只清 ads.content，保留 result/option 结构
@@ -20,7 +21,8 @@ function processBaiduMap(url, body) {
       if (j && j.data) { j.data.flow_list = []; j.data.has_more = 0; }
       return JSON.stringify(j);
     }
-    // 4. 我的页：去金币卡、借钱卡、回归抽奖入口
+    // 4. 我的页：去金币卡、借钱卡、回归抽奖入口、领打车金、热门语音商店、百度运动、车标商店
+    // 保留：足迹、我的店铺、我的车、订单、当前语音、当前车标（used_caricon）、街景、离线地图等自有数据
     if (url.includes('/usercenter/mine/page')) {
       const j = JSON.parse(body);
       if (j && j.data) {
@@ -28,6 +30,10 @@ function processBaiduMap(url, body) {
         j.data.finance = {};
         j.data.gold_coin_card = {};
         j.data.new_user_entrance = {};
+        j.data.gold = {};
+        if (j.data.voice_card) j.data.voice_card.rcmdtopics = {};
+        j.data.sport_card = {};
+        if (j.data.caricon && Array.isArray(j.data.caricon.list)) j.data.caricon.list = [];
       }
       return JSON.stringify(j);
     }
@@ -70,6 +76,34 @@ function processBaiduMap(url, body) {
           if (k.indexOf('nad_') === 0 || k.indexOf('cpc') !== -1) delete j.data.global[k];
         });
       }
+      return JSON.stringify(j);
+    }
+    // 10. 周边 AI 推荐首页：清 components（AI 推荐问题卡、AI 助手入口卡、AI 问候卡）
+    if (url.includes('/aimode-router/homepage')) {
+      const j = JSON.parse(body);
+      if (j && j.content && Array.isArray(j.content.components)) j.content.components = [];
+      return JSON.stringify(j);
+    }
+    // 11. AI 场景入口：清 sceneList（拍照识景、旅游攻略、AI订酒店、AI打车等 9 个）
+    if (url.includes('/aiagent/aiAgent/scene')) {
+      const j = JSON.parse(body);
+      if (j && j.result && j.result.data && Array.isArray(j.result.data.sceneList)) j.result.data.sceneList = [];
+      return JSON.stringify(j);
+    }
+    // 12. 周边页 POI 推荐：仅当周边 tab 请求（page_id=nearby_page_home）时清推荐内容，
+    // 保留 poi_info（当前地点头）；POI 详情页的同接口调用一律不动
+    if (url.includes('/feed-server/nearby/poi_rec') && url.includes('nearby_page_home')) {
+      const j = JSON.parse(body);
+      if (j && j.data) {
+        j.data.xiangxiang_info = {};
+        if (j.data.query_info) j.data.query_info.list = [];
+      }
+      return JSON.stringify(j);
+    }
+    // 13. 赏金任务提示：清 detail（“你有待完成的赏金任务”横幅）
+    if (url.includes('/contributor-bus/bounty/tips')) {
+      const j = JSON.parse(body);
+      if (j && j.data) j.data.detail = {};
       return JSON.stringify(j);
     }
   } catch (e) {
