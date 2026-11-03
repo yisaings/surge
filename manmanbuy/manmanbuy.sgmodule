@@ -1,0 +1,12 @@
+#!name=慢慢买去红包弹窗
+#!desc=慢慢买去红包弹窗 v1：关双 11 红包总开关与折扣页超级红包卡，不动商品与比价业务
+#!category=【yisa】Sgmodule
+
+
+[Script]
+慢慢买红包配置 = type=http-response, pattern=^https://apapia-common\.manmanbuy\.com/v1/config/getAppConfigRn, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/manmanbuy/manmanbuy-ad.js
+慢慢买折扣页红包 = type=http-response, pattern=^https://apapia-sqk-weblogic\.manmanbuy\.com/activity/api/hb, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/manmanbuy/manmanbuy-ad.js
+
+
+[MITM]
+hostname = %APPEND% apapia-common.manmanbuy.com, apapia-sqk-weblogic.manmanbuy.com
