@@ -59,7 +59,7 @@
 
 🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/10010/10010NoAds.sgmodule`
 
-- 规则拦截开屏广告域名，另用 jq 重写剔除首页“通通”“签到”、浮窗广告，以及发现页和搜索页的热词展示。
+- v2（脚本重写 JSON，旧版 jq 写法 Surge 不认）：清首页瀑布流 / 营销位 / 专属优惠 / OMO / 浮窗广告与底部标签 / 顶栏通通签到 / 推送消息 / 弹窗、我的页广告文案与推荐、搜索发现与热词；域名级拦 smartad 打点与 m1.ad 广告图域。不动业务接口、图片 CDN 与推送通道；开屏本次包没抓到冷启动，未动。
 
 ### 5. 联通 Cookie 获取
 
