@@ -1,3 +1,10 @@
+// 中国联通去广告 v10（2026-11-04 晚，依据 21:15 冷启动重抓包 983 条 + 旧包复核 Gemini 说法）：
+// - newUserInfo：trafficVo.pageList 清空（流量推广位，功能行 broad/card/contract/cloud 不动）；
+//   isNewBroad/isNewCard 置 false（实验：验证加赠横幅是否由新户旗标控制，若横幅还在则与此无关）；
+// - myWallet：payShowFlag 置 false（实验：验证 -- 格子是不是钱包卡；若格子还在则是楼层占位）；
+// - [Rule] 加穿山甲 SDK 与 WebInsight 埋点域 REJECT（仅减后台流量，不改画面）；
+// - 注意：首页卡片已证实是 H5 前端兜底渲染（smartad 兜底-前端-* 打点 63 条），非接口数据，接口层清不掉；
+//   navMenuList 本包未重拉（App 缓存菜单库），v9 过滤尚未跑上；aggregateFloorData 两包均未出现（配置旗标全关时 H5 直接跳过该请求）。
 // 中国联通去广告 v9（2026-11-04 晚，依据 21:01 空白配置+单模块重抓包 313 条）：
 // - 新增导航菜单库过滤：navMenuList 是首页卡片与我的页营销格子的唯一活源（本包内百亿补贴等标题只在此接口出现，
 //   其余接口体均已是 v8 清空后状态）；按标题/别名精确匹配删 12 类营销项，充话费/充流量/查账单/PLUS 等功能项不在黑名单内故保留；
@@ -121,9 +128,19 @@ if (obj) {
       obj.data.secendPlace = {};
       obj.data.thirdPlace = {};
       obj.data.fourPlace = {};
+      obj.data.payShowFlag = false;
     }
   } else if (url.indexOf('newUserInfo') !== -1) {
-    if (obj.data) obj.data.myPackagePackageZone = {};
+    if (obj.data) {
+      obj.data.myPackagePackageZone = {};
+      if (obj.data.userInfoData) {
+        if (obj.data.userInfoData.trafficVo && Array.isArray(obj.data.userInfoData.trafficVo.pageList)) {
+          obj.data.userInfoData.trafficVo.pageList = [];
+        }
+        obj.data.userInfoData.isNewBroad = false;
+        obj.data.userInfoData.isNewCard = false;
+      }
+    }
   } else if (url.indexOf('getDeviceInfo') !== -1) {
     if (obj.data) {
       if (Array.isArray(obj.data.rightData)) obj.data.rightData = [];
