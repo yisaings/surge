@@ -1,5 +1,5 @@
 #!name=高德精简
-#!desc=高德地图精简：只保留地图功能，首页与探索 AI 流空白，榜单、内容中心、推荐流空白，工具栏只留骑行、公交地铁、步行、离线地图、收藏夹，我的页去达人任务、好友动态、活动卡、猜你喜欢与通知卡，打车后台与推广空白，广告图片拦截，地图、搜索、导航不动
+#!desc=只留地图与导航，去营销与推荐流
 #!category=【yisa】Sgmodule
 [Script]
 高德场景推荐 = type=http-response,pattern=^https://m5\.amap\.com/ws/shield/scene/recommend,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/gaode/gaode-ad.js
