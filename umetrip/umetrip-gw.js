@@ -19,6 +19,12 @@
     return "";
   }
   var rpid = String(header("rpid") || "").trim();
+  var isSns = (req.url || "").indexOf("sns.umetrip.com") !== -1;
+  if (isSns) {
+    if (rpid === "1430030") { passthrough(); return; }
+    $done({ body: new Uint8Array(0) });
+    return;
+  }
   if (rpid !== "1100001" && rpid !== "1000017" && rpid !== "1000002" && rpid !== "1000029") { passthrough(); return; }
   if (!(body instanceof Uint8Array)) { passthrough(); return; }
   function readVarint(bytes, pos) {
