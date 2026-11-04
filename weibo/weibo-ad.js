@@ -269,7 +269,9 @@
       for (var ci = 0; ci < o14.channelInfo.channels.length; ci++) {
         var ch = o14.channelInfo.channels[ci];
         var li = ch && ch.payload && ch.payload.loadedInfo;
-        if (li && Array.isArray(li.searchBarContent)) li.searchBarContent = [];
+        if (li && Array.isArray(li.searchBarContent)) {
+          li.searchBarContent = [{ word: ' ', tip: '', note: ' ', scheme: 'sinaweibo://searchall', ext: '' }];
+        }
       }
     }
     if (o14.header && o14.header.data && Array.isArray(o14.header.data.items)) {
