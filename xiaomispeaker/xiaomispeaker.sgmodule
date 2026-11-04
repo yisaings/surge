@@ -1,0 +1,20 @@
+#!name=小米音箱去营销
+#!desc=小米音箱 App：去广告、弹窗与会员推销，保留设备控制与基本内容
+#!category=【yisa】Sgmodule
+
+
+[Script]
+小米音箱去营销 = type=http-response,pattern=^https://(marketing-aibox\.v\.mitvos\.com|appinfo-aibox\.v\.mitvos\.com),requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/xiaomispeaker/xiaomispeaker-ad.js
+
+
+[URL Rewrite]
+^https://sdkconfig\.ad\.intl\.xiaomi\.com _ reject
+^https://actfile\.cdn\.pandora\.xiaomi\.com _ reject
+^https://tracking\.intl\.miui\.com _ reject
+^https://data\.sec\.miui\.com _ reject
+^https://data\.mistat\.xiaomi\.com _ reject
+^https://log\.miwifi\.com _ reject
+
+
+[MITM]
+hostname = %APPEND% marketing-aibox.v.mitvos.com, appinfo-aibox.v.mitvos.com
