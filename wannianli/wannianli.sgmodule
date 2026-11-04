@@ -1,0 +1,22 @@
+#!name=万年历精简
+#!desc=去开屏/信息流/DSP广告、营销卡、角标与闲趣营销工具，只留日历、天气与工具
+#!category=【yisa】Sgmodule
+
+
+[Script]
+wnl-feed = type=http-response,pattern=^https://adn\.51wnl-cq\.com/AdApi/GetFeedAds,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/wannianli/wannianli-ad.js
+wnl-cards = type=http-response,pattern=^https://apic\.51wnl-cq\.com/CttApi/GetGeneralCardInfo,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/wannianli/wannianli-ad.js
+wnl-corner = type=http-response,pattern=^https://apic\.51wnl-cq\.com/CttApi/GetTabsConrner,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/wannianli/wannianli-ad.js
+wnl-exttools = type=http-response,pattern=^https://c\.51wnl-cq\.com/contentapi/api4\.4\.0/ExtTools/GetExtTools,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/wannianli/wannianli-ad.js
+wnl-gettools = type=http-response,pattern=^https://c\.51wnl-cq\.com/API/gettools\.aspx,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/wannianli/wannianli-ad.js
+wnl-msg = type=http-response,pattern=^https://msgn\.51wnl-cq\.com/api/MessageCenter/getwnliosmsg,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/wannianli/wannianli-ad.js
+
+
+[URL Rewrite]
+^https://dspad\.51wnl-cq\.com/ _ reject
+^https://ssp\.iytcdn\.com/ _ reject
+^https://ad\.51wnl-cq\.com/ _ reject
+
+
+[MITM]
+hostname = %APPEND% adn.51wnl-cq.com, apic.51wnl-cq.com, c.51wnl-cq.com, msgn.51wnl-cq.com, dspad.51wnl-cq.com, ssp.iytcdn.com, ad.51wnl-cq.com
