@@ -1,5 +1,5 @@
 #!name=中国联通去广告
-#!desc=联通去广告 v9：v8 全部 + 导航菜单库按标题过滤（首页服务大厅以下卡片、我的页营销格子同标题项；同标题在服务页也会一并消失）；MITM 不变，更新模块即可
+#!desc=联通去广告 v10：v9 全部 + newUserInfo 清流量推广并关新户旗标（实验）、钱包卡 payShowFlag=false（实验）、穿山甲与 WebInsight 埋点域拦截；MITM 不变，更新模块即可
 #!category=【yisa】Sgmodule
 
 
@@ -50,6 +50,12 @@
 [Rule]
 DOMAIN,smartad.10010.com,REJECT
 DOMAIN,m1.ad.10010.com,REJECT
+DOMAIN,api-access.pangolin-sdk-toutiao1.com,REJECT
+DOMAIN,api-access.pangolin-sdk-toutiao.com,REJECT
+DOMAIN,mssdk.volces.com,REJECT
+DOMAIN,tnc3-alisc1.zijieapi.com,REJECT
+DOMAIN,sf3-fe-tos.pglstatp-toutiao.com,REJECT
+DOMAIN,playback.newbuy.chinaunicom.cn,REJECT
 
 
 [MITM]
