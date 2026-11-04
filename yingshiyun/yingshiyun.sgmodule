@@ -1,5 +1,5 @@
 #!name=萤石云视频精简
-#!desc=萤石云视频精简：服务专区、云盘汇总、对话横幅广告、对话与社区内容、商城瀑布流清空，我的界面只留管理中心、服务中心、工具；底部按钮与天气条原生去不掉
+#!desc=清空营销与商城内容，我的页只留三项
 #!category=【yisa】Sgmodule
 [Script]
 EZVIZ清缓存社区 = type=http-request,pattern=^https://api\.ys7\.com/v3/videoclips/community/(banner|tab|position),script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js
