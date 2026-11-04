@@ -40,12 +40,8 @@ try {
         });
       }
     } else if (url.indexOf('/member/info/card/service/package') !== -1) {
-      if (result.recommendServicePackageConfigIos) {
-        result.recommendServicePackageConfigIos.subConfigs = [];
-      }
-      if (result.recommendServicePackageConfigAndroid) {
-        result.recommendServicePackageConfigAndroid.subConfigs = [];
-      }
+      result.recommendServicePackageConfigIos = null;
+      result.recommendServicePackageConfigAndroid = null;
     } else if (url.indexOf('/app/home/toolboxs') !== -1) {
       if (Array.isArray(result.data)) {
         result.data = result.data.filter(function (it) {
