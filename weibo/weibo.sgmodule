@@ -16,6 +16,9 @@
 微博我的页 = type=http-response,pattern=^https://api\.weibo\.cn/2/profile/me,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/weibo/weibo-ad.js
 微博发博面板 = type=http-response,pattern=^https://api\.weibo\.cn/2/client/publisher_list,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/weibo/weibo-ad.js
 微博热门流推广帖 = type=http-response,pattern=^https://api\.weibo\.cn/2/statuses/container_timeline_hot,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/weibo/weibo-ad.js
+微博关注直播行 = type=http-response,pattern=^https://api\.weibo\.cn/2/live/media_homelist,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/weibo/weibo-ad.js
+微博发现页 = type=http-response,pattern=^https://api\.weibo\.cn/2/search/finder,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/weibo/weibo-ad.js
+微博消息动态广告 = type=http-response,pattern=^https://api\.weibo\.cn/2/messageflow/notice,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/weibo/weibo-ad.js
 
 
 [URL Rewrite]
