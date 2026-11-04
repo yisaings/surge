@@ -1,5 +1,5 @@
 #!name=小度精简
-#!desc=小度 App 精简：首页只留回家看看+小度通话；去开屏、会员、金币、商城、广告、会员专区、音乐 tab 会员卡与金刚区会员入口、消息中心商城与会员推广、促销弹窗；底部栏原生去不掉，分区页内容清空后为空页
+#!desc=首页只留回家看看与通话，去商城与会员推广
 #!category=【yisa】Sgmodule
 [Script]
 小度首页 = type=http-response,pattern=^https://xiaodu\.baidu\.com/xiaoduapp/v3/module/index$,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/xiaodu/xiaodu-ad.js
