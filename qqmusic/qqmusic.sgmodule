@@ -1,20 +1,20 @@
 #!name=QQ音乐去广告
-#!desc=QQ音乐去广告 v1：拦广告 SDK、广告内容、统计上报；主接口加密动不了，推荐/我的页推广位、绿钻入口保留（去广告范围，不破VIP）
+#!desc=QQ音乐去广告：拦广告 SDK、广告内容、视频广告与统计上报；主接口加密动不了，推荐、我的页推广位、绿钻入口保留（去广告范围，不破VIP）
 #!category=【yisa】Sgmodule
-
-
 [URL Rewrite]
 ^https://ad\.tencentmusic\.com/ _ reject
 ^https://mc\.tencentmusic\.com/ _ reject
 ^https://c6\.y\.qq\.com/tips/fcgi-bin/fcg_get_advert\.fcg _ reject
 ^https://c6\.y\.qq\.com/musichall/fcgi-bin/3g_get_mymusic_topbanner\.fcg _ reject
+^https://shc6\.y\.qq\.com/tips/fcgi-bin/fcg_get_advert\.fcg _ reject
+^https://shc6\.y\.qq\.com/musichall/fcgi-bin/3g_get_mymusic_topbanner\.fcg _ reject
 ^https://music\.y\.qq\.com/maproxy/getPbCompressAd _ reject
 ^https://music\.y\.qq\.com/mareportbatch/ _ reject
 ^https://report\.tencentmusic\.com/ _ reject
 ^https://monitor\.music\.qq\.com/ _ reject
 ^https://sdkreport\.e\.qq\.com/ _ reject
 ^https://adcdn6\.tencentmusic\.com/ _ reject
-
-
+^https://adsmind\.gdtimg\.com/ _ reject
+^https://tmead\.y\.qq\.com/ _ reject
 [MITM]
-hostname = %APPEND% ad.tencentmusic.com, mc.tencentmusic.com, c6.y.qq.com, music.y.qq.com, report.tencentmusic.com, monitor.music.qq.com, sdkreport.e.qq.com, adcdn6.tencentmusic.com
+hostname = %APPEND% ad.tencentmusic.com, mc.tencentmusic.com, c6.y.qq.com, shc6.y.qq.com, music.y.qq.com, report.tencentmusic.com, monitor.music.qq.com, sdkreport.e.qq.com, adcdn6.tencentmusic.com, adsmind.gdtimg.com, tmead.y.qq.com
