@@ -1,28 +1,20 @@
-// 百度地图去广告 v2：只留地图/导航/搜索
-// v2 新增：周边 AI 推荐（aimode/aiAgent/poi_rec）、我的页语音/运动/车标商店、领打车金、赏金任务提示。
-// 命中规则见 baidumap.sgmodule；未列出的接口（瓦片、定位、导航、路线、搜索历史、语音、phpui2 rgc 地图数据、附近 POI 渲染）一律不动。
 function processBaiduMap(url, body) {
   try {
-    // 1. phpui2 广告（我的页横幅/活动横幅/图标）：只清 ads.content，保留 result/option 结构
     if (url.includes('/client/phpui2/') && url.includes('qt=ads')) {
       const j = JSON.parse(body);
       if (j && j.ads && Array.isArray(j.ads.content)) j.ads.content = [];
       return JSON.stringify(j);
     }
-    // 2. 首页顶部通知栏（营销通知）：清 multi_data
     if (url.includes('/client/noticebar/get')) {
       const j = JSON.parse(body);
       if (j && j.content && Array.isArray(j.content.multi_data)) j.content.multi_data = [];
       return JSON.stringify(j);
     }
-    // 3. 附近信息流：清 flow_list
     if (url.includes('/feed-server/feed/nearby_flow')) {
       const j = JSON.parse(body);
       if (j && j.data) { j.data.flow_list = []; j.data.has_more = 0; }
       return JSON.stringify(j);
     }
-    // 4. 我的页：去金币卡、借钱卡、回归抽奖入口、领打车金、热门语音商店、百度运动、车标商店
-    // 保留：足迹、我的店铺、我的车、订单、当前语音、当前车标（used_caricon）、街景、离线地图等自有数据
     if (url.includes('/usercenter/mine/page')) {
       const j = JSON.parse(body);
       if (j && j.data) {
@@ -37,13 +29,11 @@ function processBaiduMap(url, body) {
       }
       return JSON.stringify(j);
     }
-    // 5. 首页笔记区：清 posts.content
     if (url.includes('/feed/govui/rich_content')) {
       const j = JSON.parse(body);
       if (j && j.data && j.data.posts) j.data.posts.content = [];
       return JSON.stringify(j);
     }
-    // 6. 附近页：只删钻石展位卡
     if (url.includes('/living/nearby/api')) {
       const j = JSON.parse(body);
       if (j && j.Result && Array.isArray(j.Result.cards)) {
@@ -51,7 +41,6 @@ function processBaiduMap(url, body) {
       }
       return JSON.stringify(j);
     }
-    // 7. 悬浮球广告：清空 bean
     if (url.includes('/widget/floatballadd')) {
       const j = JSON.parse(body);
       if (j && j.result && j.result.bean) {
@@ -61,14 +50,12 @@ function processBaiduMap(url, body) {
       }
       return JSON.stringify(j);
     }
-    // 8. 打车/酒店/电商/车主/积分墙：整接口返回空 JSON
     if (url.includes('yongche.baidu.com/') || url.includes('ecom.map.baidu.com/ad-ops/') ||
         url.includes('maphotel.baidu.com/hotel_visible/nearbyfeed') ||
         url.includes('carowner.baidu.com/carownerui/api/pass/get') ||
         url.includes('integralwall.baidu.com/integralwall/interact/check')) {
       return '{}';
     }
-    // 9. afdconf 广告配置：只删 nad_/cpc 相关键，其余平台配置保留
     if (url.includes('afdconf.baidu.com/afd/platform')) {
       const j = JSON.parse(body);
       if (j && j.data && j.data.global) {
@@ -78,20 +65,16 @@ function processBaiduMap(url, body) {
       }
       return JSON.stringify(j);
     }
-    // 10. 周边 AI 推荐首页：清 components（AI 推荐问题卡、AI 助手入口卡、AI 问候卡）
     if (url.includes('/aimode-router/homepage')) {
       const j = JSON.parse(body);
       if (j && j.content && Array.isArray(j.content.components)) j.content.components = [];
       return JSON.stringify(j);
     }
-    // 11. AI 场景入口：清 sceneList（拍照识景、旅游攻略、AI订酒店、AI打车等 9 个）
     if (url.includes('/aiagent/aiAgent/scene')) {
       const j = JSON.parse(body);
       if (j && j.result && j.result.data && Array.isArray(j.result.data.sceneList)) j.result.data.sceneList = [];
       return JSON.stringify(j);
     }
-    // 12. 周边页 POI 推荐：仅当周边 tab 请求（page_id=nearby_page_home）时清推荐内容，
-    // 保留 poi_info（当前地点头）；POI 详情页的同接口调用一律不动
     if (url.includes('/feed-server/nearby/poi_rec') && url.includes('nearby_page_home')) {
       const j = JSON.parse(body);
       if (j && j.data) {
@@ -100,14 +83,12 @@ function processBaiduMap(url, body) {
       }
       return JSON.stringify(j);
     }
-    // 13. 赏金任务提示：清 detail（“你有待完成的赏金任务”横幅）
     if (url.includes('/contributor-bus/bounty/tips')) {
       const j = JSON.parse(body);
       if (j && j.data) j.data.detail = {};
       return JSON.stringify(j);
     }
   } catch (e) {
-    // 解析失败时原样放行，不破坏正常功能
     return body;
   }
   return body;
