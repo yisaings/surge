@@ -297,7 +297,20 @@
     return;
   }
 
-  // 16. 消息-动态流：删广告卡片（带 promotion/ad_tag 或 source=ad 的消息）
+  // 16. 搜索页卡片：删“猜你想搜”整卡（留搜索偏好设置）
+  if (url.indexOf('api.weibo.cn/2/cardlist') !== -1) {
+    var o16a = parse();
+    if (!o16a) return;
+    if (Array.isArray(o16a.items)) {
+      o16a.items = o16a.items.filter(function (it) {
+        return !(it && it.header && it.header.title === '猜你想搜');
+      });
+    }
+    done(o16a);
+    return;
+  }
+
+  // 17. 消息-动态流：删广告卡片（带 promotion/ad_tag 或 source=ad 的消息）
   if (url.indexOf('api.weibo.cn/2/messageflow/notice') !== -1) {
     var o15 = parse();
     if (!o15) return;
