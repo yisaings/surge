@@ -1,5 +1,5 @@
 #!name=万年历精简
-#!desc=去开屏/信息流/DSP/第三方SDK广告、营销卡、角标与闲趣营销工具，只留日历、天气与工具
+#!desc=去开屏/信息流/DSP/第三方SDK广告、营销卡、角标与非日历内容区，只留日历、天气与日历工具
 #!category=【yisa】Sgmodule
 
 
@@ -10,12 +10,19 @@ wnl-corner = type=http-response,pattern=^https://apic\.51wnl-cq\.com/CttApi/GetT
 wnl-exttools = type=http-response,pattern=^https://c\.51wnl-cq\.com/contentapi/api4\.4\.0/ExtTools/GetExtTools,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/wannianli/wannianli-ad.js
 wnl-gettools = type=http-response,pattern=^https://c\.51wnl-cq\.com/API/gettools\.aspx,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/wannianli/wannianli-ad.js
 wnl-msg = type=http-response,pattern=^https://msgn\.51wnl-cq\.com/api/MessageCenter/getwnliosmsg,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/wannianli/wannianli-ad.js
+wnl-cardhome = type=http-response,pattern=^https://r\.51wnl-cq\.com/api/CardHome/GetCardHome,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/wannianli/wannianli-ad.js
+wnl-health = type=http-response,pattern=^https://r\.51wnl-cq\.com/api/healthtimer/list,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/wannianli/wannianli-ad.js
+wnl-infos = type=http-response,pattern=^https://r\.51wnl-cq\.com/api/News/GetInfiniteInfos,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/wannianli/wannianli-ad.js
+wnl-channels = type=http-response,pattern=^https://r\.51wnl-cq\.com/api/channel/GetChannelList,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/wannianli/wannianli-ad.js
+wnl-daily = type=http-response,pattern=^https://r\.51wnl-cq\.com/api/daily/GetDailySentences,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/wannianli/wannianli-ad.js
+wnl-chanflow = type=http-response,pattern=^https://msgn\.51wnl-cq\.com/api/ChannelCardFlow/GetList,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/wannianli/wannianli-ad.js
 
 
 [URL Rewrite]
 ^https://dspad\.51wnl-cq\.com/ _ reject
 ^https://ssp\.iytcdn\.com/ _ reject
 ^https://ad\.51wnl-cq\.com/ _ reject
+^https://cn\.51wnl-cq\.com/contentapi/api4\.4\.0/Astro/GetIndex _ reject
 
 
 [Rule]
@@ -69,7 +76,19 @@ DOMAIN,analytics.oceanengine.com,REJECT
 DOMAIN,mobads-logs.baidu.com,REJECT
 DOMAIN,mobads.baidu.com,REJECT
 DOMAIN,mobads-pre-config.cdn.bcebos.com,REJECT
+DOMAIN,api-access.pangolin-sdk-toutiao-b.com,REJECT
+DOMAIN,ido.getui.net,REJECT
+DOMAIN,b-gtc.getui.net,REJECT
+DOMAIN,c-ido.getui.net,REJECT
+DOMAIN,c-gtc.getui.net,REJECT
+DOMAIN,open.e.kuaishou.cn,REJECT
+DOMAIN,cnlogs.umengcloud.com,REJECT
+DOMAIN,resolve.umeng.com,REJECT
+DOMAIN,p26-sign.douyinpic.com,REJECT
+DOMAIN,aaid.uyunad.com,REJECT
+DOMAIN,tnc3-alisc1.zijieapi.com,REJECT
+DOMAIN,sdk-conf.getui.com,REJECT
 
 
 [MITM]
-hostname = %APPEND% adn.51wnl-cq.com, apic.51wnl-cq.com, c.51wnl-cq.com, msgn.51wnl-cq.com, dspad.51wnl-cq.com, ssp.iytcdn.com, ad.51wnl-cq.com
+hostname = %APPEND% adn.51wnl-cq.com, apic.51wnl-cq.com, c.51wnl-cq.com, msgn.51wnl-cq.com, dspad.51wnl-cq.com, ssp.iytcdn.com, ad.51wnl-cq.com, r.51wnl-cq.com, cn.51wnl-cq.com
