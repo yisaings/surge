@@ -1,5 +1,5 @@
 #!name=百度地图去广告
-#!desc=百度地图精简 v2：只留地图/导航/搜索，去打车/酒店/电商/营销/广告及周边 AI 推荐（高德同款口径）
+#!desc=百度地图精简 v3：v2 全部 + sofire 信标、活动任务、车主配置
 #!category=【yisa】Sgmodule
 [URL Rewrite]
 ^https://newclient\.map\.baidu\.com/client/crossmarketing/ _ reject
@@ -13,6 +13,7 @@
 ^https://.*statisticslinks\.com/ _ reject
 ^https://.*yunxish\.com/ _ reject
 ^https://cpc-service-square\.iggrowth\.cn/ _ reject
+^https://sofire\.baidu\.com/ _ reject
 [Script]
 百度地图phpui2广告 = type=http-response,pattern=newclient\.map\.baidu\.com/client/phpui2/.*qt=ads,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidumap/baidumap-ad.js
 百度地图通知栏 = type=http-response,pattern=^https://newclient\.map\.baidu\.com/client/noticebar/get,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidumap/baidumap-ad.js
@@ -31,5 +32,7 @@
 百度地图AI场景入口 = type=http-response,pattern=^https://newclient\.map\.baidu\.com/aiagent/aiAgent/scene,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidumap/baidumap-ad.js
 百度地图周边POI推荐 = type=http-response,pattern=^https://newclient\.map\.baidu\.com/feed-server/nearby/poi_rec,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidumap/baidumap-ad.js
 百度地图赏金任务提示 = type=http-response,pattern=^https://newclient\.map\.baidu\.com/contributor-bus/bounty/tips,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidumap/baidumap-ad.js
+百度地图活动任务 = type=http-response,pattern=^https://newclient\.map\.baidu\.com/feed-server/activity/task_init,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidumap/baidumap-ad.js
+百度地图车主配置 = type=http-response,pattern=^https://appnavi\.baidu\.com/datacenter/group/groupconf,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidumap/baidumap-ad.js
 [MITM]
 hostname = %APPEND% newclient.map.baidu.com, yongche.baidu.com, ecom.map.baidu.com, maphotel.baidu.com, carowner.baidu.com, integralwall.baidu.com, afdconf.baidu.com, appnavi.baidu.com, ulogimap.baidu.com, daup.map.baidu.com, nsclick.baidu.com, bz-ipdx.baidu.com, mores.toponad.com, *.statisticslinks.com, *.yunxish.com, cpc-service-square.iggrowth.cn
