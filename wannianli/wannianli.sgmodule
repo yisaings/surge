@@ -1,5 +1,5 @@
 #!name=万年历精简
-#!desc=去开屏/信息流/DSP广告、营销卡、角标与闲趣营销工具，只留日历、天气与工具
+#!desc=去开屏/信息流/DSP/第三方SDK广告、营销卡、角标与闲趣营销工具，只留日历、天气与工具
 #!category=【yisa】Sgmodule
 
 
@@ -16,6 +16,59 @@ wnl-msg = type=http-response,pattern=^https://msgn\.51wnl-cq\.com/api/MessageCen
 ^https://dspad\.51wnl-cq\.com/ _ reject
 ^https://ssp\.iytcdn\.com/ _ reject
 ^https://ad\.51wnl-cq\.com/ _ reject
+
+
+[Rule]
+DOMAIN,api-access.pangolin-sdk-toutiao.com,REJECT
+DOMAIN,api-access.pangolin-sdk-toutiao1.com,REJECT
+DOMAIN,sf3-fe-tos.pglstatp-toutiao.com,REJECT
+DOMAIN,log-api.pangolin-sdk-toutiao-b.com,REJECT
+DOMAIN,toblog.ctobsnssdk.com,REJECT
+DOMAIN,v6-be-pack.pglstatp-toutiao.com,REJECT
+DOMAIN,p3-be-pack-sign.pglstatp-toutiao.com,REJECT
+DOMAIN,p26-be-pack-sign.pglstatp-toutiao.com,REJECT
+DOMAIN,sf6-fe-tos.pglstatp-toutiao.com,REJECT
+DOMAIN,p3-sign.douyinpic.com,REJECT
+DOMAIN,p11-sign.douyinpic.com,REJECT
+DOMAIN,p5-ex-gddgtc-sign.douyinpic.com,REJECT
+DOMAIN,win.gdt.qq.com,REJECT
+DOMAIN,mi.gdt.qq.com,REJECT
+DOMAIN,ipv4.gdt.qq.com,REJECT
+DOMAIN,v.gdt.qq.com,REJECT
+DOMAIN,v3.gdt.qq.com,REJECT
+DOMAIN,sdk.e.qq.com,REJECT
+DOMAIN,v2mi.gdt.qq.com,REJECT
+DOMAIN,sdkquic.e.qq.com,REJECT
+DOMAIN,pgdt.ugdtimg.com,REJECT
+DOMAIN,adsmind.ugdtimg.com,REJECT
+DOMAIN,qzs.gdtimg.com,REJECT
+DOMAIN,tdid.m.qq.com,REJECT
+DOMAIN,p66-ad.adkwai.com,REJECT
+DOMAIN,open.e.kuaishou.com,REJECT
+DOMAIN,gdfp.gifshow.com,REJECT
+DOMAIN,p1-lm.adukwai.com,REJECT
+DOMAIN,cnlogs.umeng.com,REJECT
+DOMAIN,dsp.ads.umeng.com,REJECT
+DOMAIN,errnewlog.umeng.com,REJECT
+DOMAIN,log.umtrack.com,REJECT
+DOMAIN,utoken.umeng.com,REJECT
+DOMAIN,ucc.umeng.com,REJECT
+DOMAIN,ulogs.umeng.com,REJECT
+DOMAIN,ido.gepush.com,REJECT
+DOMAIN,sdk-open-phone.getui.com,REJECT
+DOMAIN,c-gtc.gepush.com,REJECT
+DOMAIN,dnms.getui.com,REJECT
+DOMAIN,c-hzgt2.getui.com,REJECT
+DOMAIN,c-ido.gepush.com,REJECT
+DOMAIN,umini.shujupie.com,REJECT
+DOMAIN,sdk-log.partner.sm.cn,REJECT
+DOMAIN,hc-ssp.sm.cn,REJECT
+DOMAIN,partner.uc.cn,REJECT
+DOMAIN,ssp.1rtb.com,REJECT
+DOMAIN,analytics.oceanengine.com,REJECT
+DOMAIN,mobads-logs.baidu.com,REJECT
+DOMAIN,mobads.baidu.com,REJECT
+DOMAIN,mobads-pre-config.cdn.bcebos.com,REJECT
 
 
 [MITM]
