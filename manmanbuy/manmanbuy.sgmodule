@@ -1,5 +1,5 @@
-#!name=慢慢买去红包弹窗
-#!desc=慢慢买去红包弹窗：双 11 红包总开关关闭，折扣页与文章中间的超级红包卡空白，首页悬浮弹窗空白，商品、比价、历史价格不动
+#!name=慢慢买去广告
+#!desc=去红包弹窗与红包卡
 #!category=【yisa】Sgmodule
 [Script]
 慢慢买红包配置 = type=http-response, pattern=^https://apapia-common\.manmanbuy\.com/v1/config/getAppConfigRn, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/manmanbuy/manmanbuy-ad.js
