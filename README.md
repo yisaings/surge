@@ -39,24 +39,53 @@
 ---
 
 ## 模块一览
+### 1. 中国联通去广告
 
-### 1. 萤石云视频精简（VideoGo）
 
-🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun.sgmodule`
+🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/10010/10010NoAds.sgmodule`
 
-- 首页服务专区整卡清空、云盘汇总置空、服务入口那排清空。
-- 对话（系统机器人 / 家庭会话 / 消息汇总）、社区、商城瀑布流内容清空；“我的”界面只留管理中心、服务中心、工具。
-- 另有 3 条 http-request 规则清掉社区、首页配置、商城的缓存校验头，强制回全量再掏空。
-- 已知限制（接口层改不了）：底部对话 / 商城 / 社区三个按钮是 App 原生写死的，只能掏空内容；首页天气本版恢复原样，空白字段照样会被 App 判为获取失败。
+- v8（MITM 不变，更新模块即可）：v7 全部，另修两处——我的页菜单改 moduleConfigFlag=true＋各楼层关旗标使菜单为空（直接清空会触发 H5 内置默认菜单）；商城 brandZone 与 terminalGoods/region 补上规则（v7 只改了 JS、漏加规则，故未生效）。首页只留话费 / 流量 / 语音用量行，脚手架与顶栏全清；商城清空；我的页只留基本信息。
 
-### 2. 创维智慧云精简（脚本返空版）
+### 2. 联通 Cookie 获取
 
-🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/skyworth/skyworth.sgmodule`
 
-- 对 `allBannerConfig` 接口直接返回 `{}`：首页顶部轮播 banner 与“我的”中间 banner 位一起消失。
-- 已知限制（接口层改不了）：轮播图没了，但那个占位框是 App 原生布局，空白还在；底部消息 / 云服务按钮与“我的”页增值服务卡同样是原生写死的。
+🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/10010/Get-10010-Cookie.sgmodule`
 
-### 3. 哔哩哔哩推荐流替换（Fuck 茧房）
+- 联通手机营业厅 Cookie 获取模块，带参数面板，抓到后可把脚本与 MITM 两项填 `#` 禁用。
+- 脚本原作者：[@dompling](https://github.com/dompling)（本模块引用其 Script 仓库中的联通脚本）。
+
+### 3. 慢慢买去红包弹窗
+
+
+关双 11 红包总开关（hongbaoconfig_3642）与折扣页淘宝超级红包卡，不动商品、比价、历史价格等业务。
+
+🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/manmanbuy/manmanbuy.sgmodule`
+
+### 4. 什么值得买去红包
+
+
+去掉首页天天领红包卡、好价横幅红包卡与详情页京东红包链接，不动正常爆料、好价列表与详情页购买链路。
+
+🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/smzdm/smzdm.sgmodule`
+
+### 5. 百度地图精简
+
+
+🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/baidumap/baidumap.sgmodule`
+
+- 只留地图 / 导航 / 搜索，去打车 / 酒店 / 电商 / 营销 / 广告及统计 SDK；周边 AI 推荐全清。
+- 已知限制：底部 tab 与分类行图标上的神券 / 油补角标是原生或图标图自带的，接口去不掉。
+
+### 6. 百度网盘精简
+
+
+🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/baidupan/baidupan.sgmodule`
+
+- 我的页 usercard / coins / gamecenter / gamematerial 数据清空。
+- 已知限制：三处原生框、AI 点数 / 资产行、玩寻道卡没有可控接口，保持现状；个别超大响应体（约 1MB 以上）受 Surge 脚本上限影响，过滤不生效。
+
+### 7. 哔哩哔哩推荐流替换（Fuck 茧房）
+
 
 🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/bilibili/Fuck-jianfang.sgmodule`
 
@@ -64,75 +93,55 @@
 - 长按模块可调运行模式：`popular`（热门池）、`crossregion`（跨分区）、`niche`（冷门优质）、`weekly`（每周必看）、`fresh`（新号模式）、`upmaster`（UP 主画像，需配合 UP 主名称）。
 - 来源致谢：核心逻辑移植与启发自 [lixing23/Fuck-jianfang](https://github.com/lixing23/Fuck-jianfang)。
 
-### 4. 中国联通去广告
+### 8. 滴滴精简
 
-🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/10010/10010NoAds.sgmodule`
-
-- v8（MITM 不变，更新模块即可）：v7 全部，另修两处——我的页菜单改 moduleConfigFlag=true＋各楼层关旗标使菜单为空（直接清空会触发 H5 内置默认菜单）；商城 brandZone 与 terminalGoods/region 补上规则（v7 只改了 JS、漏加规则，故未生效）。首页只留话费 / 流量 / 语音用量行，脚手架与顶栏全清；商城清空；我的页只留基本信息。
-
-### 5. 联通 Cookie 获取
-
-🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/10010/Get-10010-Cookie.sgmodule`
-
-- 联通手机营业厅 Cookie 获取模块，带参数面板，抓到后可把脚本与 MITM 两项填 `#` 禁用。
-- 脚本原作者：[@dompling](https://github.com/dompling)（本模块引用其 Script 仓库中的联通脚本）。
-
-### 6. NodeSeek 每日签到
-
-🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/nodeseek/NodeSeekDailyBonus.sgmodule`
-
-- NodeSeek 论坛每日签到模块，定时任务走 cron，签到时间可在模块参数面板里改；Token 抓到后可把获取脚本与 MITM 两项填 `#` 禁用。
-- 脚本原作者：[@Sliverkiss](https://github.com/Sliverkiss)（本模块引用其 nodeseek.js）。
-
-### 7. 懂球帝去广告
-
-🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/dongqiudi/dongqiudi.list`
-
-- 纯域名规则列表，屏蔽懂球帝内置的广告联盟、开屏广告分发与追踪域名。按 Surge 规则集方式引用。
-
-### 8. 高德地图精简
-
-🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/gaode/gaode.sgmodule`
-
-- 只留地图功能：工具栏只留骑行 / 公交地铁 / 步行 / 离线地图 / 收藏夹，清掉酒店 / 营销图层及首页 / 探索 / 我的页营销卡，探索只剩顶上原生搜索框。
-- 已知限制：底部 tab 是原生写死的，动不了；搜索页分类行未进响应体，属本地缓存或原生兜底，脚本过滤不了。
-
-### 9. 百度地图精简
-
-🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/baidumap/baidumap.sgmodule`
-
-- 只留地图 / 导航 / 搜索，去打车 / 酒店 / 电商 / 营销 / 广告及统计 SDK；周边 AI 推荐全清。
-- 已知限制：底部 tab 与分类行图标上的神券 / 油补角标是原生或图标图自带的，接口去不掉。
-
-### 10. 小度精简
-
-🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/xiaodu/xiaodu.sgmodule`
-
-- 首页只留回家看看 + 小度通话；资源广场 / 会员 / 商城内容清空、底部会员 tab 消失；我的页营销已清。
-- 已知限制：我的页收藏行与头像下签到金条是原生写死的，去不掉。
-
-### 11. QQ 音乐去广告
-
-🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/qqmusic/qqmusic.sgmodule`
-
-- 纯 `[URL Rewrite]` reject，无 JS：只拦广告与上报域名。
-- 已知限制：主接口响应全加密，推荐页 / 我的页推广位、绿钻入口挑不出来；不破 VIP。
-
-### 12. 百度网盘精简
-
-🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/baidupan/baidupan.sgmodule`
-
-- 我的页 usercard / coins / gamecenter / gamematerial 数据清空。
-- 已知限制：三处原生框、AI 点数 / 资产行、玩寻道卡没有可控接口，保持现状；个别超大响应体（约 1MB 以上）受 Surge 脚本上限影响，过滤不生效。
-
-### 13. 滴滴精简
 
 🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/didi/didi.sgmodule`
 
 - 顶部只留出行；首页服务网格只留 5 个叫车服务（打车 / 顺风车 / 代驾 / 城际拼车 / 特价拼车）；我的页删会员卡 / 营销卡 / 企业服务卡，工具与钱包只留核心项；清开屏海报弹窗与通知弹窗营销。
 - 注意：ad_oss 不是纯广告桶，功能图标也走它，不能整路 reject，本模块只拦 adtrack 上报。
 
+### 9. 懂球帝去广告
+
+
+🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/dongqiudi/dongqiudi.list`
+
+- 纯域名规则列表，屏蔽懂球帝内置的广告联盟、开屏广告分发与追踪域名。按 Surge 规则集方式引用。
+
+### 10. 高德地图精简
+
+
+🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/gaode/gaode.sgmodule`
+
+- 只留地图功能：工具栏只留骑行 / 公交地铁 / 步行 / 离线地图 / 收藏夹，清掉酒店 / 营销图层及首页 / 探索 / 我的页营销卡，探索只剩顶上原生搜索框。
+- 已知限制：底部 tab 是原生写死的，动不了；搜索页分类行未进响应体，属本地缓存或原生兜底，脚本过滤不了。
+
+### 11. NodeSeek 每日签到
+
+
+🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/nodeseek/NodeSeekDailyBonus.sgmodule`
+
+- NodeSeek 论坛每日签到模块，定时任务走 cron，签到时间可在模块参数面板里改；Token 抓到后可把获取脚本与 MITM 两项填 `#` 禁用。
+- 脚本原作者：[@Sliverkiss](https://github.com/Sliverkiss)（本模块引用其 nodeseek.js）。
+
+### 12. QQ 音乐去广告
+
+
+🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/qqmusic/qqmusic.sgmodule`
+
+- 纯 `[URL Rewrite]` reject，无 JS：只拦广告与上报域名。
+- 已知限制：主接口响应全加密，推荐页 / 我的页推广位、绿钻入口挑不出来；不破 VIP。
+
+### 13. 创维智慧云精简（脚本返空版）
+
+
+🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/skyworth/skyworth.sgmodule`
+
+- 对 `allBannerConfig` 接口直接返回 `{}`：首页顶部轮播 banner 与“我的”中间 banner 位一起消失。
+- 已知限制（接口层改不了）：轮播图没了，但那个占位框是 App 原生布局，空白还在；底部消息 / 云服务按钮与“我的”页增值服务卡同样是原生写死的。
+
 ### 14. 航旅纵横精简
+
 
 🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/umetrip/umetrip.sgmodule`
 
@@ -141,57 +150,70 @@
 
 ### 15. 联通云盘精简
 
+
 🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/woyunpan/woyunpan.sgmodule`
 
 - 清开屏、首页会员横幅与芒果视频卡及 AI 入戏入口、我的页活动中心、工具箱权益优惠 tab、发现页全部娱乐 tab、会员权益展示、弹窗与 mixpanel 上报。
 - 不动文件 / 备份 / 相册 / 工具与会员入口。
 
-### 16. 慢慢买去红包弹窗
+### 16. 小度精简
 
-关双 11 红包总开关（hongbaoconfig_3642）与折扣页淘宝超级红包卡，不动商品、比价、历史价格等业务。
 
-🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/manmanbuy/manmanbuy.sgmodule`
+🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/xiaodu/xiaodu.sgmodule`
 
-### 17. 什么值得买去红包
+- 首页只留回家看看 + 小度通话；资源广场 / 会员 / 商城内容清空、底部会员 tab 消失；我的页营销已清。
+- 已知限制：我的页收藏行与头像下签到金条是原生写死的，去不掉。
 
-去掉首页天天领红包卡、好价横幅红包卡与详情页京东红包链接，不动正常爆料、好价列表与详情页购买链路。
+### 17. 萤石云视频精简（VideoGo）
 
-🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/smzdm/smzdm.sgmodule`
 
-### 18. Scriptable 小组件
+🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun.sgmodule`
 
-- **CSL Monitor**（`CSL-Monitor.js`，v1.2.0）：中超比赛监控，仅支持大尺寸小组件。
-- **CDT Monitor**（`CDT-Monitor-scriptable.js` / `CDT-Monitor-scripting.tsx`）：与 CDT Monitor 配套的 Scriptable 文件。
+- 首页服务专区整卡清空、云盘汇总置空、服务入口那排清空。
+- 对话（系统机器人 / 家庭会话 / 消息汇总）、社区、商城瀑布流内容清空；“我的”界面只留管理中心、服务中心、工具。
+- 另有 3 条 http-request 规则清掉社区、首页配置、商城的缓存校验头，强制回全量再掏空。
+- 已知限制（接口层改不了）：底部对话 / 商城 / 社区三个按钮是 App 原生写死的，只能掏空内容；首页天气本版恢复原样，空白字段照样会被 App 判为获取失败。
 
-### 19. 天翼云盘精简
+### 18. 天翼云盘精简
+
 
 只留网盘功能：首页删 AI 权益分区与非网盘入口、清横幅、推荐订阅与 AI 问答提示，不动文件与账号数据。
 
 🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/tianyiyunpan/tianyiyunpan.sgmodule`
 
-### 20. 微博去推广
+### 19. 微博去推广
+
 
 去开屏、红包、签到及非社交推广；只留社交本体。
 
 🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/weibo/weibo.sgmodule`
 
-### 21. 小米音箱去营销
+### 20. 小米音箱去营销
+
 
 去广告、弹窗与会员推销，保留设备控制与基本内容。
 
 🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/xiaomispeaker/xiaomispeaker.sgmodule`
 
-### 22. 携程去广告
+### 21. 携程去广告
+
 
 清广告位数据与广告上报，保留酒店机票火车票等预订功能。
 
 🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/ctrip/ctrip.sgmodule`
 
-### 23. 渝畅行精简
+### 22. 渝畅行精简
+
 
 首页菜单只留行程/到站/拥堵/首末班/站点/快车时刻/进站预约，去广告、去首页动态流、拦日志上报；乘车码、登录、票卡、版本检查不动。
 
 🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yuchangxing/yuchangxing.sgmodule`
+
+### 23. Scriptable 小组件
+
+
+- **CSL Monitor**（`CSL-Monitor.js`，v1.2.0）：中超比赛监控，仅支持大尺寸小组件。
+- **CDT Monitor**（`CDT-Monitor-scriptable.js` / `CDT-Monitor-scripting.tsx`）：与 CDT Monitor 配套的 Scriptable 文件。
 
 ---
 
