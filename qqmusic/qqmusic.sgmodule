@@ -1,5 +1,5 @@
 #!name=QQ音乐去广告
-#!desc=QQ音乐去广告：拦广告 SDK、广告内容、视频广告与统计上报；主接口加密动不了，推荐、我的页推广位、绿钻入口保留（去广告范围，不破VIP）
+#!desc=QQ音乐去广告：拦广告 SDK、广告内容、视频广告、开屏广告与统计上报；主接口加密动不了，推荐、我的页推广位、绿钻入口保留（去广告范围，不破VIP）
 #!category=【yisa】Sgmodule
 [URL Rewrite]
 ^https://ad\.tencentmusic\.com/ _ reject
@@ -16,5 +16,7 @@
 ^https://adcdn6\.tencentmusic\.com/ _ reject
 ^https://adsmind\.gdtimg\.com/ _ reject
 ^https://tmead\.y\.qq\.com/ _ reject
+^https://us\.l\.qq\.com/exapp _ reject
+^https://xs\.gdt\.qq\.com/style_factory/ _ reject
 [MITM]
-hostname = %APPEND% ad.tencentmusic.com, mc.tencentmusic.com, c6.y.qq.com, shc6.y.qq.com, music.y.qq.com, report.tencentmusic.com, monitor.music.qq.com, sdkreport.e.qq.com, adcdn6.tencentmusic.com, adsmind.gdtimg.com, tmead.y.qq.com
+hostname = %APPEND% ad.tencentmusic.com, mc.tencentmusic.com, c6.y.qq.com, shc6.y.qq.com, music.y.qq.com, report.tencentmusic.com, monitor.music.qq.com, sdkreport.e.qq.com, adcdn6.tencentmusic.com, adsmind.gdtimg.com, tmead.y.qq.com, us.l.qq.com, xs.gdt.qq.com
