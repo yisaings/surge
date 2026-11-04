@@ -4,7 +4,7 @@
     var obj = JSON.parse($response.body);
     if (url.indexOf('/v3/home') !== -1 && obj.data && Array.isArray(obj.data.component)) {
       obj.data.component = obj.data.component.filter(function (c) {
-        return c.zz_type !== 'hongbao';
+        return c.zz_type !== 'hongbao' && c.zz_type !== 'banner';
       });
     } else if (url.indexOf('/home/list') !== -1 && obj.data) {
       if (Array.isArray(obj.data.banner_v2)) {
@@ -37,6 +37,10 @@
     } else if (url.indexOf('user-api.smzdm.com/vip') !== -1 && obj.data) {
       obj.data.featured_activitys = [];
       obj.data.big_banner = [];
+    } else if (url.indexOf('app-api.smzdm.com/util/loading') !== -1 && Array.isArray(obj.data)) {
+      obj.data = obj.data.filter(function (it) {
+        return it.is_show_ad !== '1';
+      });
     }
     $done({ body: JSON.stringify(obj) });
   } catch (e) {
