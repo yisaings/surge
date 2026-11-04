@@ -1,5 +1,5 @@
-#!name=百度地图去广告
-#!desc=百度地图精简：打车、酒店、电商、积分墙、车主、活动任务空白，我的页去营销卡与点亮打卡，周边去 AI 推荐与笔记流，首页去通知与悬浮球
+#!name=百度地图精简
+#!desc=去营销区与我的页营销卡
 #!category=【yisa】Sgmodule
 [URL Rewrite]
 ^https://newclient\.map\.baidu\.com/client/crossmarketing/ _ reject
