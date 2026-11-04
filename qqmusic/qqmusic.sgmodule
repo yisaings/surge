@@ -1,5 +1,5 @@
 #!name=QQ音乐去广告
-#!desc=QQ音乐去广告：拦广告 SDK、广告内容、视频广告、开屏广告与统计上报；主接口加密动不了，推荐、我的页推广位、绿钻入口保留（去广告范围，不破VIP）
+#!desc=拦广告与上报，不破 VIP
 #!category=【yisa】Sgmodule
 [URL Rewrite]
 ^https://ad\.tencentmusic\.com/ _ reject
