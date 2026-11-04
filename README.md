@@ -28,6 +28,11 @@
 | `woyunpan/` | 联通云盘精简 |
 | `xiaodu/` | 小度精简 |
 | `yingshiyun/` | 萤石云视频精简 |
+| `tianyiyunpan/` | 天翼云盘精简 |
+| `weibo/` | 微博去推广 |
+| `xiaomispeaker/` | 小米音箱去营销 |
+| `ctrip/` | 携程去广告 |
+| `yuchangxing/` | 渝畅行精简 |
 | `CSL-Monitor.js` | 中超比赛监控 Scriptable 小组件 |
 | `CDT-Monitor-scriptable.js` / `CDT-Monitor-scripting.tsx` | CDT Monitor 配套文件 |
 
@@ -157,6 +162,36 @@
 
 - **CSL Monitor**（`CSL-Monitor.js`，v1.2.0）：中超比赛监控，仅支持大尺寸小组件。
 - **CDT Monitor**（`CDT-Monitor-scriptable.js` / `CDT-Monitor-scripting.tsx`）：与 CDT Monitor 配套的 Scriptable 文件。
+
+### 19. 天翼云盘精简
+
+只留网盘功能：首页删 AI 权益分区与非网盘入口、清横幅、推荐订阅与 AI 问答提示，不动文件与账号数据。
+
+🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/tianyiyunpan/tianyiyunpan.sgmodule`
+
+### 20. 微博去推广
+
+去开屏、红包、签到及非社交推广；只留社交本体。
+
+🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/weibo/weibo.sgmodule`
+
+### 21. 小米音箱去营销
+
+去广告、弹窗与会员推销，保留设备控制与基本内容。
+
+🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/xiaomispeaker/xiaomispeaker.sgmodule`
+
+### 22. 携程去广告
+
+清广告位数据与广告上报，保留酒店机票火车票等预订功能。
+
+🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/ctrip/ctrip.sgmodule`
+
+### 23. 渝畅行精简
+
+首页菜单只留行程/到站/拥堵/首末班/站点/快车时刻/进站预约，去广告、去首页动态流、拦日志上报；乘车码、登录、票卡、版本检查不动。
+
+🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yuchangxing/yuchangxing.sgmodule`
 
 ---
 
