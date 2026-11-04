@@ -88,6 +88,16 @@ function processBaiduMap(url, body) {
       if (j && j.data) j.data.detail = {};
       return JSON.stringify(j);
     }
+    if (url.includes('/feed-server/activity/task_init')) {
+      const j = JSON.parse(body);
+      if (j && j.data) j.data = {};
+      return JSON.stringify(j);
+    }
+    if (url.includes('/datacenter/group/groupconf')) {
+      const j = JSON.parse(body);
+      if (j && j.data) j.data = {};
+      return JSON.stringify(j);
+    }
   } catch (e) {
     return body;
   }
