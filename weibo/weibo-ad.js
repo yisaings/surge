@@ -151,7 +151,9 @@
       }
       return x;
     }
-    done(walk(o9));
+    var cleaned9 = walk(o9);
+    if (cleaned9.feed_redpacket) cleaned9.feed_redpacket = {};
+    done(cleaned9);
     return;
   }
 
@@ -169,6 +171,12 @@
       for (var i = 0; i < o10.items.length; i++) {
         var it = o10.items[i];
         if (it && DROP_ITEMS[it.itemId]) continue;
+        if (it && it.itemId === 'mine_attent_title') continue;
+        if (it && it.itemId && it.itemId.indexOf('100505_-_meattent') === 0) continue;
+        if (it && it.header) {
+          delete it.header.vipView;
+          delete it.header.vipIcon;
+        }
         if (it && Array.isArray(it.items)) {
           var subs = [];
           for (var j = 0; j < it.items.length; j++) {
@@ -194,6 +202,12 @@
           it.body.items = bsubs;
         }
         kept.push(it);
+      }
+      for (var ci2 = 0; ci2 < kept.length; ci2++) {
+        if (kept[ci2] && kept[ci2].itemId === '100505_-_chaohua') {
+          kept = kept.slice(0, ci2 + 1);
+          break;
+        }
       }
       o10.items = kept;
     }
@@ -229,6 +243,57 @@
       });
     }
     done(o12);
+    return;
+  }
+
+  // 13. 关注页顶部直播行：清空直播故事流
+  if (url.indexOf('api.weibo.cn/2/live/media_homelist') !== -1) {
+    var o13 = parse();
+    if (!o13) return;
+    o13.data = [];
+    done(o13);
+    return;
+  }
+
+  // 14. 发现页：清搜索框推荐词、删中间轮播卡片
+  if (url.indexOf('api.weibo.cn/2/search/finder') !== -1) {
+    var o14 = parse();
+    if (!o14) return;
+    if (o14.channelInfo && Array.isArray(o14.channelInfo.channels)) {
+      for (var ci = 0; ci < o14.channelInfo.channels.length; ci++) {
+        var ch = o14.channelInfo.channels[ci];
+        var li = ch && ch.payload && ch.payload.loadedInfo;
+        if (li && Array.isArray(li.searchBarContent)) li.searchBarContent = [];
+      }
+    }
+    if (o14.header && o14.header.data && Array.isArray(o14.header.data.items)) {
+      for (var gi = 0; gi < o14.header.data.items.length; gi++) {
+        var grp = o14.header.data.items[gi];
+        if (grp && Array.isArray(grp.items)) {
+          grp.items = grp.items.filter(function (s) {
+            return !(s && s.data && s.data.itemid === 'finder_window');
+          });
+        }
+      }
+    }
+    done(o14);
+    return;
+  }
+
+  // 15. 消息-动态流：删广告卡片（带 promotion/ad_tag 或 source=ad 的消息）
+  if (url.indexOf('api.weibo.cn/2/messageflow/notice') !== -1) {
+    var o15 = parse();
+    if (!o15) return;
+    if (Array.isArray(o15.messages)) {
+      o15.messages = o15.messages.filter(function (m) {
+        var mc = m && m.msg_card;
+        if (!mc) return true;
+        if (mc.promotion || mc.ad_tag) return false;
+        if (mc.actionlog && mc.actionlog.source === 'ad') return false;
+        return true;
+      });
+    }
+    done(o15);
     return;
   }
 
