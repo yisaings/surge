@@ -1,24 +1,20 @@
 #!name=萤石云视频精简
-#!desc=萤石云视频 VideoGo：服务专区整卡与云盘汇总清空，对话/社区内容清空、商城瀑布流清空，我的界面只留管理中心、服务中心、工具；并清掉社区/首页配置/商城的缓存校验头，强制回全量再掏空。底部对话/商城/社区三个按钮是 App 原生写死的，脚本删不掉按钮，只能掏空内容。天气本版恢复原样（接口层去不掉，空白字段照样报获取失败）。
+#!desc=萤石云视频精简：服务专区、云盘汇总、对话横幅广告、对话与社区内容、商城瀑布流清空，我的界面只留管理中心、服务中心、工具；底部按钮与天气条原生去不掉
 #!category=【yisa】Sgmodule
-
 [Script]
-# 清缓存规则只删请求头、不读请求体，所以不写 requires-body（默认 false）；写 true 反而是白白缓存整个请求体
 EZVIZ清缓存社区 = type=http-request,pattern=^https://api\.ys7\.com/v3/videoclips/community/(banner|tab|position),script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js
 EZVIZ清缓存首页配置 = type=http-request,pattern=^https://api\.ys7\.com/v3/devices/homepage/basic,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js
 EZVIZ清缓存商城 = type=http-request,pattern=^https://m\.ys7\.com/default/(index-waterfall-tab-list|rn-index),script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js
-
-# 响应体净化规则：要改 body，必须 requires-body=true
 EZVIZ服务专区整卡清空 = type=http-response,pattern=^https://api\.ys7\.com/v3/entrance/vas/service/info,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=true
 EZVIZ云盘汇总置空 = type=http-response,pattern=^https://api\.ys7\.com/v3/clouds/cloudspace/spaceInfo,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=true
 EZVIZ服务入口清空 = type=http-response,pattern=^https://api\.ys7\.com/v3/config/service/entrance/component/info,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=true
 EZVIZ对话清空 = type=http-response,pattern=^https://api\.ys7\.com/v3/intelligent-bot/bot/,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=true
 EZVIZ家庭会话清空 = type=http-response,pattern=^https://api\.ys7\.com/v3/terminal/communication/im/chat/page,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=true
 EZVIZ消息汇总清空 = type=http-response,pattern=^https://api\.ys7\.com/v3/unifiedmsg/,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=true
+EZVIZ对话横幅清空 = type=http-response,pattern=^https://api\.ys7\.com/api/ads/v2,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=true
 EZVIZ商城瀑布流清空 = type=http-response,pattern=^https://m\.ys7\.com/default/index-waterfall-tab-list,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=true
 EZVIZ商城页空白 = type=http-response,pattern=^https://m\.ys7\.com/default/rn-index,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=true
 EZVIZ社区清空 = type=http-response,pattern=^https://api\.ys7\.com/v3/videoclips/community/,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=true
 EZVIZ我的界面精简 = type=http-response,pattern=^https://api\.ys7\.com/v3/valueadded/operation/config/master/station,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun-ad.js,requires-body=true
-
 [MITM]
 hostname = %APPEND% api.ys7.com, m.ys7.com
