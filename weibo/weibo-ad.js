@@ -203,9 +203,15 @@
         }
         kept.push(it);
       }
+      var CUT_FROM = {
+        '100505_-_recentlyuser': 1, '100505_-_mypay_new': 1,
+        '100505_-_chaohua': 1, '100505_-_worldcup': 1,
+        '100505_-_manage2': 1, 'mine_attent_title': 1
+      };
       for (var ci2 = 0; ci2 < kept.length; ci2++) {
-        if (kept[ci2] && kept[ci2].itemId === '100505_-_chaohua') {
-          kept = kept.slice(0, ci2 + 1);
+        var cid = kept[ci2] && kept[ci2].itemId;
+        if (cid && (CUT_FROM[cid] || cid.indexOf('100505_-_meattent') === 0)) {
+          kept = kept.slice(0, ci2);
           break;
         }
       }
