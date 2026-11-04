@@ -1,5 +1,5 @@
 #!name=航旅纵横精简
-#!desc=航旅纵横精简：首页去广告位、发现目的地、本地服务、新人券包与瀑布流推广资讯卡，我的页去营销区与圈子、航旅会卡与推广行、票券权益与钱包列、运营卡置空；社区仅放行个人资料、其余拦，活动、上报、免税图与 Mixpanel 整域拦，广告图路径单拦；不动行程、航班动态、值机、机场数据、消息
+#!desc=航旅纵横精简：首页去广告位、发现目的地、本地服务、新人券包与瀑布流推广资讯卡，我的页去营销区与圈子、航旅会卡与推广行、票券权益、运营卡置空；社区仅放行个人资料、其余拦，活动、上报、免税图与 Mixpanel 整域拦，广告图路径单拦；不动行程、航班动态、值机、机场数据、钱包、消息、客服与证件行
 #!category=【yisa】Sgmodule
 [Script]
 umetrip-gw = type=http-response,pattern=^https?://(bkclient\.umetrip\.com\.cn|umerp\.umetrip\.com(\.cn)?|umehome\.umetrip\.com(\.cn)?|home\.umetrip\.com(\.cn)?|opactivity\.umetrip\.com|sns\.umetrip\.com)/gateway/api/umetrip/native,requires-body=true,binary-body-mode=true,max-size=1048576,script-path=https://raw.githubusercontent.com/yisaings/surge/main/umetrip/umetrip-gw.js
