@@ -1,0 +1,16 @@
+#!name=携程去广告
+#!desc=携程 App：清广告位数据与广告上报，保留酒店机票火车票等预订功能
+#!category=【yisa】Sgmodule
+
+
+[Script]
+携程广告位 = type=http-response,pattern=^https://m\.ctrip\.com/restapi/soa2/[^/]+/json/tripAds,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/ctrip/ctrip-ad.js
+
+
+[URL Rewrite]
+^https://ma-adx\.ctrip\.com _ reject
+^https://ubtlog\.ctrip\.com _ reject
+
+
+[MITM]
+hostname = %APPEND% m.ctrip.com
