@@ -26,6 +26,8 @@ function processBaiduMap(url, body) {
         if (j.data.voice_card) j.data.voice_card.rcmdtopics = {};
         j.data.sport_card = {};
         if (j.data.caricon && Array.isArray(j.data.caricon.list)) j.data.caricon.list = [];
+        j.data.footPrint = {};
+        j.data.street_view_card = {};
       }
       return JSON.stringify(j);
     }
@@ -38,6 +40,9 @@ function processBaiduMap(url, body) {
       const j = JSON.parse(body);
       if (j && j.Result && Array.isArray(j.Result.cards)) {
         j.Result.cards = j.Result.cards.filter(c => !(c.cardName && c.cardName.indexOf('diamond') !== -1));
+        j.Result.cards.forEach(c => {
+          if (c && typeof c === 'object' && c.data && Array.isArray(c.data.feeds)) c.data.feeds = [];
+        });
       }
       return JSON.stringify(j);
     }
