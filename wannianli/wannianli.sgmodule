@@ -90,5 +90,6 @@ DOMAIN,tnc3-alisc1.zijieapi.com,REJECT
 DOMAIN,sdk-conf.getui.com,REJECT
 
 
+wnl-vip = type=http-response,pattern=^https://r\.51wnl-cq\.com/api/Member/IsMember,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/wannianli/wnl-vip.js
 [MITM]
 hostname = %APPEND% adn.51wnl-cq.com, apic.51wnl-cq.com, c.51wnl-cq.com, msgn.51wnl-cq.com, dspad.51wnl-cq.com, ssp.iytcdn.com, ad.51wnl-cq.com, r.51wnl-cq.com, cn.51wnl-cq.com
