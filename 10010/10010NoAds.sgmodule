@@ -1,5 +1,5 @@
-#!name=中国联通去广告
-#!desc=联通去广告：首页、我的页去营销，商城空白，权益空白
+#!name=中国联通精简
+#!desc=首页、我的页去营销，商城、权益空白
 #!category=【yisa】Sgmodule
 [Script]
 联通首页瀑布流 = type=http-response, pattern=^https://m\.client\.10010\.com/clientIndex/api/v1/index/queryIndexWaterfall, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
