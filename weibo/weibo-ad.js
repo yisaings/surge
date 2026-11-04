@@ -288,7 +288,16 @@
     return;
   }
 
-  // 15. 消息-动态流：删广告卡片（带 promotion/ad_tag 或 source=ad 的消息）
+  // 15. 搜索联想：清空猜你想搜（发现页搜索框点按后占位词由此回流）
+  if (url.indexOf('api.weibo.cn/2/!/was/finder/searchbarchange') !== -1) {
+    var o15a = parse();
+    if (!o15a) return;
+    o15a.suggestions = [];
+    done(o15a);
+    return;
+  }
+
+  // 16. 消息-动态流：删广告卡片（带 promotion/ad_tag 或 source=ad 的消息）
   if (url.indexOf('api.weibo.cn/2/messageflow/notice') !== -1) {
     var o15 = parse();
     if (!o15) return;
