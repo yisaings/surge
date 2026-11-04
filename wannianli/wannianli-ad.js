@@ -36,6 +36,34 @@ try {
     }
     if (Array.isArray(obj.msgs)) obj.msgs = [];
     if (Array.isArray(obj.messages)) obj.messages = [];
+  } else if (url.includes('/api/CardHome/GetCardHomeItems')) {
+    if (obj.data && Array.isArray(obj.data)) {
+      obj.data = obj.data.filter(function (c) { return !/openvip/.test(c.url || ''); });
+    }
+  } else if (url.includes('/api/CardHome/GetCardHome')) {
+    let drop = ['今日星座', '每日一言', '抖音领券', '特价会员', '今日一览', '限时背景图', '按钮图', '非限时背景图', '电子木鱼'];
+    if (obj.data && Array.isArray(obj.data)) {
+      obj.data.forEach(function (g) {
+        if (Array.isArray(g.items)) {
+          g.items = g.items.filter(function (it) {
+            return drop.indexOf(it.title) === -1 && !/openvip|csj-mall/.test(it.url || '');
+          });
+        }
+      });
+      obj.data = obj.data.filter(function (g) {
+        return !Array.isArray(g.items) || g.items.length > 0;
+      });
+    }
+  } else if (url.includes('/api/healthtimer/list')) {
+    if (obj.data) { obj.data = []; }
+  } else if (url.includes('/api/News/GetInfiniteInfos')) {
+    if (obj.data) { obj.data = []; }
+  } else if (url.includes('/api/channel/GetChannelList')) {
+    if (obj.data) { obj.data = []; }
+  } else if (url.includes('/api/daily/GetDailySentences')) {
+    if (obj.data) { obj.data = []; }
+  } else if (url.includes('/api/ChannelCardFlow/GetList')) {
+    if (obj.data) { obj.data = []; }
   }
   $done({ body: JSON.stringify(obj) });
 } catch (e) {
