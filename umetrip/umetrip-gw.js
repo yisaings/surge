@@ -26,7 +26,6 @@
     return;
   }
   if (rpid === "1370286") { $done({ body: new Uint8Array(0) }); return; }
-  if (rpid === "1130016") { $done({ body: new Uint8Array(0) }); return; }
   if (rpid !== "1100001" && rpid !== "1000017" && rpid !== "1000002" && rpid !== "1000029") { passthrough(); return; }
   if (!(body instanceof Uint8Array)) { passthrough(); return; }
   function readVarint(bytes, pos) {
@@ -175,6 +174,8 @@
   }
   function keepMyPageSection(payload) {
     var t = textOf(payload);
+    if (/"title"\s*:\s*"客服"/.test(t)) return true;
+    if (t.indexOf("我的证件") !== -1 || t.indexOf("常客卡") !== -1) return true;
     if (/"title"\s*:\s*"票券权益"/.test(t)) return false;
     if (/"hasOperationCard"\s*:\s*true/.test(t)) return false;
     if (/"trackName"\s*:\s*"equity"/.test(t)) return false;
