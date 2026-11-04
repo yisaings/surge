@@ -1,5 +1,5 @@
 #!name=中国联通去广告
-#!desc=联通去广告 v10：v9 全部 + newUserInfo 清流量推广并关新户旗标（实验）、钱包卡 payShowFlag=false（实验）、穿山甲与 WebInsight 埋点域拦截；MITM 不变，更新模块即可
+#!desc=联通去广告 v11：v10 全部 + H5 包补丁（我的兜底格子 douDiData、首页 OMO 兜底 omoDataDoudi 置空）+ 撤掉无用新户旗标；MITM 加 img.client.10010.com，须删模块重装
 #!category=【yisa】Sgmodule
 
 
@@ -46,6 +46,8 @@
 联通我的页楼层配置 = type=http-response, pattern=^https://m\.client\.10010\.com/clientMyPage/v1/api/aggregateFloorConfig, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
 
 联通导航菜单 = type=http-response,pattern=^https://m\.client\.10010\.com/navigationService/naviService/navMenuList,requires-body=true,max-size=2097152,script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通我的兜底格子 = type=http-response, pattern=^https://img\.client\.10010\.com/myinfo12/js/chunk-, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
+联通首页OMO兜底 = type=http-response, pattern=^https://img\.client\.10010\.com/homejingxuan12/js/omoQianrenqianmian, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/10010/10010NoAds.js
 
 [Rule]
 DOMAIN,smartad.10010.com,REJECT
@@ -59,4 +61,4 @@ DOMAIN,playback.newbuy.chinaunicom.cn,REJECT
 
 
 [MITM]
-hostname = %APPEND% m.client.10010.com, m.10010.com, card.10010.com
+hostname = %APPEND% m.client.10010.com, m.10010.com, card.10010.com, img.client.10010.com
