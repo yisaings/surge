@@ -55,6 +55,7 @@ RULE-SET,https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/release/
 | `xiaomispeaker/` | 小米音箱去广告 |
 | `ctrip/` | 携程去广告 |
 | `yuchangxing/` | 渝畅行精简 |
+| `wannianli/` | 万年历去广告解锁 |
 | `CSL-Monitor.js` | 中超比赛监控 Scriptable 小组件 |
 | `CDT-Monitor-scriptable.js` / `CDT-Monitor-scripting.tsx` | CDT Monitor 配套文件 |
 
@@ -194,7 +195,13 @@ NodeSeek 论坛每日签到。脚本原作者：[@Sliverkiss](https://github.com
 
 只留乘车功能，去广告与动态流。
 
-### 23. Scriptable 小组件
+### 23. 万年历去广告解锁
+
+🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/wannianli/wannianli.sgmodule`
+
+去广告，解锁 VIP。
+
+### 24. Scriptable 小组件
 
 - `CSL-Monitor.js`：中超比赛监控小组件。
 - `CDT-Monitor-scriptable.js` / `CDT-Monitor-scripting.tsx`：CDT Monitor 配套文件。
