@@ -1,8 +1,6 @@
 #!name=百度网盘去广告
-#!desc=百度网盘去广告 v3：v2 的开屏/弹窗/引导/金刚区/工具区/上报全保留，新增我的页 SVIP 卡、任务系统卡、游戏中心整区清掉；头像、我的收藏一排图标、空间卡不动（去广告范围，不破 SVIP）
+#!desc=百度网盘精简：开屏、弹窗、引导、金刚区、工具区、我的页 SVIP 卡、任务系统卡、游戏中心、任务列表空白，空间卡与文件功能不动
 #!category=【yisa】Sgmodule
-
-
 [Script]
 百度网盘开屏配置 = type=http-response, pattern=^https://pan\.baidu\.com/api/getsyscfg, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidupan/baidupan-ad.js
 百度网盘活动弹窗 = type=http-response, pattern=^https://pan\.baidu\.com/act/api/activityentry, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidupan/baidupan-ad.js
@@ -11,8 +9,7 @@
 百度网盘 SVIP 卡 = type=http-response, pattern=^https://pan\.baidu\.com/rest/2\.0/membership/user, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidupan/baidupan-ad.js
 百度网盘任务系统卡 = type=http-response, pattern=^https://pan\.baidu\.com/coins/center/notice, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidupan/baidupan-ad.js
 百度网盘游戏中心 = type=http-response, pattern=^https://pan\.baidu\.com/act/v2/gamecenter/, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidupan/baidupan-ad.js
-
-
+百度网盘任务列表 = type=http-response, pattern=^https://pan\.baidu\.com/api/taskscore/tasklist, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/baidupan/baidupan-ad.js
 [URL Rewrite]
 ^https://update\.pan\.baidu\.com/statistics _ reject
 ^https://diskapi\.baidu\.com/rest/2\.0/netdisk/log _ reject
@@ -28,7 +25,6 @@
 ^https://sessions\.bugsnag\.com/ _ reject
 ^https://mssdk\.volces\.com/ri/report_otob _ reject
 ^https://tdid\.m\.qq\.com/event/report _ reject
-
-
+^https://api-nxs-v4\.mentamob\.com/ _ reject
 [MITM]
 hostname = %APPEND% pan.baidu.com, update.pan.baidu.com, diskapi.baidu.com, cpc-service-square.58iclick.com, cpc-service-square.yunxish.com, cpc-service-square.iggrowth.cn, bz-ipdx.baidu.com, logrcv.yunxish.com, usr-api.yunxish.com, service.yunxish.com, tracelog-debug.yunxish.com, sessions.bugsnag.com, mssdk.volces.com, tdid.m.qq.com
