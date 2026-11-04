@@ -1,0 +1,19 @@
+#!name=渝畅行精简
+#!desc=渝畅行只留乘车本质：首页菜单只留行程/到站/拥堵/首末班/站点/快车时刻/进站预约，去广告、去首页动态流、拦日志上报；乘车码、登录、票卡、版本检查不动。
+#!category=【yisa】Sgmodule
+
+
+[Script]
+渝畅行首页菜单 = type=http-response, pattern=^https://ycx\.cqmetro\.cn/bas/appmgt/v3/app-menus, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/yuchangxing/yuchangxing-ad.js
+渝畅行广告 = type=http-response, pattern=^https://api\.bwton\.com/bas/ad/v1/advertisement/getAds, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/yuchangxing/yuchangxing-ad.js
+渝畅行首页动态 = type=http-response, pattern=^https://api\.bwton\.com/bas/tweets/v1/posts/home_list, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/yuchangxing/yuchangxing-ad.js
+
+
+[URL Rewrite]
+^https://dlogs\.bwton\.com/ _ reject
+^https://upload\.bwton\.com/applog/ _ reject
+^https://sofire\.baidu\.com/ _ reject
+
+
+[MITM]
+hostname = %APPEND% ycx.cqmetro.cn, api.bwton.com
