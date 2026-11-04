@@ -1,19 +1,13 @@
 #!name=滴滴精简
-#!desc=滴滴出行精简 v3：只留打车；顶部只留出行 tab；首页服务网格只留 5 个叫车服务；清首页营销轮播、领券横幅、车主招募挂件、日常运营活动卡、公交乘车码、扫一扫；我的页清会员卡、营销卡、企业服务卡、推广挂件，只留头像、订单、钱包、3 个工具、安全中心；清开屏海报弹窗；拦广告上报；不动叫车卡、进行中订单、底部 tab
+#!desc=滴滴精简：顶部只留出行，首页服务网格只留 5 个叫车服务，首页去营销轮播、领券横幅、车主招募与运营卡，我的页去会员卡、营销卡、企业服务卡与推广挂件，开屏弹窗空白，广告上报拦截，叫车、订单、安全中心不动
 #!category=【yisa】Sgmodule
-
-
 [Script]
-滴滴精简 = type=http-response,pattern=^https://conf\.diditaxi\.com\.cn/homepage/v1/core,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/didi/didi-ad.js
-滴滴精简 = type=http-response,pattern=^https://conf\.diditaxi\.com\.cn/homepage/v1/other/fast,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/didi/didi-ad.js
-滴滴精简 = type=http-response,pattern=^https://conf\.diditaxi\.com\.cn/homepage/v1/other/slow,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/didi/didi-ad.js
-滴滴精简 = type=http-response,pattern=^https://common\.diditaxi\.com\.cn/common/v5/usercenter/layout,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/didi/didi-ad.js
-滴滴精简 = type=http-response,pattern=^https://res\.xiaojukeji\.com/resapi/activity/mget,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/didi/didi-ad.js
-
-
+滴滴首页核心 = type=http-response,pattern=^https://conf\.diditaxi\.com\.cn/homepage/v1/core,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/didi/didi-ad.js
+滴滴首页快 = type=http-response,pattern=^https://conf\.diditaxi\.com\.cn/homepage/v1/other/fast,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/didi/didi-ad.js
+滴滴首页慢 = type=http-response,pattern=^https://conf\.diditaxi\.com\.cn/homepage/v1/other/slow,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/didi/didi-ad.js
+滴滴我的页 = type=http-response,pattern=^https://common\.diditaxi\.com\.cn/common/v5/usercenter/layout,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/didi/didi-ad.js
+滴滴开屏弹窗 = type=http-response,pattern=^https://res\.xiaojukeji\.com/resapi/activity/mget,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/didi/didi-ad.js
 [URL Rewrite]
 ^https://adtrack\.xiaojukeji\.com/trackx _ reject
-
-
 [MITM]
 hostname = %APPEND% conf.diditaxi.com.cn, common.diditaxi.com.cn, res.xiaojukeji.com, adtrack.xiaojukeji.com
