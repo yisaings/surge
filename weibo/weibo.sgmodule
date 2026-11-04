@@ -1,0 +1,33 @@
+#!name=微博去推广
+#!desc=去开屏、红包、签到及非社交推广；只留社交本体。
+#!category=【yisa】Sgmodule
+
+
+[Script]
+微博开屏预加载 = type=http-response,pattern=^https://bootpreload\.uve\.weibo\.com/v2/ad/preload,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/weibo/weibo-ad.js
+微博开屏拉取广告 = type=http-response,pattern=^https://wbapp\.uve\.weibo\.com/wbapplua/wbpullad\.lua,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/weibo/weibo-ad.js
+微博签到弹窗 = type=http-response,pattern=^https://api\.weibo\.cn/2/checkin/show,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/weibo/weibo-ad.js
+微博读红包配置 = type=http-response,pattern=^https://api\.weibo\.cn/2/ug/read/redpacket/config,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/weibo/weibo-ad.js
+微博视频红包 = type=http-response,pattern=^https://api\.weibo\.cn/2/!/multimedia/video/red_package/grow_follower/active_uids,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/weibo/weibo-ad.js
+微博首页气泡 = type=http-response,pattern=^https://api\.weibo\.cn/2/!/ug/home_bubble,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/weibo/weibo-ad.js
+微博搜索彩蛋推广 = type=http-response,pattern=^https://api\.weibo\.cn/2/!/mi/api/sap,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/weibo/weibo-ad.js
+微博视频提醒气泡 = type=http-response,pattern=^https://api\.weibo\.cn/2/video/remind_info,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/weibo/weibo-ad.js
+微博推送节点 = type=http-response,pattern=^https://api\.weibo\.cn/2/push/active,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/weibo/weibo-ad.js
+微博我的页 = type=http-response,pattern=^https://api\.weibo\.cn/2/profile/me,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/weibo/weibo-ad.js
+微博发博面板 = type=http-response,pattern=^https://api\.weibo\.cn/2/client/publisher_list,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/weibo/weibo-ad.js
+微博热门流推广帖 = type=http-response,pattern=^https://api\.weibo\.cn/2/statuses/container_timeline_hot,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/weibo/weibo-ad.js
+
+
+[URL Rewrite]
+^https://adimg\.uve\.weibo\.com _ reject
+^https://ad\.us\.sinaimg\.cn _ reject
+^https://kadmimage\.biz\.weibo\.com/ad/ _ reject
+^https://sdkmonitor\.biz\.weibo\.com _ reject
+^https://sdkclick\.biz\.weibo\.com _ reject
+^https://sdkaction\.biz\.weibo\.com _ reject
+^https://tg-v\.jd\.com _ reject
+^https://ef-dongfeng\.tanx\.com _ reject
+
+
+[MITM]
+hostname = %APPEND% api.weibo.cn, bootpreload.uve.weibo.com, wbapp.uve.weibo.com
