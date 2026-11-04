@@ -208,9 +208,22 @@
         removed += filtered.removed;
         newP1 = replacePayload(newP1, 11, filtered.bytes);
       }
-      var circ = filterFields(newP1, 2, function (pl) { return !isCircleEntry(pl); });
-      removed += circ.removed;
-      newP1 = circ.bytes;
+      var p1fields = parseFields(newP1);
+      var p1parts = [];
+      var circRemoved = 0;
+      for (var i = 0; i < p1fields.length; i++) {
+        var f = p1fields[i];
+        if (f.fieldNo === 2 && f.wireType === 2) {
+          var itemPl = payloadOf(newP1, f);
+          var stripped = filterFields(itemPl, 7, function (pl) { return !isCircleEntry(pl); });
+          circRemoved += stripped.removed;
+          p1parts.push(wrapField(2, stripped.bytes));
+        } else {
+          p1parts.push(newP1.subarray(f.start, f.end));
+        }
+      }
+      removed += circRemoved;
+      newP1 = concat(p1parts);
       if (removed === 0) { passthrough(); return; }
       var newP7b = replacePayload(p7, 1, newP1);
       $done({ body: replacePayload(body, 7, newP7b) });
