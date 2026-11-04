@@ -1,3 +1,9 @@
+// 中国联通去广告 v9（2026-11-04 晚，依据 21:01 空白配置+单模块重抓包 313 条）：
+// - 新增导航菜单库过滤：navMenuList 是首页卡片与我的页营销格子的唯一活源（本包内百亿补贴等标题只在此接口出现，
+//   其余接口体均已是 v8 清空后状态）；按标题/别名精确匹配删 12 类营销项，充话费/充流量/查账单/PLUS 等功能项不在黑名单内故保留；
+// - 已知副作用：菜单库无页面标记，同标题项在服务页也会一并消失；
+// - 未定位（本包任何 HTTP 体/JS 包里均无对应数据，疑 aggregateFloorData 缓存或原生桥接数据）：首页更多靓号卡与卡内小字徽标、
+//   我的页套餐专区卡/加赠横幅/我的设备推广机型/营销格子余项（套餐专区/享数码好物/手机特惠/至高享千元），须冷启动重抓我的页看 aggregateFloorData 再定。
 // 中国联通去广告 v8（2026-11-03 晚，核实 211417 重装包：我的页默认菜单在 H5 包里、清空会触发兜底，故改 moduleConfigFlag=true＋各楼层关旗标使菜单为空；商城 brandZone/terminalGoods 补规则）：
 // 中国联通去广告 v4（2026-11-03 晚，Yi 新口径：首页只留话费/流量行、商城清空、我的页只留基本信息）：
 // - 首页脚手架 pageContent 全清；顶栏 homeMenuItems/homeTopMenuItems 全清；专属优惠右栏 pageList 也清；
@@ -177,6 +183,13 @@ if (obj) {
     obj.data = [];
   } else if (url.indexOf('mall-access/query/FlowWindowAndBanner') !== -1) {
     obj.data = {};
+  } else if (url.indexOf('naviService/navMenuList') !== -1) {
+    var NAV_BLOCK = ['百亿补贴', '更多套餐', '流量专区', '装宽带', '宽带新装', '宽带升级', '腾讯王卡', '选靓号', '流量特惠', '1元1GB', '宽带办理', '全屋光宽带'];
+    if (obj.data && obj.data.value && Array.isArray(obj.data.value.list)) {
+      obj.data.value.list = obj.data.value.list.filter(function (it) {
+        return NAV_BLOCK.indexOf(it.title) === -1 && NAV_BLOCK.indexOf(it.menuAliasName) === -1;
+      });
+    }
   } else if (url.indexOf('mall-access/searchRecommend') !== -1) {
     obj.data = [];
   }
