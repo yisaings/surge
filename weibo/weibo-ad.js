@@ -297,14 +297,15 @@
     return;
   }
 
-  // 16. 搜索页卡片：删“猜你想搜”整卡（留搜索偏好设置）
+  // 16. 搜索页卡片：搜索落地页（带“猜你想搜”卡）整页下方全部清空
   if (url.indexOf('api.weibo.cn/2/cardlist') !== -1) {
     var o16a = parse();
     if (!o16a) return;
     if (Array.isArray(o16a.items)) {
-      o16a.items = o16a.items.filter(function (it) {
-        return !(it && it.header && it.header.title === '猜你想搜');
+      var hasGuess = o16a.items.some(function (it) {
+        return it && it.header && it.header.title === '猜你想搜';
       });
+      if (hasGuess) o16a.items = [];
     }
     done(o16a);
     return;
