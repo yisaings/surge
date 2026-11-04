@@ -8,6 +8,30 @@
 
 ---
 
+## 广告拦截（基础层）
+
+本仓库各模块是在下面这套基础广告拦截开着的环境下抓包、开发的；只装模块不加这套基础层，部分广告可能还在（抓包时它们已经被这套规则拦了，包里看不到）。
+
+```ini
+# Unbreak（防止部分广告规则误杀正常服务）
+RULE-SET,https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/UnBan.list,DIRECT
+
+# 广告规则
+RULE-SET,https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/release/rule/Surge/Advertising/Advertising.list,REJECT
+
+# 广告域名规则
+DOMAIN-SET,https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/release/rule/Surge/Advertising/Advertising_Domain.list,REJECT
+
+# 劫持规则
+RULE-SET,https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/release/rule/Surge/Hijacking/Hijacking.list,REJECT
+```
+
+去广告总模块，请挪到模块位置第一个：
+
+🔗 `https://raw.githubusercontent.com/QingRex/LoonKissSurge/refs/heads/main/Surge/Beta/广告平台拦截器.beta.sgmodule`
+
+---
+
 ## 目录结构
 
 | 目录 | 内容 |
