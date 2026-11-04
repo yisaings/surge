@@ -1,3 +1,11 @@
+// 中国联通去广告 v11（2026-11-04 晚，依据 21:42 重装首启包 1336 条：兜底数据源定位到 H5 包内，接口层到墙的问题改走包补丁）：
+// - 新增包补丁（须 MITM img.client.10010.com，见 sgmodule；脚本内任一补丁条件不满足即原样放行，绝不破坏页面）：
+//   (1) 我的页兜底格子：myinfo12 chunk-2660b238 的 douDiData（10 项，与截图格子顺序完全一致）置空，isDouDiIndex 同步置空，
+//       HuoDongData 随 douDiData 自动为空；内容锚点 douDiData=[{title:"宽带办理" 保证只命中该包；
+//   (2) 首页 OMO 兜底：homejingxuan12 omoQianrenqianmian 的 omoDataDoudi（流量专区/装宽带）置空；
+// - newUserInfo：撤掉 v10 的 isNewBroad/isNewCard=false（21:32 实证横幅仍在，旗标无用，不留无用改动）；trafficVo 清空保留；
+// - navMenuList 过滤在重装首启包里实证跑上（1572 项、黑名单余 0），保留；
+// - 待定位（本包仍无）：首页大卡片兜底 moren 结构、套餐专区侧卡、加赠横幅（疑图片）、我的设备推广 chunk-5f99f7f2。
 // 中国联通去广告 v10（2026-11-04 晚，依据 21:15 冷启动重抓包 983 条 + 旧包复核 Gemini 说法）：
 // - newUserInfo：trafficVo.pageList 清空（流量推广位，功能行 broad/card/contract/cloud 不动）；
 //   isNewBroad/isNewCard 置 false（实验：验证加赠横幅是否由新户旗标控制，若横幅还在则与此无关）；
@@ -35,9 +43,31 @@
 //      商城选号（card.10010.com）、图片 CDN（m1.img/img.client，功能图标与广告图混用不能整域拦）、
 //      推送通道（pushservice，只清推送消息里的营销内容）、开屏（本次包没抓到冷启动，未动）
 var url = $request.url;
+var body = $response.body;
+var patched = null;
+if (url.indexOf('omoQianrenqianmian') !== -1 && body.indexOf('omoDataDoudi:[{title:"流量专区"') !== -1) {
+  var s = body.indexOf('omoDataDoudi:[');
+  var e = body.indexOf(']}},created:', s);
+  if (s !== -1 && e !== -1 && body.indexOf('omoDataDoudi:[', s + 1) === -1) {
+    patched = body.slice(0, s) + 'omoDataDoudi:[]' + body.slice(e + 1);
+  }
+} else if (url.indexOf('/myinfo12/js/chunk-') !== -1 && body.indexOf('douDiData=[{title:"宽带办理"') !== -1) {
+  var s2 = body.indexOf('this.douDiData=[');
+  var e2 = body.indexOf('],this.isDouDiIndex=', s2);
+  if (s2 !== -1 && e2 !== -1 && body.indexOf('this.douDiData=[', s2 + 1) === -1) {
+    var tmp = body.slice(0, s2) + 'this.douDiData=[]' + body.slice(e2 + 1);
+    var idxLit = 'this.isDouDiIndex=[0,1,2,3,4,5,6,7,8,9]';
+    if (tmp.indexOf(idxLit) !== -1) {
+      patched = tmp.replace(idxLit, 'this.isDouDiIndex=[]');
+    }
+  }
+}
+if (patched !== null) {
+  $done({ body: patched });
+} else {
 var obj = null;
 try {
-  obj = JSON.parse($response.body);
+  obj = JSON.parse(body);
 } catch (e) {
   obj = null;
 }
@@ -137,8 +167,6 @@ if (obj) {
         if (obj.data.userInfoData.trafficVo && Array.isArray(obj.data.userInfoData.trafficVo.pageList)) {
           obj.data.userInfoData.trafficVo.pageList = [];
         }
-        obj.data.userInfoData.isNewBroad = false;
-        obj.data.userInfoData.isNewCard = false;
       }
     }
   } else if (url.indexOf('getDeviceInfo') !== -1) {
@@ -213,4 +241,5 @@ if (obj) {
   $done({ body: JSON.stringify(obj) });
 } else {
   $done({});
+}
 }
