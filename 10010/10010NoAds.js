@@ -1,3 +1,10 @@
+// 中国联通去广告 v12（2026-11-04 晚，依据 22:10 重装首启包 433 条：v11 两包补丁实证已跑上、画面仍在，证明源头找错）：
+// - 22:10 包实锤：chunk-2660b238 体内 douDiData=[]、omoQianrenqianmian 体内 omoDataDoudi=[]，即 v11 包补丁已在设备上跑到，
+//   但视频里首页卡片仍在——首页 OMO 行真正源头是 homeView 包内的 omoDataList 默认数据（流量专区/装宽带/超值购机/靓号秒杀/套餐专区/热销手机），
+//   omoQianrenqianmian 只是另一路个性化组件。本版新增 homeView 包补丁：omoDataList 平衡括号置空（两包同规则逻辑，锚点不满足即原样放行）；
+// - 我的格子双保险：已有 goods=[] 不足以杀格子（v11 视频 1 实证格子仍在——init 种子在 fetch 空结果时存活），
+//   本版 precisionKeyAndActivity 再把服务端“移出”开关 MoveOut 置 1，走 chunk-2660 自身的清空分支；只动这一个开关；
+// - 其余 v11 全部保留；MITM 不变，更新模块即可。
 // 中国联通去广告 v11（2026-11-04 晚，依据 21:42 重装首启包 1336 条：兜底数据源定位到 H5 包内，接口层到墙的问题改走包补丁）：
 // - 新增包补丁（须 MITM img.client.10010.com，见 sgmodule；脚本内任一补丁条件不满足即原样放行，绝不破坏页面）：
 //   (1) 我的页兜底格子：myinfo12 chunk-2660b238 的 douDiData（10 项，与截图格子顺序完全一致）置空，isDouDiIndex 同步置空，
@@ -61,6 +68,39 @@ if (url.indexOf('omoQianrenqianmian') !== -1 && body.indexOf('omoDataDoudi:[{tit
       patched = tmp.replace(idxLit, 'this.isDouDiIndex=[]');
     }
   }
+} else if (url.indexOf('/js/homeView.') !== -1 && body.indexOf('omoDataList:') !== -1) {
+  var out = '';
+  var pos = 0;
+  var changed = false;
+  while (true) {
+    var a = body.indexOf('omoDataList:', pos);
+    if (a === -1) { out += body.slice(pos); break; }
+    var b = body.indexOf('[', a);
+    if (b === -1) { changed = false; break; }
+    var depth = 0;
+    var k = b;
+    var instr = false;
+    var esc = false;
+    var q = '';
+    while (k < body.length) {
+      var ch = body.charAt(k);
+      if (instr) {
+        if (esc) esc = false;
+        else if (ch === '\\') esc = true;
+        else if (ch === q) instr = false;
+      } else {
+        if (ch === '"' || ch === "'" || ch === '`') { instr = true; q = ch; }
+        else if (ch === '[') depth++;
+        else if (ch === ']') { depth--; if (depth === 0) break; }
+      }
+      k++;
+    }
+    if (depth !== 0) { changed = false; break; }
+    out += body.slice(pos, a) + 'omoDataList:[]';
+    pos = k + 1;
+    changed = true;
+  }
+  if (changed) patched = out;
 }
 if (patched !== null) {
   $done({ body: patched });
@@ -175,7 +215,10 @@ if (obj) {
       obj.data.leftData = {};
     }
   } else if (url.indexOf('precisionKeyAndActivity') !== -1) {
-    if (obj.data && Array.isArray(obj.data.goods)) obj.data.goods = [];
+    if (obj.data) {
+      if (Array.isArray(obj.data.goods)) obj.data.goods = [];
+      obj.data.precisionKeyAndActivityMoveOut = "1";
+    }
   } else if (url.indexOf('aggregateFloorData') !== -1) {
     obj.data = {};
   } else if (url.indexOf('mall-access/homePage/v25/query/brandZone') !== -1) {
