@@ -1,5 +1,5 @@
 #!name=天翼云盘精简
-#!desc=只留网盘功能：首页删 AI 权益分区与非网盘入口、清横幅、推荐订阅与 AI 问答提示、去我的页开通会员横幅，不动文件与账号数据。
+#!desc=只留网盘功能，去横幅与会员推广
 #!category=【yisa】Sgmodule
 [Script]
 tianyiyunpan-home = type=http-response, pattern=^https://api\.cloud\.189\.cn/bff/client/newHomePages\.action, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/tianyiyunpan/tianyiyunpan-ad.js
