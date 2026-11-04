@@ -1,6 +1,10 @@
 #!name=航旅纵横精简
-#!desc=航旅纵横精简 v1：只留登机相关；整域拦社区、活动（含行程页运营横幅）、上报与免税购物图；不动行程、航班动态、值机、机场数据、钱包与消息
+#!desc=航旅纵横精简 v2：只留登机相关；网关过滤我的页营销区、航旅圈子与广告横幅，运营卡置空；整域拦社区、活动、上报、免税图与 Mixpanel，广告图路径单拦；不动行程、航班动态、值机、机场数据、钱包、消息与票券权益
 #!category=【yisa】Sgmodule
+
+
+[Script]
+umetrip-gw = type=http-response,pattern=^https?://(bkclient\.umetrip\.com\.cn|umerp\.umetrip\.com(\.cn)?|umehome\.umetrip\.com(\.cn)?|home\.umetrip\.com(\.cn)?)/gateway/api/umetrip/native,requires-body=true,binary-body-mode=true,max-size=1048576,script-path=https://raw.githubusercontent.com/yisaings/surge/main/umetrip/umetrip-gw.js
 
 
 [URL Rewrite]
@@ -9,8 +13,10 @@
 ^https://sensors\.umetrip\.com\.cn/ _ reject
 ^https://analytics\.umetrip\.com/ _ reject
 ^https://bda\.umetrip\.com/ _ reject
-^https://lefox-data-library-cdn\.cdfsunrise\.com/ _ reject
+^https://lefox-data-library-cdn\.cdfsunrise.com/ _ reject
+^https://oss\.umetrip\.com/fs/advert/ _ reject
+^https://api\.mixpanel\.com/ _ reject
 
 
 [MITM]
-hostname = %APPEND% sns.umetrip.com, activity.umetrip.com, sensors.umetrip.com.cn, analytics.umetrip.com, bda.umetrip.com, lefox-data-library-cdn.cdfsunrise.com
+hostname = %APPEND% sns.umetrip.com, activity.umetrip.com, sensors.umetrip.com.cn, analytics.umetrip.com, bda.umetrip.com, lefox-data-library-cdn.cdfsunrise.com, oss.umetrip.com, api.mixpanel.com, bkclient.umetrip.com.cn, umerp.umetrip.com, umehome.umetrip.com, home.umetrip.com
