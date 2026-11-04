@@ -25,6 +25,7 @@
     $done({ body: new Uint8Array(0) });
     return;
   }
+  if (rpid === "1370286") { $done({ body: new Uint8Array(0) }); return; }
   if (rpid !== "1100001" && rpid !== "1000017" && rpid !== "1000002" && rpid !== "1000029") { passthrough(); return; }
   if (!(body instanceof Uint8Array)) { passthrough(); return; }
   function readVarint(bytes, pos) {
