@@ -1,8 +1,8 @@
-#!name=创维智慧云精简（脚本返空版）
-#!desc=创维智慧云：首页轮播与我的页 banner 空白，快手开屏广告拦截
+#!name=创维智慧云精简
+#!desc=创维智慧云：首页轮播接口返回失败（试验顶部空白是否消失），快手开屏广告拦截
 #!category=【yisa】Sgmodule
 [Script]
-创维轮播接口返空 = type=http-response,pattern=^https://app\.skyworthdigitaliot\.com/skyworthOperation/v1/appOperation/allBannerConfig,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/skyworth/skyworth-empty.js,requires-body=true
+创维轮播接口返失败 = type=http-response,pattern=^https://app\.skyworthdigitaliot\.com/skyworthOperation/v1/appOperation/allBannerConfig,script-path=https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/skyworth/skyworth-banner-fail.js,requires-body=true
 [Rule]
 DOMAIN,p66-ad.adkwai.com,REJECT
 DOMAIN,p4-lm.adukwai.com,REJECT
