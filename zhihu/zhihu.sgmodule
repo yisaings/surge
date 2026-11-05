@@ -8,6 +8,7 @@
 知乎我的页 = type=http-response,pattern=^https://api\.zhihu\.com/people/self,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/zhihu/zhihu-profile.js
 知乎灵感 = type=http-response,pattern=^https://api\.zhihu\.com/creators/personalized-question-tabs,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/zhihu/zhihu-inspiration.js
 知乎关注 = type=http-response,pattern=^https://api\.zhihu\.com/moments/hybrid,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/zhihu/zhihu-follow.js
+知乎优惠券 = type=http-response,pattern=^https://api\.zhihu\.com/slytherin/scene/coupon_countdown,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/zhihu/zhihu-coupon.js
 知乎穿山甲 = type=http-request,pattern=^https://api-access\.pangolin-sdk-toutiao\.com/api/ad/union/sdk/(get_ads/|device_score|settings/),script-path=https://raw.githubusercontent.com/yisaings/surge/main/zhihu/zhihu-adsdk.js
 知乎广点通 = type=http-request,pattern=^https://sdk\.e\.qq\.com/(event|perf|msg),script-path=https://raw.githubusercontent.com/yisaings/surge/main/zhihu/zhihu-adsdk.js
 知乎广点通QUIC = type=http-request,pattern=^https://sdkquic\.e\.qq\.com/(activate|update|launch),script-path=https://raw.githubusercontent.com/yisaings/surge/main/zhihu/zhihu-adsdk.js
