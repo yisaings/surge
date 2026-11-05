@@ -1,0 +1,44 @@
+#!name=百度贴吧精简
+#!desc=只留帖子查看，去视频、直播与广告
+#!category=【yisa】Sgmodule
+[URL Rewrite]
+^https://tiebac\.baidu\.com/c/f/ad/getFeedAd _ reject
+^https://tiebac\.baidu\.com/c/f/ad/getSplashAd _ reject
+^https://tiebac\.baidu\.com/c/s/adNewLog _ reject
+^https://tiebac\.baidu\.com/c/s/newlog _ reject
+^https://tiebac\.baidu\.com/c/s/loop _ reject
+^https://tiebac\.baidu\.com/c/s/pv _ reject
+^https://tiebac\.baidu\.com/c/s/nps/global _ reject
+^https://tiebac\.baidu\.com/c/s/getIconToast _ reject
+^https://tiebac\.baidu\.com/c/s/shop/getKjsIMList _ reject
+^https://tiebac\.baidu\.com/c/s/activateTask _ reject
+^https://tiebac\.baidu\.com/c/s/trackConfig _ reject
+^https://tiebac\.baidu\.com/c/f/video/redIcon _ reject
+^https://tiebac\.baidu\.com/c/f/voiceroom/newstab _ reject
+^https://tiebac\.baidu\.com/c/f/chat/commonChannel _ reject
+^https://tiebac\.baidu\.com/c/f/chat/getRoomListByFid _ reject
+^https://tiebac\.baidu\.com/c/u/chat/getChatSubscriptionList _ reject
+^https://tiebac\.baidu\.com/c/c/forum/statClientStartTimes _ reject
+^https://tieba\.baidu\.com/c/f/forum/shopGoodsFeed _ reject
+^https://tieba\.baidu\.com/mo/q/hybrid-main-forumtab/forumShopStreet/hybrid _ reject
+^https://gsp0\.baidu\.com/.*/tb/img/track\.gif _ reject
+[Rule]
+DOMAIN,api-access.pangolin-sdk-toutiao.com,REJECT
+DOMAIN,api-access.pangolin-sdk-toutiao1.com,REJECT
+DOMAIN,mi.gdt.qq.com,REJECT
+DOMAIN,sdk.e.qq.com,REJECT
+DOMAIN,adsmind.ugdtimg.com,REJECT
+DOMAIN,pgdt.ugdtimg.com,REJECT
+DOMAIN-SUFFIX,pglstatp-toutiao.com,REJECT
+DOMAIN,mobads.baidu.com,REJECT
+DOMAIN,afd.baidu.com,REJECT
+DOMAIN,mbd.baidu.com,REJECT
+DOMAIN,h2tcbox.baidu.com,REJECT
+DOMAIN,als.baidu.com,REJECT
+DOMAIN,rpe.xdplt.com,REJECT
+DOMAIN,lxcode.bs2cdn.yy.com,REJECT
+DOMAIN,gdfp.gifshow.com,REJECT
+DOMAIN,nadvideo2.baidu.com,REJECT
+DOMAIN,tb-video.bdstatic.com,REJECT
+[MITM]
+hostname = %APPEND% tiebac.baidu.com, tieba.baidu.com, gsp0.baidu.com
