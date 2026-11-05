@@ -55,6 +55,7 @@ RULE-SET,https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/release/
 | `xiaomispeaker/` | 小米音箱去广告 |
 | `ctrip/` | 携程去广告 |
 | `yuchangxing/` | 渝畅行精简 |
+| `tieba/` | 百度贴吧精简 |
 | `wannianli/` | 万年历去广告解锁 |
 | `CSL-Monitor.js` | 中超比赛监控 Scriptable 小组件 |
 | `CDT-Monitor-scriptable.js` / `CDT-Monitor-scripting.tsx` | CDT Monitor 配套文件 |
@@ -63,11 +64,15 @@ RULE-SET,https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/release/
 
 ## 模块一览
 
+测试版本指该模块实测通过时的 App 版本；App 升级后若失效，欢迎反馈。
+
 ### 1. 中国联通精简
 
 🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/10010/10010NoAds.sgmodule`
 
 首页、我的页去营销，商城、权益空白。
+
+测试版本：13.0200（已验证）。
 
 ### 2. 联通 Cookie 获取
 
@@ -75,11 +80,15 @@ RULE-SET,https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/release/
 
 打开联通手机营业厅 App 抓 Cookie，抓到后可把脚本与 MITM 两项填 `#` 禁用。脚本原作者：[@dompling](https://github.com/dompling)。
 
+测试版本：13.0200（同联通 App，已验证）。
+
 ### 3. 慢慢买去广告
 
 🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/manmanbuy/manmanbuy.sgmodule`
 
 去红包弹窗与红包卡。
+
+测试版本：5.2.51.1（已验证）。
 
 ### 4. 什么值得买去广告
 
@@ -87,11 +96,15 @@ RULE-SET,https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/release/
 
 去红包卡、横幅与开屏广告。
 
+测试版本：11.2.3（已验证）。
+
 ### 5. 百度地图精简
 
 🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/baidumap/baidumap.sgmodule`
 
 去营销区与我的页营销卡。
+
+测试版本：22.1.20.1（已验证）。
 
 ### 6. 百度网盘精简
 
@@ -99,11 +112,15 @@ RULE-SET,https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/release/
 
 去开屏、弹窗与我的页营销卡。
 
+测试版本：—（已验证）。
+
 ### 7. 哔哩哔哩茧房
 
 🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/bilibili/Fuck-jianfang.sgmodule`
 
 替换首页推荐流，打破信息茧房。核心逻辑移植与启发自 [lixing23/Fuck-jianfang](https://github.com/lixing23/Fuck-jianfang)。
+
+测试版本：—（已验证）。
 
 ### 8. 滴滴精简
 
@@ -111,11 +128,15 @@ RULE-SET,https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/release/
 
 首页只留叫车服务，我的页去营销卡。
 
+测试版本：8.0.18（已验证）。
+
 ### 9. 懂球帝去广告
 
 🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/dongqiudi/dongqiudi.list`
 
 纯域名规则，拦广告联盟与开屏分发。
+
+测试版本：—（纯域名规则，无 App 版本）。
 
 ### 10. 高德精简
 
@@ -123,11 +144,15 @@ RULE-SET,https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/release/
 
 只留地图与导航，去营销与推荐流。
 
+测试版本：—（已验证）。
+
 ### 11. NodeSeek 每日签到
 
 🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/nodeseek/NodeSeekDailyBonus.sgmodule`
 
 NodeSeek 论坛每日签到。脚本原作者：[@Sliverkiss](https://github.com/Sliverkiss)。
+
+测试版本：—（网页版，无 App 版本）。
 
 ### 12. QQ 音乐去广告
 
@@ -135,11 +160,15 @@ NodeSeek 论坛每日签到。脚本原作者：[@Sliverkiss](https://github.com
 
 拦广告与上报，不破 VIP。
 
+测试版本：—（已验证）。
+
 ### 13. 创维智慧云精简
 
 🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/skyworth/skyworth.sgmodule`
 
 首页轮播与横幅空白，拦开屏广告。
+
+测试版本：—（已验证）。
 
 ### 14. 航旅纵横精简
 
@@ -147,11 +176,15 @@ NodeSeek 论坛每日签到。脚本原作者：[@Sliverkiss](https://github.com
 
 精简首页、我的页与社区，去推广营销。
 
+测试版本：—（待验证）。
+
 ### 15. 联通云盘精简
 
 🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/woyunpan/woyunpan.sgmodule`
 
 去开屏、会员横幅与营销行，文件功能不动。
+
+测试版本：—（已验证）。
 
 ### 16. 小度精简
 
@@ -159,11 +192,15 @@ NodeSeek 论坛每日签到。脚本原作者：[@Sliverkiss](https://github.com
 
 首页只留回家看看与通话，去商城与会员推广。
 
+测试版本：6.0.0（已验证）。
+
 ### 17. 萤石云视频精简
 
 🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/yingshiyun/yingshiyun.sgmodule`
 
 清空营销与商城内容，我的页只留三项。
+
+测试版本：7.9.6（已验证）。
 
 ### 18. 天翼云盘精简
 
@@ -171,11 +208,15 @@ NodeSeek 论坛每日签到。脚本原作者：[@Sliverkiss](https://github.com
 
 只留网盘功能，去横幅与会员推广。
 
+测试版本：11.1.1（已验证）。
+
 ### 19. 微博去广告
 
 🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/weibo/weibo.sgmodule`
 
 去推广，只留社交本体。
+
+测试版本：—（已验证）。
 
 ### 20. 小米音箱去广告
 
@@ -183,11 +224,15 @@ NodeSeek 论坛每日签到。脚本原作者：[@Sliverkiss](https://github.com
 
 去广告、弹窗与会员推销，控制不动。
 
+测试版本：—（已验证）。
+
 ### 21. 携程去广告
 
 🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/ctrip/ctrip.sgmodule`
 
 去广告位与上报，预订不动。
+
+测试版本：8.97.2（已验证）。
 
 ### 22. 渝畅行精简
 
@@ -195,13 +240,25 @@ NodeSeek 论坛每日签到。脚本原作者：[@Sliverkiss](https://github.com
 
 只留乘车功能，去广告与动态流。
 
+测试版本：1.29.0（待验证）。
+
 ### 23. 万年历去广告解锁
 
 🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/wannianli/wannianli.sgmodule`
 
 去广告，解锁 VIP。
 
-### 24. Scriptable 小组件
+测试版本：7.5.9（已验证）。
+
+### 24. 百度贴吧精简
+
+🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/tieba/tieba.sgmodule`
+
+只留帖子查看，去视频、直播与广告。
+
+测试版本：22.13.3.0（已验证）。
+
+### 25. Scriptable 小组件
 
 - `CSL-Monitor.js`：中超比赛监控小组件。
 - `CDT-Monitor-scriptable.js` / `CDT-Monitor-scripting.tsx`：CDT Monitor 配套文件。
