@@ -2,8 +2,10 @@
 #!desc=只留帖子查看，去视频、直播与广告
 #!category=【yisa】Sgmodule
 [Script]
-tieba-feed = type=http-response,pattern=^https://tiebac\.baidu\.com/c/f/(excellent/personalized|frs/page),requires-body=true,binary-body-mode=true,max-size=-1,script-path=https://raw.githubusercontent.com/yisaings/surge/main/tieba/tieba-feed.js
-tieba-shop = type=http-response,pattern=^https://tieba\.baidu\.com/c/f/frs/frsBottom,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/tieba/tieba-shop.js
+tieba-feed = type=http-response,pattern=^https://tiebac\.baidu\.com/c/f/(excellent/personalized|frs/page|frs/threadlist),requires-body=true,binary-body-mode=true,max-size=-1,script-path=https://raw.githubusercontent.com/yisaings/surge/main/tieba/tieba-feed.js
+tieba-shop = type=http-response,pattern=^https://tieba[c]?\.baidu\.com/c/f/frs/frsBottom,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/tieba/tieba-shop.js
+tieba-album = type=http-response,pattern=^https://tieba\.baidu\.com/c/f/forum/getForumAlbum,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/tieba/tieba-album.js
+tieba-profile = type=http-response,pattern=^https://tiebac\.baidu\.com/c/u/user/profile,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/tieba/tieba-profile.js
 [URL Rewrite]
 ^https://tiebac\.baidu\.com/c/f/ad/getFeedAd _ reject
 ^https://tiebac\.baidu\.com/c/f/ad/getSplashAd _ reject
@@ -22,7 +24,7 @@ tieba-shop = type=http-response,pattern=^https://tieba\.baidu\.com/c/f/frs/frsBo
 ^https://tiebac\.baidu\.com/c/f/chat/getRoomListByFid _ reject
 ^https://tiebac\.baidu\.com/c/u/chat/getChatSubscriptionList _ reject
 ^https://tiebac\.baidu\.com/c/c/forum/statClientStartTimes _ reject
-^https://tieba\.baidu\.com/c/f/forum/shopGoodsFeed _ reject
+^https://tieba[c]?\.baidu\.com/c/f/forum/shopGoodsFeed _ reject
 ^https://tieba\.baidu\.com/mo/q/hybrid-main-forumtab/forumShopStreet/hybrid _ reject
 ^https://gsp0\.baidu\.com/.*/tb/img/track\.gif _ reject
 ^https://tiebac\.baidu\.com/livefeed/feed _ reject
