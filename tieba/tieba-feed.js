@@ -104,6 +104,11 @@
     for (var i = 0; i < str.length; i++) out[i] = str.charCodeAt(i) & 0xff;
     return out;
   }
+  function bytesEqual(a, b) {
+    if (a.length !== b.length) return false;
+    for (var i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+    return true;
+  }
   function indexOfBytes(hay, needle) {
     if (needle.length === 0 || hay.length < needle.length) return -1;
     for (var i = 0; i <= hay.length - needle.length; i++) {
@@ -138,6 +143,52 @@
     }
     return concat(parts);
   }
+  function setCardTypeNormal(meta) {
+    var fields = parseFields(meta);
+    var parts = [];
+    var changed = false;
+    var CARD_TYPE = bytesOf("card_type");
+    var VIDEO = bytesOf("video");
+    var NORMAL = bytesOf("normal");
+    for (var i = 0; i < fields.length; i++) {
+      var f = fields[i];
+      if (f.fieldNo === 1 && f.wireType === 2 && bytesEqual(payloadOf(meta, f), CARD_TYPE)) {
+        if (i + 1 < fields.length && fields[i + 1].fieldNo === 2 && fields[i + 1].wireType === 2 && bytesEqual(payloadOf(meta, fields[i + 1]), VIDEO)) {
+          parts.push(meta.subarray(f.start, f.end));
+          parts.push(wrapField(2, NORMAL));
+          changed = true;
+          i++;
+          continue;
+        }
+      }
+      parts.push(meta.subarray(f.start, f.end));
+    }
+    return changed ? concat(parts) : null;
+  }
+  function convertVideoPost(item) {
+    var fields = parseFields(item);
+    var parts = [];
+    var changed = false;
+    for (var i = 0; i < fields.length; i++) {
+      var f = fields[i];
+      if (f.fieldNo === 79) {
+        changed = true;
+        continue;
+      }
+      if (f.fieldNo === 234 && f.wireType === 2) {
+        var newMeta = setCardTypeNormal(payloadOf(item, f));
+        if (newMeta) {
+          parts.push(wrapField(234, newMeta));
+          changed = true;
+        } else {
+          parts.push(item.subarray(f.start, f.end));
+        }
+        continue;
+      }
+      parts.push(item.subarray(f.start, f.end));
+    }
+    return changed ? concat(parts) : null;
+  }
   var EMPTY = new Uint8Array(0);
   var TB_VIDEO = bytesOf("tb-video.bdstatic.com");
   try {
@@ -161,7 +212,13 @@
         } else if (f.fieldNo === 2 && f.wireType === 2) {
           var p = payloadOf(f2, f);
           if (indexOfBytes(p, TB_VIDEO) !== -1) {
-            changed = true;
+            var conv = convertVideoPost(p);
+            if (conv) {
+              parts.push(wrapField(2, conv));
+              changed = true;
+            } else {
+              parts.push(f2.subarray(f.start, f.end));
+            }
           } else {
             parts.push(f2.subarray(f.start, f.end));
           }
