@@ -8,6 +8,8 @@ tieba-album = type=http-response,pattern=^https://tieba\.baidu\.com/c/f/forum/ge
 tieba-profile = type=http-response,pattern=^https://tiebac\.baidu\.com/c/u/user/profile,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/tieba/tieba-profile.js
 tieba-sync = type=http-response,pattern=^https://tiebac\.baidu\.com/c/s/sync,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/tieba/tieba-sync.js
 tieba-splash = type=http-request,pattern=^https://tiebac\.baidu\.com/c/f/ad/getSplashAd,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/tieba/tieba-splash.js
+tieba-pangle = type=http-request,pattern=^https://api-access\.pangolin-sdk-toutiao\.com/api/ad/union/sdk/(get_ads/|device_score|settings/),script-path=https://raw.githubusercontent.com/yisaings/surge/main/tieba/tieba-adsdk.js
+tieba-gdt = type=http-request,pattern=^https://(sdkquic\.e\.qq\.com/launch|mi\.gdt\.qq\.com/gdt_mview\.fcg),script-path=https://raw.githubusercontent.com/yisaings/surge/main/tieba/tieba-adsdk.js
 [URL Rewrite]
 ^https://tiebac\.baidu\.com/c/f/ad/getFeedAd _ reject
 ^https://tiebac\.baidu\.com/c/s/adNewLog _ reject
