@@ -1,6 +1,9 @@
 #!name=百度贴吧精简
 #!desc=只留帖子查看，去视频、直播与广告
 #!category=【yisa】Sgmodule
+[Script]
+tieba-feed = type=http-response,pattern=^https://tiebac\.baidu\.com/c/f/(excellent/personalized|frs/page),requires-body=true,binary-body-mode=true,max-size=-1,script-path=https://raw.githubusercontent.com/yisaings/surge/main/tieba/tieba-feed.js
+tieba-shop = type=http-response,pattern=^https://tieba\.baidu\.com/c/f/frs/frsBottom,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/tieba/tieba-shop.js
 [URL Rewrite]
 ^https://tiebac\.baidu\.com/c/f/ad/getFeedAd _ reject
 ^https://tiebac\.baidu\.com/c/f/ad/getSplashAd _ reject
@@ -22,8 +25,11 @@
 ^https://tieba\.baidu\.com/c/f/forum/shopGoodsFeed _ reject
 ^https://tieba\.baidu\.com/mo/q/hybrid-main-forumtab/forumShopStreet/hybrid _ reject
 ^https://gsp0\.baidu\.com/.*/tb/img/track\.gif _ reject
+^https://tiebac\.baidu\.com/livefeed/feed _ reject
+^http://tiebac\.baidu\.com/c/s/interactMsgAlter _ reject
 [Rule]
 DOMAIN,api-access.pangolin-sdk-toutiao.com,REJECT
+DOMAIN,api-access.pangolin-sdk-toutiao-b.com,REJECT
 DOMAIN,api-access.pangolin-sdk-toutiao1.com,REJECT
 DOMAIN,mi.gdt.qq.com,REJECT
 DOMAIN,sdk.e.qq.com,REJECT
@@ -36,9 +42,14 @@ DOMAIN,mbd.baidu.com,REJECT
 DOMAIN,h2tcbox.baidu.com,REJECT
 DOMAIN,als.baidu.com,REJECT
 DOMAIN,rpe.xdplt.com,REJECT
-DOMAIN,lxcode.bs2cdn.yy.com,REJECT
+DOMAIN-SUFFIX,bs2cdn.yy.com,REJECT
 DOMAIN,gdfp.gifshow.com,REJECT
 DOMAIN,nadvideo2.baidu.com,REJECT
 DOMAIN,tb-video.bdstatic.com,REJECT
+DOMAIN,toblog.ctobsnssdk.com,REJECT
+DOMAIN,open.e.kuaishou.cn,REJECT
+DOMAIN,adx-data-u1.ubixioe.com,REJECT
+DOMAIN,lf-cdn-tos.bytescm.com,REJECT
+DOMAIN,ala-rmb-gift.bj.bcebos.com,REJECT
 [MITM]
 hostname = %APPEND% tiebac.baidu.com, tieba.baidu.com, gsp0.baidu.com
