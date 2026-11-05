@@ -42,6 +42,8 @@ DOMAIN,tbcdn.bdstatic.com,DIRECT
 DOMAIN,cdn.hiphotos.baidu.com,DIRECT
 DOMAIN,tieba-ares.cdn.bcebos.com,DIRECT
 DOMAIN,imgsrc.baidu.com,DIRECT
+DOMAIN,tieba.baidu.com,DIRECT
+DOMAIN,tiebac.baidu.com,DIRECT
 DOMAIN-SUFFIX,pglstatp-toutiao.com,REJECT
 DOMAIN,mobads.baidu.com,REJECT
 DOMAIN,afd.baidu.com,REJECT
