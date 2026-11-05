@@ -17,7 +17,10 @@ try {
       if (NONQA[pre]) return false;
       return true;
     });
-    body = JSON.stringify(o);
   }
+  if (o && o.fresh_text) {
+    o.fresh_text = "";
+  }
+  body = JSON.stringify(o);
 } catch (e) {}
 $done({ body: body });
