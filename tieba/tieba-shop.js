@@ -17,10 +17,25 @@
             if (cd && cd.data && cd.data.shop_info) { hasShop = true; break; }
           }
         }
-        if (hasShop) { changed = true; continue; }
+        var isChat = a && a.area_type === "chat-channel-card";
+        if (hasShop || isChat) { changed = true; continue; }
         akeep.push(a);
       }
       obj.area_data = akeep;
+    }
+    if (obj.card_activity && typeof obj.card_activity === "object") {
+      if (Array.isArray(obj.card_activity.small_card) && obj.card_activity.small_card.length > 0) {
+        obj.card_activity.small_card = [];
+        changed = true;
+      }
+      if (Array.isArray(obj.card_activity.area_data) && obj.card_activity.area_data.length > 0) {
+        obj.card_activity.area_data = [];
+        changed = true;
+      }
+    }
+    if (obj.frs_bottom && obj.frs_bottom.frs_chatroom) {
+      obj.frs_bottom.frs_chatroom = {};
+      changed = true;
     }
     function walk(node) {
       if (!node || typeof node !== "object") return;
