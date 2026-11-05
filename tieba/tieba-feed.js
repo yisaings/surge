@@ -99,16 +99,78 @@
     if (!done) throw new Error("field " + fieldNo + " not found");
     return concat(parts);
   }
+  function bytesOf(str) {
+    var out = new Uint8Array(str.length);
+    for (var i = 0; i < str.length; i++) out[i] = str.charCodeAt(i) & 0xff;
+    return out;
+  }
+  function indexOfBytes(hay, needle) {
+    if (needle.length === 0 || hay.length < needle.length) return -1;
+    for (var i = 0; i <= hay.length - needle.length; i++) {
+      var ok = true;
+      for (var j = 0; j < needle.length; j++) {
+        if (hay[i + j] !== needle[j]) { ok = false; break; }
+      }
+      if (ok) return i;
+    }
+    return -1;
+  }
+  function hasFieldNo(bytes, fieldNo) {
+    var fields = parseFields(bytes);
+    for (var i = 0; i < fields.length; i++) {
+      if (fields[i].fieldNo === fieldNo) return true;
+    }
+    return false;
+  }
+  function filterHotCard(payload) {
+    var fields = parseFields(payload);
+    var parts = [];
+    for (var i = 0; i < fields.length; i++) {
+      var f = fields[i];
+      if (f.fieldNo === 1 && f.wireType === 2) {
+        var sub = payloadOf(payload, f);
+        var hot = false;
+        try { hot = hasFieldNo(sub, 12); } catch (e) { hot = false; }
+        if (!hot) parts.push(payload.subarray(f.start, f.end));
+      } else {
+        parts.push(payload.subarray(f.start, f.end));
+      }
+    }
+    return concat(parts);
+  }
   var EMPTY = new Uint8Array(0);
+  var TB_VIDEO = bytesOf("tb-video.bdstatic.com");
   try {
     var url = req.url || "";
     var topF2 = findField(body, 2);
     if (!topF2) { passthrough(); return; }
     var f2 = payloadOf(body, topF2);
     if (url.indexOf("excellent/personalized") !== -1) {
-      if (!findField(f2, 9)) { passthrough(); return; }
-      var newF2 = replacePayload(f2, 9, EMPTY);
-      $done({ body: replacePayload(body, 2, newF2) });
+      var fields = parseFields(f2);
+      var parts = [];
+      var changed = false;
+      for (var i = 0; i < fields.length; i++) {
+        var f = fields[i];
+        if (f.fieldNo === 9 && f.wireType === 2) {
+          if (f.payloadEnd - f.payloadStart > 0) changed = true;
+          parts.push(wrapField(9, EMPTY));
+        } else if (f.fieldNo === 27 && f.wireType === 2) {
+          var newHot = filterHotCard(payloadOf(f2, f));
+          if (newHot.length !== (f.payloadEnd - f.payloadStart)) changed = true;
+          parts.push(wrapField(27, newHot));
+        } else if (f.fieldNo === 2 && f.wireType === 2) {
+          var p = payloadOf(f2, f);
+          if (indexOfBytes(p, TB_VIDEO) !== -1) {
+            changed = true;
+          } else {
+            parts.push(f2.subarray(f.start, f.end));
+          }
+        } else {
+          parts.push(f2.subarray(f.start, f.end));
+        }
+      }
+      if (!changed) { passthrough(); return; }
+      $done({ body: replacePayload(body, 2, concat(parts)) });
       return;
     }
     if (url.indexOf("frs/page") !== -1) {
@@ -119,6 +181,12 @@
       var newMid = replacePayload(mid, 33, EMPTY);
       var newF2b = replacePayload(f2, 2, newMid);
       $done({ body: replacePayload(body, 2, newF2b) });
+      return;
+    }
+    if (url.indexOf("frs/threadlist") !== -1) {
+      if (!findField(f2, 3)) { passthrough(); return; }
+      var newF2c = replacePayload(f2, 3, EMPTY);
+      $done({ body: replacePayload(body, 2, newF2c) });
       return;
     }
     passthrough();
