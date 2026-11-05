@@ -41,7 +41,6 @@
     if (obj.finance_tab) { obj.finance_tab = {}; changed = true; }
     if (obj.duxiaoman) { obj.duxiaoman = {}; changed = true; }
     if (obj.duxiaoman_entry) { obj.duxiaoman_entry = {}; changed = true; }
-    if (obj.vip_banner) { obj.vip_banner = null; changed = true; }
     if (obj.namoaixud_entry) { obj.namoaixud_entry = {}; changed = true; }
     if (Array.isArray(obj.recom_naws_list) && obj.recom_naws_list.length > 0) { obj.recom_naws_list = []; changed = true; }
     if (changed) { $done({ body: JSON.stringify(obj) }); return; }
