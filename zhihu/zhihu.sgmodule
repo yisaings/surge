@@ -1,0 +1,26 @@
+#!name=知乎精简
+#!desc=只留问答，去视频、直播与广告
+#!category=【yisa】Sgmodule
+[Script]
+知乎推荐流 = type=http-response,pattern=^https://api\.zhihu\.com/(topstory/recommend|recommend/app/zhihu_classics_top),requires-body=true,max-size=-1,script-path=https://raw.githubusercontent.com/yisaings/surge/main/zhihu/zhihu-feed.js
+知乎顶栏 = type=http-response,pattern=^https://api\.zhihu\.com/root/tab/v2,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/zhihu/zhihu-tab.js
+知乎穿山甲 = type=http-request,pattern=^https://api-access\.pangolin-sdk-toutiao\.com/api/ad/union/sdk/(get_ads/|device_score|settings/),script-path=https://raw.githubusercontent.com/yisaings/surge/main/zhihu/zhihu-adsdk.js
+知乎广点通 = type=http-request,pattern=^https://sdk\.e\.qq\.com/(event|perf|msg),script-path=https://raw.githubusercontent.com/yisaings/surge/main/zhihu/zhihu-adsdk.js
+知乎广点通QUIC = type=http-request,pattern=^https://sdkquic\.e\.qq\.com/(activate|update|launch),script-path=https://raw.githubusercontent.com/yisaings/surge/main/zhihu/zhihu-adsdk.js
+知乎广点通开屏 = type=http-request,pattern=^https://mi\.gdt\.qq\.com/gdt_mview\.fcg,script-path=https://raw.githubusercontent.com/yisaings/surge/main/zhihu/zhihu-adsdk.js
+知乎商业接口 = type=http-request,pattern=^https://api\.zhihu\.com/commercial_api/(banners_v3/app_topstory_banner|real_time_pull_refresh_v2|real_time_second_floor_v2),script-path=https://raw.githubusercontent.com/yisaings/surge/main/zhihu/zhihu-adsdk.js
+[URL Rewrite]
+^https://api\.zhihu\.com/zst/events/ _ reject
+^https://api\.zhihu\.com/message-push/event _ reject
+^https://api\.zhihu\.com/api/channel/tracking/ _ reject
+^https://api\.zhihu\.com/api/new_channel/tracking/ _ reject
+^https://api\.zhihu\.com/consumption_events/ _ reject
+^https://www\.zhihu\.com/sc-profiler-zhapp _ reject
+[Rule]
+DOMAIN,duga.zhihu.com,REJECT
+DOMAIN,zhihu-web-analytics.zhihu.com,REJECT
+DOMAIN,datahub.zhihu.com,REJECT
+DOMAIN,zhida.zhihu.com,REJECT
+DOMAIN-SUFFIX,pglstatp-toutiao.com,REJECT
+[MITM]
+hostname = %APPEND% api.zhihu.com, www.zhihu.com, api-access.pangolin-sdk-toutiao.com, sdk.e.qq.com, sdkquic.e.qq.com, mi.gdt.qq.com
