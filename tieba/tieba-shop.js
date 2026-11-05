@@ -6,6 +6,22 @@
   try {
     var obj = JSON.parse(body);
     var changed = false;
+    if (Array.isArray(obj.area_data)) {
+      var akeep = [];
+      for (var i = 0; i < obj.area_data.length; i++) {
+        var a = obj.area_data[i];
+        var hasShop = false;
+        if (a && Array.isArray(a.card_data)) {
+          for (var j = 0; j < a.card_data.length; j++) {
+            var cd = a.card_data[j];
+            if (cd && cd.data && cd.data.shop_info) { hasShop = true; break; }
+          }
+        }
+        if (hasShop) { changed = true; continue; }
+        akeep.push(a);
+      }
+      obj.area_data = akeep;
+    }
     function walk(node) {
       if (!node || typeof node !== "object") return;
       if (Array.isArray(node)) {
