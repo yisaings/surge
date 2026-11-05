@@ -130,13 +130,19 @@
   function filterHotCard(payload) {
     var fields = parseFields(payload);
     var parts = [];
+    var BANNER_CARD = bytesOf("banner_card");
     for (var i = 0; i < fields.length; i++) {
       var f = fields[i];
       if (f.fieldNo === 1 && f.wireType === 2) {
         var sub = payloadOf(payload, f);
         var hot = false;
+        var isBanner = false;
         try { hot = hasFieldNo(sub, 12); } catch (e) { hot = false; }
-        if (!hot) parts.push(payload.subarray(f.start, f.end));
+        try {
+          var firstF = findField(sub, 1);
+          if (firstF && bytesEqual(payloadOf(sub, firstF), BANNER_CARD)) isBanner = true;
+        } catch (e) { isBanner = false; }
+        if (!hot && !isBanner) parts.push(payload.subarray(f.start, f.end));
       } else {
         parts.push(payload.subarray(f.start, f.end));
       }
