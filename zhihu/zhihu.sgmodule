@@ -4,8 +4,9 @@
 [Script]
 知乎推荐流 = type=http-response,pattern=^https://api\.zhihu\.com/(topstory/recommend|recommend/app/zhihu_classics_top),requires-body=true,max-size=-1,script-path=https://raw.githubusercontent.com/yisaings/surge/main/zhihu/zhihu-feed.js
 知乎顶栏 = type=http-response,pattern=^https://api\.zhihu\.com/root/tab/v2,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/zhihu/zhihu-tab.js
-知乎搜索 = type=http-response,pattern=^https://api\.zhihu\.com/search/(preset_words\?|recommend_query/v2),requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/zhihu/zhihu-search.js
+知乎搜索 = type=http-response,pattern=^https://api\.zhihu\.com/search/(preset_words\?|recommend_query/v2|hot_search),requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/zhihu/zhihu-search.js
 知乎我的页 = type=http-response,pattern=^https://api\.zhihu\.com/people/self,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/zhihu/zhihu-profile.js
+知乎灵感 = type=http-response,pattern=^https://api\.zhihu\.com/creators/personalized-question-tabs,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/zhihu/zhihu-inspiration.js
 知乎穿山甲 = type=http-request,pattern=^https://api-access\.pangolin-sdk-toutiao\.com/api/ad/union/sdk/(get_ads/|device_score|settings/),script-path=https://raw.githubusercontent.com/yisaings/surge/main/zhihu/zhihu-adsdk.js
 知乎广点通 = type=http-request,pattern=^https://sdk\.e\.qq\.com/(event|perf|msg),script-path=https://raw.githubusercontent.com/yisaings/surge/main/zhihu/zhihu-adsdk.js
 知乎广点通QUIC = type=http-request,pattern=^https://sdkquic\.e\.qq\.com/(activate|update|launch),script-path=https://raw.githubusercontent.com/yisaings/surge/main/zhihu/zhihu-adsdk.js
