@@ -189,8 +189,22 @@
     }
     return changed ? concat(parts) : null;
   }
+  function filterRecForum(payload) {
+    var fields = parseFields(payload);
+    var parts = [];
+    for (var i = 0; i < fields.length; i++) {
+      var f = fields[i];
+      if (f.fieldNo === 2 && f.wireType === 2) {
+        var item = payloadOf(payload, f);
+        if (indexOfBytes(item, REC_FORUM) !== -1) continue;
+      }
+      parts.push(payload.subarray(f.start, f.end));
+    }
+    return concat(parts);
+  }
   var EMPTY = new Uint8Array(0);
   var TB_VIDEO = bytesOf("tb-video.bdstatic.com");
+  var REC_FORUM = bytesOf("recommend_forum");
   try {
     var url = req.url || "";
     var topF2 = findField(body, 2);
@@ -231,13 +245,28 @@
       return;
     }
     if (url.indexOf("frs/page") !== -1) {
+      var newF2 = f2;
+      var changed = false;
       var midField = findField(f2, 2);
-      if (!midField) { passthrough(); return; }
-      var mid = payloadOf(f2, midField);
-      if (!findField(mid, 33)) { passthrough(); return; }
-      var newMid = replacePayload(mid, 33, EMPTY);
-      var newF2b = replacePayload(f2, 2, newMid);
-      $done({ body: replacePayload(body, 2, newF2b) });
+      if (midField) {
+        var mid = payloadOf(f2, midField);
+        if (findField(mid, 33)) {
+          var newMid = replacePayload(mid, 33, EMPTY);
+          newF2 = replacePayload(f2, 2, newMid);
+          changed = true;
+        }
+      }
+      var f126 = findField(newF2, 126);
+      if (f126) {
+        var oldLen = f126.payloadEnd - f126.payloadStart;
+        var newF126 = filterRecForum(payloadOf(newF2, f126));
+        if (newF126.length !== oldLen) {
+          newF2 = replacePayload(newF2, 126, newF126);
+          changed = true;
+        }
+      }
+      if (!changed) { passthrough(); return; }
+      $done({ body: replacePayload(body, 2, newF2) });
       return;
     }
     if (url.indexOf("frs/threadlist") !== -1) {
