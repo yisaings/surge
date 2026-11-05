@@ -2,7 +2,7 @@
 #!desc=只留问答，去视频、直播与广告
 #!category=【yisa】Sgmodule
 [Script]
-知乎推荐流 = type=http-response,pattern=^https://api\.zhihu\.com/(topstory/recommend|recommend/app/zhihu_classics_top),requires-body=true,max-size=-1,script-path=https://raw.githubusercontent.com/yisaings/surge/main/zhihu/zhihu-feed.js
+知乎推荐流 = type=http-response,pattern=^https://api\.zhihu\.com/(topstory/recommend|recommend/app/zhihu_classics_top),requires-body=true,max-size=-1,script-path=https://raw.githubusercontent.com/yisaings/surge/main/zhihu/zhihu-feed-v6.js
 知乎顶栏 = type=http-response,pattern=^https://api\.zhihu\.com/root/tab/v2,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/zhihu/zhihu-tab.js
 知乎搜索 = type=http-response,pattern=^https://api\.zhihu\.com/search/(preset_words\?|recommend_query/v2|hot_search),requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/zhihu/zhihu-search-v4.js
 知乎我的页 = type=http-response,pattern=^https://api\.zhihu\.com/people/self,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/zhihu/zhihu-profile.js
