@@ -29,7 +29,16 @@ tieba-splash = type=http-request,pattern=^https://tiebac\.baidu\.com/c/f/ad/getS
 ^https://gsp0\.baidu\.com/.*/tb/img/track\.gif _ reject
 ^https://tiebac\.baidu\.com/livefeed/feed _ reject
 ^http://tiebac\.baidu\.com/c/s/interactMsgAlter _ reject
+^http://[0-9.]+/album/ _ reject
 [Rule]
+DOMAIN,tiebapic.baidu.com,DIRECT
+DOMAIN,tb.himg.baidu.com,DIRECT
+DOMAIN,tb1.bdstatic.com,DIRECT
+DOMAIN,tb3.bdstatic.com,DIRECT
+DOMAIN,tbcdn.bdstatic.com,DIRECT
+DOMAIN,cdn.hiphotos.baidu.com,DIRECT
+DOMAIN,tieba-ares.cdn.bcebos.com,DIRECT
+DOMAIN,imgsrc.baidu.com,DIRECT
 DOMAIN-SUFFIX,pglstatp-toutiao.com,REJECT
 DOMAIN,mobads.baidu.com,REJECT
 DOMAIN,afd.baidu.com,REJECT
