@@ -25,7 +25,7 @@
       var zkeep = [];
       for (var j = 0; j < obj.zone_info.length; j++) {
         var z = obj.zone_info[j];
-        if (z.type === "commerce" || z.type === "game") { changed = true; continue; }
+        if (z.type === "commerce" || z.type === "game" || z.type === "banner") { changed = true; continue; }
         if (z.type === "common_func" && z.common_func) {
           if (Array.isArray(z.common_func.common_func_other_new)) {
             z.common_func.common_func_other_new = dropNames(z.common_func.common_func_other_new);
@@ -42,6 +42,8 @@
     if (obj.duxiaoman) { obj.duxiaoman = {}; changed = true; }
     if (obj.duxiaoman_entry) { obj.duxiaoman_entry = {}; changed = true; }
     if (obj.vip_banner) { obj.vip_banner = null; changed = true; }
+    if (obj.namoaixud_entry) { obj.namoaixud_entry = {}; changed = true; }
+    if (Array.isArray(obj.recom_naws_list) && obj.recom_naws_list.length > 0) { obj.recom_naws_list = []; changed = true; }
     if (changed) { $done({ body: JSON.stringify(obj) }); return; }
     passthrough();
   } catch (e) {
