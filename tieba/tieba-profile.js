@@ -41,7 +41,7 @@
     if (obj.finance_tab) { obj.finance_tab = {}; changed = true; }
     if (obj.duxiaoman) { obj.duxiaoman = {}; changed = true; }
     if (obj.duxiaoman_entry) { obj.duxiaoman_entry = {}; changed = true; }
-    if (obj.vip_banner) { delete obj.vip_banner; changed = true; }
+    if (obj.vip_banner) { obj.vip_banner = null; changed = true; }
     if (changed) { $done({ body: JSON.stringify(obj) }); return; }
     passthrough();
   } catch (e) {
