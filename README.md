@@ -57,6 +57,7 @@ RULE-SET,https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/release/
 | `yuchangxing/` | 渝畅行精简 |
 | `tieba/` | 百度贴吧精简 |
 | `wannianli/` | 万年历去广告解锁 |
+| `zhihu/` | 知乎精简 |
 | `CSL-Monitor.js` | 中超比赛监控 Scriptable 小组件 |
 | `CDT-Monitor-scriptable.js` / `CDT-Monitor-scripting.tsx` | CDT Monitor 配套文件 |
 
@@ -258,7 +259,15 @@ NodeSeek 论坛每日签到。脚本原作者：[@Sliverkiss](https://github.com
 
 测试版本：22.13.3.0（已验证）。
 
-### 25. Scriptable 小组件
+### 25. 知乎精简
+
+🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/zhihu/zhihu.sgmodule`
+
+只留问答，去视频、直播与广告。
+
+测试版本：11.14.0（待验证）。
+
+### 26. Scriptable 小组件
 
 - `CSL-Monitor.js`：中超比赛监控小组件。
 - `CDT-Monitor-scriptable.js` / `CDT-Monitor-scripting.tsx`：CDT Monitor 配套文件。
