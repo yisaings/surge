@@ -112,7 +112,7 @@ RULE-SET,https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/release/
 
 去开屏、弹窗与我的页营销卡。
 
-测试版本：—（已验证）。
+测试版本：13.36.5（已验证）。
 
 ### 7. 哔哩哔哩茧房
 
@@ -120,7 +120,7 @@ RULE-SET,https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/release/
 
 替换首页推荐流，打破信息茧房。核心逻辑移植与启发自 [lixing23/Fuck-jianfang](https://github.com/lixing23/Fuck-jianfang)。
 
-测试版本：—（已验证）。
+测试版本：9.18.0（已验证）。
 
 ### 8. 滴滴精简
 
@@ -144,7 +144,7 @@ RULE-SET,https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/release/
 
 只留地图与导航，去营销与推荐流。
 
-测试版本：—（已验证）。
+测试版本：17.3.0（已验证）。
 
 ### 11. NodeSeek 每日签到
 
@@ -160,7 +160,7 @@ NodeSeek 论坛每日签到。脚本原作者：[@Sliverkiss](https://github.com
 
 拦广告与上报，不破 VIP。
 
-测试版本：—（已验证）。
+测试版本：20.9.8（已验证）。
 
 ### 13. 创维智慧云精简
 
@@ -168,7 +168,7 @@ NodeSeek 论坛每日签到。脚本原作者：[@Sliverkiss](https://github.com
 
 首页轮播与横幅空白，拦开屏广告。
 
-测试版本：—（已验证）。
+测试版本：3.12.9（已验证）。
 
 ### 14. 航旅纵横精简
 
@@ -176,7 +176,7 @@ NodeSeek 论坛每日签到。脚本原作者：[@Sliverkiss](https://github.com
 
 精简首页、我的页与社区，去推广营销。
 
-测试版本：—（待验证）。
+测试版本：8.6.7（待验证）。
 
 ### 15. 联通云盘精简
 
@@ -184,7 +184,7 @@ NodeSeek 论坛每日签到。脚本原作者：[@Sliverkiss](https://github.com
 
 去开屏、会员横幅与营销行，文件功能不动。
 
-测试版本：—（已验证）。
+测试版本：6.5.0（已验证）。
 
 ### 16. 小度精简
 
@@ -216,7 +216,7 @@ NodeSeek 论坛每日签到。脚本原作者：[@Sliverkiss](https://github.com
 
 去推广，只留社交本体。
 
-测试版本：—（已验证）。
+测试版本：16.11.0（已验证）。
 
 ### 20. 小米音箱去广告
 
@@ -224,7 +224,7 @@ NodeSeek 论坛每日签到。脚本原作者：[@Sliverkiss](https://github.com
 
 去广告、弹窗与会员推销，控制不动。
 
-测试版本：—（已验证）。
+测试版本：3.0.0（已验证）。
 
 ### 21. 携程去广告
 
