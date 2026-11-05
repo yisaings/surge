@@ -30,9 +30,6 @@ tieba-sync = type=http-response,pattern=^https://tiebac\.baidu\.com/c/s/sync,req
 ^https://tiebac\.baidu\.com/livefeed/feed _ reject
 ^http://tiebac\.baidu\.com/c/s/interactMsgAlter _ reject
 [Rule]
-DOMAIN,api-access.pangolin-sdk-toutiao.com,REJECT
-DOMAIN,api-access.pangolin-sdk-toutiao-b.com,REJECT
-DOMAIN,api-access.pangolin-sdk-toutiao1.com,REJECT
 DOMAIN,mi.gdt.qq.com,REJECT
 DOMAIN,sdk.e.qq.com,REJECT
 DOMAIN,adsmind.ugdtimg.com,REJECT
