@@ -263,9 +263,9 @@ NodeSeek 论坛每日签到。脚本原作者：[@Sliverkiss](https://github.com
 
 🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/zhihu/zhihu.sgmodule`
 
-只留问答，去视频、直播与广告。
+只留问答，去视频、直播、广告与各类推荐。
 
-测试版本：11.14.0（待验证）。
+测试版本：11.14.0（已验证）。
 
 ### 26. Scriptable 小组件
 
