@@ -6,6 +6,7 @@ tieba-feed = type=http-response,pattern=^https://tiebac\.baidu\.com/c/f/(excelle
 tieba-shop = type=http-response,pattern=^https://tieba[c]?\.baidu\.com/c/f/frs/frsBottom,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/tieba/tieba-shop.js
 tieba-album = type=http-response,pattern=^https://tieba\.baidu\.com/c/f/forum/getForumAlbum,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/tieba/tieba-album.js
 tieba-profile = type=http-response,pattern=^https://tiebac\.baidu\.com/c/u/user/profile,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/tieba/tieba-profile.js
+tieba-sync = type=http-response,pattern=^https://tiebac\.baidu\.com/c/s/sync,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/tieba/tieba-sync.js
 [URL Rewrite]
 ^https://tiebac\.baidu\.com/c/f/ad/getFeedAd _ reject
 ^https://tiebac\.baidu\.com/c/f/ad/getSplashAd _ reject
