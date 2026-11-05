@@ -7,9 +7,9 @@ tieba-shop = type=http-response,pattern=^https://tieba[c]?\.baidu\.com/c/f/frs/f
 tieba-album = type=http-response,pattern=^https://tieba\.baidu\.com/c/f/forum/getForumAlbum,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/tieba/tieba-album.js
 tieba-profile = type=http-response,pattern=^https://tiebac\.baidu\.com/c/u/user/profile,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/tieba/tieba-profile.js
 tieba-sync = type=http-response,pattern=^https://tiebac\.baidu\.com/c/s/sync,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/tieba/tieba-sync.js
+tieba-splash = type=http-request,pattern=^https://tiebac\.baidu\.com/c/f/ad/getSplashAd,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/tieba/tieba-splash.js
 [URL Rewrite]
 ^https://tiebac\.baidu\.com/c/f/ad/getFeedAd _ reject
-^https://tiebac\.baidu\.com/c/f/ad/getSplashAd _ reject
 ^https://tiebac\.baidu\.com/c/s/adNewLog _ reject
 ^https://tiebac\.baidu\.com/c/s/newlog _ reject
 ^https://tiebac\.baidu\.com/c/s/pv _ reject
@@ -30,10 +30,6 @@ tieba-sync = type=http-response,pattern=^https://tiebac\.baidu\.com/c/s/sync,req
 ^https://tiebac\.baidu\.com/livefeed/feed _ reject
 ^http://tiebac\.baidu\.com/c/s/interactMsgAlter _ reject
 [Rule]
-DOMAIN,mi.gdt.qq.com,REJECT
-DOMAIN,sdk.e.qq.com,REJECT
-DOMAIN,adsmind.ugdtimg.com,REJECT
-DOMAIN,pgdt.ugdtimg.com,REJECT
 DOMAIN-SUFFIX,pglstatp-toutiao.com,REJECT
 DOMAIN,mobads.baidu.com,REJECT
 DOMAIN,afd.baidu.com,REJECT
