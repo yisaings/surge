@@ -249,6 +249,8 @@ NodeSeek 论坛每日签到。脚本原作者：[@Sliverkiss](https://github.com
 
 🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/wannianli/wannianli.sgmodule`
 
+App Store：`https://apps.apple.com/tr/app/%E4%B8%87%E5%B9%B4%E5%8E%86-%E6%97%A5%E5%8E%86%E5%A4%A9%E6%B0%94%E9%BB%84%E5%8E%86%E5%86%9C%E5%8E%86%E6%9F%A5%E8%AF%A2%E5%B7%A5%E5%85%B7/id419805549`
+
 去广告，解锁 VIP。
 
 测试版本：7.5.9（已验证）。
@@ -285,6 +287,8 @@ NodeSeek 论坛每日签到。脚本原作者：[@Sliverkiss](https://github.com
 ### 28. 极简汇率 VIP Mock
 
 🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/xcurrency/xcurrency.sgmodule`
+
+App Store：`https://apps.apple.com/tr/app/currency-converter-xcurrency/id851033695`
 
 本地修改极简汇率会员接口响应。
 
