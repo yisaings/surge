@@ -58,6 +58,8 @@ RULE-SET,https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/release/
 | `tieba/` | 百度贴吧精简 |
 | `wannianli/` | 万年历去广告解锁 |
 | `zhihu/` | 知乎精简 |
+| `loopback/` | Local Device Loopback（10.7.0.1 回环） |
+| `xcurrency/` | 极简汇率 VIP Mock |
 | `CSL-Monitor.js` | 中超比赛监控 Scriptable 小组件 |
 | `CDT-Monitor-scriptable.js` / `CDT-Monitor-scripting.tsx` | CDT Monitor 配套文件 |
 
@@ -271,3 +273,19 @@ NodeSeek 论坛每日签到。脚本原作者：[@Sliverkiss](https://github.com
 
 - `CSL-Monitor.js`：中超比赛监控小组件。
 - `CDT-Monitor-scriptable.js` / `CDT-Monitor-scripting.tsx`：CDT Monitor 配套文件。
+
+### 27. Local Device Loopback
+
+🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/loopback/loopback.sgmodule`
+
+把 10.7.0.1 回环到本机，供设备端开发者工具使用。
+
+测试版本：—（网络配置，无 App 版本）。
+
+### 28. 极简汇率 VIP Mock
+
+🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/xcurrency/xcurrency.sgmodule`
+
+本地修改极简汇率会员接口响应。
+
+测试版本：—（未验证）。
