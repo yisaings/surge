@@ -12,6 +12,10 @@ if (body) {
             obj.data.recoverableIDFA = true;
             obj.data.vipEndTime = 4070880000;
             obj.data.vipType = "permanent";
+            if (obj.data.userVipInfo) {
+                obj.data.userVipInfo.level = 1;
+                obj.data.userVipInfo.isValid = true;
+            }
         }
         $done({ body: JSON.stringify(obj) });
     } catch (e) {
