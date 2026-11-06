@@ -1,5 +1,5 @@
 #!name=Local Device Loopback
-#!desc=Reflect 10.7.0.1 back to this device for on-device developer tools.
+#!desc=把 10.7.0.1 回环到本机，供设备端开发者工具使用。
 #!category=【yisa】Sgmodule
 [General]
 ipv6-vif = disabled
