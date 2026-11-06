@@ -1,0 +1,7 @@
+#!name=TopWidgets VIP Mock
+#!desc=本地修改 TopWidgets 会员接口响应
+#!category=【yisa】Sgmodule
+[Script]
+TopWidgets_VIP = type=http-response,pattern=^https:\/\/api\.topwidgets\.com\/bff\/user\/vip-info\/recover-vip-info,requires-body=1,max-size=0,script-path=https://raw.githubusercontent.com/yisaings/surge/main/topwidgets/topwidgets_vip.js
+[MITM]
+hostname = %APPEND% api.topwidgets.com
