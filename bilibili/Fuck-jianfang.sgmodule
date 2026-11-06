@@ -1,10 +1,13 @@
 #!name=哔哩哔哩茧房
-#!desc=去首页直播、关注流广告，替换推荐流打破茧房
-#!arguments=运行模式:popular,UP主名称:老番茄
-#!arguments-desc=运行模式输入对应英文：\npopular (热门池)\ncrossregion (跨分区)\nniche (冷门优质)\nweekly (每周必看)\nfresh (新号模式)\nupmaster (UP主画像)\n\n只有当运行模式填 upmaster 时，下方的UP主名称才会生效。
+#!desc=去开屏/直播/关注广告，精简tab与我的页，打破茧房
+#!arguments=运行模式:popular,UP主名称:老番茄,去直播:1,去关注广告:1,去开屏广告:1,精简底部tab:1,精简我的页:1
+#!arguments-desc=运行模式输入对应英文：\npopular (热门池)\ncrossregion (跨分区)\nniche (冷门优质)\nweekly (每周必看)\nfresh (新号模式)\nupmaster (UP主画像)\n\n只有当运行模式填 upmaster 时，下方的UP主名称才会生效。\n\n开关填 1 开启、0 关闭：去直播、去关注广告、去开屏广告、精简底部tab、精简我的页。
 #!category=【yisa】Sgmodule
 [Script]
-Fuck茧房 = type=http-response,pattern=^https:\/\/(app|api)\.bilibili\.com\/x\/(v2\/feed\/index|web-interface\/(index\/top\/feed\/rcmd|rcmd)),requires-body=1,max-size=-1,timeout=10,script-path=https://raw.githubusercontent.com/yisaings/surge/main/bilibili/Fuck-jianfang-v2.js,argument=mode={{{运行模式}}}&upmaster_name={{{UP主名称}}}
-bilibili-dynamic = type=http-response,pattern=^https:\/\/(grpc\.biliapi\.net|app\.bilibili\.com)\/bilibili\.app\.dynamic\.v2\.Dynamic\/DynAll$,requires-body=1,binary-body-mode=1,max-size=-1,timeout=10,script-path=https://raw.githubusercontent.com/yisaings/surge/main/bilibili/bilibili-dynamic.js
+Fuck茧房 = type=http-response,pattern=^https:\/\/(app|api)\.bilibili\.com\/x\/(v2\/feed\/index|web-interface\/(index\/top\/feed\/rcmd|rcmd)),requires-body=1,max-size=-1,timeout=10,script-path=https://raw.githubusercontent.com/yisaings/surge/main/bilibili/Fuck-jianfang-v3.js,argument=mode={{{运行模式}}}&upmaster_name={{{UP主名称}}}&remove_live={{{去直播}}}
+bilibili-dynamic = type=http-response,pattern=^https:\/\/(grpc\.biliapi\.net|app\.bilibili\.com)\/bilibili\.app\.dynamic\.v2\.Dynamic\/DynAll$,requires-body=1,binary-body-mode=1,max-size=-1,timeout=10,script-path=https://raw.githubusercontent.com/yisaings/surge/main/bilibili/bilibili-dynamic-v2.js,argument=remove_ad={{{去关注广告}}}
+bilibili-splash = type=http-response,pattern=^https:\/\/app\.bilibili\.com\/x\/v2\/splash\/(list|show),requires-body=1,max-size=-1,timeout=10,script-path=https://raw.githubusercontent.com/yisaings/surge/main/bilibili/bilibili-splash.js,argument=remove_splash={{{去开屏广告}}}
+bilibili-tab = type=http-response,pattern=^https:\/\/app\.bilibili\.com\/x\/resource\/show\/tab\/v2,requires-body=1,max-size=-1,timeout=10,script-path=https://raw.githubusercontent.com/yisaings/surge/main/bilibili/bilibili-tab.js,argument=trim_tab={{{精简底部tab}}}&remove_live={{{去直播}}}
+bilibili-mine = type=http-response,pattern=^https:\/\/app\.bilibili\.com\/x\/v2\/account\/mine,requires-body=1,max-size=-1,timeout=10,script-path=https://raw.githubusercontent.com/yisaings/surge/main/bilibili/bilibili-mine.js,argument=trim_mine={{{精简我的页}}}
 [MITM]
 hostname = %APPEND% api.bilibili.com, app.bilibili.com, grpc.biliapi.net
