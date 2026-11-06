@@ -1,0 +1,7 @@
+#!name=极简汇率 VIP Mock
+#!desc=本地修改极简汇率 (xCurrency) 会员接口响应
+#!category=【yisa】Sgmodule
+[Script]
+xCurrency_VIP = type=http-response,pattern=^https?:\/\/(explorer\.tratao\.com|xtransfer\.xcurrency\.cn)\/api\/client\/xtool\/vip,requires-body=1,max-size=0,script-path=https://raw.githubusercontent.com/yisaings/surge/main/xcurrency/xcurrency_vip.js
+[MITM]
+hostname = %APPEND% explorer.tratao.com, xtransfer.xcurrency.cn
