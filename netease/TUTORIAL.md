@@ -271,3 +271,7 @@ https://github.com/yisaings/surge/tree/main/netease
 - `netease-gateway-client-redirect-1794142900.js`：Surge 客户端（改 URL + 带设备头）
 - `netease-clean-1794139322.js`：页面净化脚本（Yu9191/NeteasemusicAd 的 `wyyad.js`）
 - `netease-gateway.sgmodule`：Surge 模块
+
+---
+
+交流无罪。
