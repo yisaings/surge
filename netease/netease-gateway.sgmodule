@@ -1,7 +1,7 @@
 #!name=网易云畅听
 #!desc=畅听 VIP 歌曲。
-#!arguments=gateway:网关地址:https://wyy.000135.xyz, token:口令, name:备注
-#!arguments-desc=gateway:Worker 地址
+#!arguments=gateway:网关地址, token:口令, name:备注
+#!arguments-desc=gateway:Worker 地址，默认已填好
 token:口令，由分享人提供
 name:你的名字或备注，方便管理
 #!category=Sgmodule
