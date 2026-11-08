@@ -4,6 +4,6 @@
 #!arguments-desc=gateway:Worker 地址，默认已填好\ntoken:口令，由分享人提供\nname:你的名字或备注，方便管理
 #!category=Sgmodule
 [Script]
-网易云畅听 = type=http-request,pattern=^https://interface3.music.163.com/xeapi/song/enhance/player/url,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/netease/netease-gateway-client4-1794128151.js
+网易云畅听 = type=http-request,pattern=^https://interface3.music.163.com/xeapi/song/enhance/player/url,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/netease/netease-gateway-client-debug-1794128611.js
 [MITM]
 hostname = %APPEND% interface3.music.163.com
