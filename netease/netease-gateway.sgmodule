@@ -2,9 +2,10 @@
 #!desc=畅听 VIP 歌曲。
 #!category=Sgmodule
 #!arguments=TOKEN:口令
-#!arguments-desc=TOKEN:填入专属口令
-
-[Script]
-网易云畅听 = type=http-request,pattern=^https?:\/\/interface\d?\.music\.163\.com\/x?eapi\/,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/netease/netease-gateway-client-redirect-1794138416.js,argument={{{TOKEN}}}
+#!arguments-desc=TOKEN:填入专属口令\n\n[Script]
+网易云畅听播放 = type=http-request,pattern=^https?:\/\/interface\d?\.music\.163\.com\/x?eapi\/(?:v\d+\/)?song\/(?!(?:like|dislike)),requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/netease/netease-gateway-client-redirect-1794138416.js,argument={{{TOKEN}}}
+网易云畅听音质 = type=http-request,pattern=^https?:\/\/interface\d?\.music\.163\.com\/x?eapi\/usertool\/sound\/queryAllSound,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/netease/netease-gateway-client-redirect-1794138416.js,argument={{{TOKEN}}}
+网易云畅听鉴权 = type=http-request,pattern=^https?:\/\/interface\d?\.music\.163\.com\/x?eapi\/vipauth\/app\/auth\/query,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/netease/netease-gateway-client-redirect-1794138416.js,argument={{{TOKEN}}}
+网易云畅听主题 = type=http-request,pattern=^https?:\/\/interface\d?\.music\.163\.com\/x?eapi\/middle\/user\/setting\/elegant\/get,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/netease/netease-gateway-client-redirect-1794138416.js,argument={{{TOKEN}}}
 [MITM]
 hostname = %APPEND% interface.music.163.com, interface3.music.163.com
