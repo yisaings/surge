@@ -1,7 +1,10 @@
 #!name=网易云畅听
 #!desc=畅听 VIP 歌曲。
 #!category=Sgmodule
+#!arguments=TOKEN:口令
+#!arguments-desc=TOKEN:填入专属口令
+
 [Script]
-网易云畅听 = type=http-request,pattern=^https?:\/\/interface\d?\.music\.163\.com\/x?eapi\/(?:v\d+\/)?song\/(?!(?:like|dislike)),requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/netease/netease-gateway-client-httpclient-1794132443.js
+网易云畅听 = type=http-request,pattern=^https?:\/\/interface\d?\.music\.163\.com\/x?eapi\/(?:v\d+\/)?song\/(?!(?:like|dislike)),requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/netease/netease-gateway-client-redirect-1794138416.js,argument={{{TOKEN}}}
 [MITM]
 hostname = %APPEND% interface.music.163.com, interface3.music.163.com
