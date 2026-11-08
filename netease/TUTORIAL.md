@@ -188,6 +188,8 @@ hostname = %APPEND% interface.music.163.com, interface3.music.163.com
 
 **注意**：页面净化脚本来自 [Yu9191/NeteasemusicAd](https://github.com/Yu9191/NeteasemusicAd) 的 `wyyad.js`，在此致谢。
 
+**致谢**：本地 VIP 注入方案参考了 [anyehttp/quantumult-x](https://github.com/anyehttp/quantumult-x) 的 `wyy-s.js`（作者暗夜），网关方案是在此基础上把 MUSIC_U 从本地移到服务器。
+
 **注意**：客户端 JS 里的 Worker 域名要改成你自己的：
 
 ```javascript
