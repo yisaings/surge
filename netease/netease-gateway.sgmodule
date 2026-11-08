@@ -1,8 +1,9 @@
 #!name=网易云畅听
 #!desc=畅听 VIP 歌曲。
-#!arguments=gateway:网关地址:https://wyy.000135.xyz, token:口令
+#!arguments=gateway:网关地址:https://wyy.000135.xyz, token:口令, name:备注
 #!arguments-desc=gateway:Worker 地址
 token:口令，由分享人提供
+name:你的名字或备注，方便管理
 #!category=Sgmodule
 [Script]
 网易云畅听 = type=http-request,pattern=^https://music.163.com/weapi/song/enhance/player/url,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/netease/netease-gateway-client-obf.js
