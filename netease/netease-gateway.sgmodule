@@ -1,7 +1,7 @@
 #!name=网易云播放网关
 #!desc=播放请求走 CF Worker 注入 VIP，防分享。
-#!arguments=gateway:网关地址, token:口令
-#!arguments-desc=gateway:Worker 地址，如 https://wyy.000135.xyz
+#!arguments=gateway:网关地址:https://wyy.000135.xyz, token:口令
+#!arguments-desc=gateway:Worker 地址
 token:口令，由分享人提供
 #!category=Sgmodule
 [Script]
