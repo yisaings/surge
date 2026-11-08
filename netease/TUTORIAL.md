@@ -274,4 +274,4 @@ https://github.com/yisaings/surge/tree/main/netease
 
 ---
 
-<font color="red"><b>本教程仅供技术交流学习，交流无罪。</b></font>
+> **⚠️ 本教程仅供技术交流学习，交流无罪。**
