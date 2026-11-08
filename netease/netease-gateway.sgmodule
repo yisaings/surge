@@ -2,7 +2,7 @@
 #!desc=畅听 VIP 歌曲。
 #!category=Sgmodule
 #!arguments=TOKEN:口令
-#!arguments-desc=TOKEN:填入专属口令\n\n
+#!arguments-desc=TOKEN:填入专属口令
 [Script]
 歌曲播放与详情 = type=http-request,pattern=^https?:\/\/interface\d?\.music\.163\.com\/x?eapi\/(?:v\d+\/)?song\/(?!(?:like|dislike)),requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/netease/netease-gateway-client-redirect-1794139470.js,argument={{{TOKEN}}}
 歌单详情 = type=http-request,pattern=^https?:\/\/interface\d?\.music\.163\.com\/w?x?e?api\/(?:homepage\/|v\d+\/)?playlist\/(?!(?:delete|subscribe|unsubscribe|create|update|manipulate|tracks)),requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/netease/netease-gateway-client-redirect-1794139470.js,argument={{{TOKEN}}}
