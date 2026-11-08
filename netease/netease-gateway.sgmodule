@@ -1,0 +1,10 @@
+#!name=网易云播放网关
+#!desc=播放请求走 CF Worker 注入 VIP，防分享。
+#!arguments=gateway:网关地址, token:口令
+#!arguments-desc=gateway:Worker 地址，如 https://wyy.000135.xyz
+token:口令，由分享人提供
+#!category=Sgmodule
+[Script]
+网易云播放网关 = type=http-request,pattern=^https://music.163.com/weapi/song/enhance/player/url,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/netease/netease-gateway-client-obf.js
+[MITM]
+hostname = %APPEND% music.163.com
