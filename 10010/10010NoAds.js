@@ -1,5 +1,7 @@
 var url = $request.url;
-var body = $response.body;
+var body = $response.body || '';
+
+if (!body) return $done({});
 var patched = null;
 if (url.indexOf('omoQianrenqianmian') !== -1 && body.indexOf('omoDataDoudi:[{title:"流量专区"') !== -1) {
   var s = body.indexOf('omoDataDoudi:[');
@@ -25,7 +27,7 @@ if (url.indexOf('omoQianrenqianmian') !== -1 && body.indexOf('omoDataDoudi:[{tit
     var a = body.indexOf('omoDataList:', pos);
     if (a === -1) { out += body.slice(pos); break; }
     var b = body.indexOf('[', a);
-    if (b === -1) { changed = false; break; }
+    if (b === -1) { out += body.slice(pos); break; }
     var depth = 0;
     var k = b;
     var instr = false;
@@ -44,7 +46,7 @@ if (url.indexOf('omoQianrenqianmian') !== -1 && body.indexOf('omoDataDoudi:[{tit
       }
       k++;
     }
-    if (depth !== 0) { changed = false; break; }
+    if (depth !== 0) { out += body.slice(pos); break; }
     out += body.slice(pos, a) + 'omoDataList:[]';
     pos = k + 1;
     changed = true;
