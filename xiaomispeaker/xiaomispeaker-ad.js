@@ -14,7 +14,7 @@ if (url.indexOf('marketing-aibox.v.mitvos.com') !== -1) {
   }
   if (hit) {
     var o1 = parse();
-    if (!o1) return;
+    if (!o1) return $done({});
     o1.data = Array.isArray(o1.data) ? [] : {};
     done(o1);
     return;
@@ -26,7 +26,7 @@ if (url.indexOf('marketing-aibox.v.mitvos.com') !== -1) {
 // 2. 首页内容流：只删“限时折扣”整块和带 vipbar 的会员条，其余内容块全留
 if (url.indexOf('appinfo-aibox.v.mitvos.com/info/app/flow') !== -1) {
   var o2 = parse();
-  if (!o2) return;
+  if (!o2) return $done({});
   if (o2.data && Array.isArray(o2.data.blocks)) {
     o2.data.blocks = o2.data.blocks.filter(function (b) {
       if (b.title === '限时折扣') return false;
