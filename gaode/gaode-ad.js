@@ -4,7 +4,7 @@
   if (!body) { $done({}); return; }
 
   if (url.indexOf('ai.amap.com/v1/ai_rec/home_explore') !== -1) {
-    $done({ body: 'event: data\ndata: {"exist_risk":false,"is_done":true}\n\n' });
+    $done({ headers: { 'Content-Type': 'text/event-stream' }, body: 'event: data\ndata: {"exist_risk":false,"is_done":true}\n\n' });
     return;
   }
 
