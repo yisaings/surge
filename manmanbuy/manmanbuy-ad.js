@@ -16,6 +16,10 @@ try {
     if (obj) {
       obj.result = null;
     }
+  } else if (url.indexOf('/v1/config') !== -1) {
+    if (obj && obj.result && obj.result.ad && obj.result.ad.mmb_homealert_name) {
+      obj.result.ad = null;
+    }
   }
   $done({ body: JSON.stringify(obj) });
 } catch (e) {
