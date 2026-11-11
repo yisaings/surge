@@ -41,6 +41,10 @@
       obj.data = obj.data.filter(function (it) {
         return it.is_show_ad !== '1';
       });
+    } else if (url.indexOf('/sou/filter/tags/hot_tags') !== -1 && obj.data) {
+      obj.data.hongbao = null;
+    } else if (url.indexOf('/util/update') !== -1 && obj.data) {
+      obj.data.widget = [];
     }
     $done({ body: JSON.stringify(obj) });
   } catch (e) {
