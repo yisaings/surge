@@ -4,7 +4,7 @@
     var obj = JSON.parse($response.body);
     if (url.indexOf('/v3/home') !== -1 && obj.data && Array.isArray(obj.data.component)) {
       obj.data.component = obj.data.component.filter(function (c) {
-        return c.zz_type !== 'hongbao' && c.zz_type !== 'banner';
+        return c.zz_type !== 'hongbao' && c.zz_type !== 'banner' && c.zz_type !== 'yixing_banner';
       });
     } else if (url.indexOf('/home/list') !== -1 && obj.data) {
       if (Array.isArray(obj.data.banner_v2)) {
@@ -26,13 +26,13 @@
       }
     } else if (url.indexOf('/preload/') !== -1 && obj.data && Array.isArray(obj.data.article_link_list)) {
       obj.data.article_link_list = obj.data.article_link_list.filter(function (l) {
-        return l.direct_link_type !== 'hongbao';
+        return (l.direct_link_type || '').indexOf('hongbao') !== 0;
       });
     } else if (url.indexOf('detail_modul/user_related_modul') !== -1 && obj.data) {
       delete obj.data.super_coupon;
     } else if (url.indexOf('/detail/') !== -1 && obj.data && Array.isArray(obj.data.article_link_list)) {
       obj.data.article_link_list = obj.data.article_link_list.filter(function (l) {
-        return l.direct_link_type !== 'hongbao';
+        return (l.direct_link_type || '').indexOf('hongbao') !== 0;
       });
     } else if (url.indexOf('user-api.smzdm.com/vip') !== -1 && obj.data) {
       obj.data.featured_activitys = [];
