@@ -38,6 +38,10 @@ if (cookie) {
   }
 }
 if (changed) {
-  $notification.post('京东一键价保', '', 'Cookie 已抓取，定时价保已就绪');
+  var lastNotify = parseInt($persistentStore.read('JD_NOTIFY_TS') || '0', 10) || 0;
+  if (Date.now() - lastNotify > 3600000) {
+    $persistentStore.write(String(Date.now()), 'JD_NOTIFY_TS');
+    $notification.post('京东一键价保', '', 'Cookie 已抓取，定时价保已就绪');
+  }
 }
 $done({});
