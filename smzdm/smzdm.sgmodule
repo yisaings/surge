@@ -9,5 +9,7 @@ smzdm-detail = type=http-response, pattern=^https://haojia-api\.smzdm\.com/detai
 smzdm-detail-related = type=http-response, pattern=^https://haojia\.m\.smzdm\.com/detail_modul/user_related_modul, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/smzdm/smzdm-ad.js
 smzdm-vip = type=http-response, pattern=^https://user-api\.smzdm\.com/vip, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/smzdm/smzdm-ad.js
 smzdm-loading = type=http-response, pattern=^https://app-api\.smzdm\.com/util/loading, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/smzdm/smzdm-ad.js
+什么值得买搜索页红包 = type=http-response, pattern=^https://s-api\.smzdm\.com/sou/filter/tags/hot_tags, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/smzdm/smzdm-ad.js
+什么值得买首页悬浮挂件 = type=http-response, pattern=^https://app-api\.smzdm\.com/util/update, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/smzdm/smzdm-ad.js
 [MITM]
-hostname = %APPEND% homepage-api.smzdm.com, haojia-api.smzdm.com, haojia-cdn.smzdm.com, haojia.m.smzdm.com, user-api.smzdm.com, app-api.smzdm.com
+hostname = %APPEND% homepage-api.smzdm.com, haojia-api.smzdm.com, haojia-cdn.smzdm.com, haojia.m.smzdm.com, user-api.smzdm.com, app-api.smzdm.com, s-api.smzdm.com
