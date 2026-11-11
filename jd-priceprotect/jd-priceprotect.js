@@ -14,9 +14,9 @@ var localStorage = {
 window.localStorage = localStorage;
 window.sessionStorage = localStorage;
 var navigator = {
-  userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 27_0_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
+  userAgent: 'jdapp;iPhone;16.1.81;;;M/5.0;appBuild/171195;jdSupportDarkMode/0;lang/zh_CN;ctype/0;site/CN;ccy/CNY;elder/0;ef/1;Mozilla/5.0 (iPhone; CPU iPhone OS 27_0_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1;',
   platform: 'iPhone',
-  appVersion: '5.0 (iPhone; CPU iPhone OS 27_0_1 like Mac OS X) AppleWebKit/605.1.15',
+  appVersion: '5.0 (iPhone; CPU iPhone OS 27_0_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
   vendor: 'Apple Computer, Inc.',
   language: 'zh-CN',
   languages: ['zh-CN', 'zh'],
@@ -210,6 +210,14 @@ var ParamsSign=function(){'use strict';function a015263O(_$v,_$O){var _$R=a01526
       finish();
       return;
     }
+    var eid = $persistentStore.read('JD_EID');
+    if (!eid) {
+      notify('未抓到 eid，请打开京东价保页重新抓取');
+      finish();
+      return;
+    }
+    var fullCookie = $persistentStore.read('JD_FULL_COOKIE');
+    var cookieHeader = (fullCookie && fullCookie !== '') ? fullCookie : ('pt_key=' + ptKey + '; pt_pin=' + ptPin + ';');
     var bodyObj = { onceBatchId: '', couponConfirmFlag: null, appId: 'cuser', uniformBizInfo: { data: { language: 'zh_CN', buId: 301, tenantId: 1024 } }, type: '25' };
     var bodyStr = JSON.stringify(bodyObj);
     var bodySha = SHA256(bodyStr);
@@ -222,18 +230,23 @@ var ParamsSign=function(){'use strict';function a015263O(_$v,_$O){var _$R=a01526
         finish();
         return;
       }
-      var form = 'functionId=mlproprice_skuOnceApply_jsf&appid=price_protection&loginType=2&body=' + encodeURIComponent(bodyStr) + '&client=apple&clientVersion=&h5st=' + encodeURIComponent(h5st) + '&t=' + t + '&xAPIClientLanguage=zh_CN';
+      var form = 'functionId=mlproprice_skuOnceApply_jsf&appid=price_protection&loginType=2&body=' + encodeURIComponent(bodyStr) + '&client=apple&clientVersion=&x-api-eid-token=' + encodeURIComponent(eid) + '&h5st=' + encodeURIComponent(h5st) + '&t=' + t + '&xAPIClientLanguage=zh_CN';
       $httpClient.post({
         url: 'https://api.m.jd.com/',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          'User-Agent': navigator.userAgent,
+          'User-Agent': 'jdapp;iPhone;16.1.81;;;M/5.0;appBuild/171195;jdSupportDarkMode/0;lang/zh_CN;ctype/0;site/CN;ccy/CNY;elder/0;ef/1;Mozilla/5.0 (iPhone; CPU iPhone OS 27_0_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1;',
           'Accept': 'application/json, text/plain, */*',
           'Origin': 'https://h5.m.jd.com',
           'Referer': 'https://h5.m.jd.com/',
           'X-Rp-Client': 'h5_2.6.0',
-          'Accept-Language': 'zh-CN,zh;q=0.9',
-          'Cookie': 'pt_key=' + ptKey + '; pt_pin=' + ptPin + ';'
+          'Accept-Language': 'zh-SG,zh-CN;q=0.9,zh-Hans;q=0.8',
+          'sec-fetch-site': 'same-site',
+          'sec-fetch-mode': 'cors',
+          'sec-fetch-dest': 'empty',
+          'x-referer-page': 'https://h5.m.jd.com/babelDiy/Zeus/2RePMzTqg6UoffvMwtwVeMcnPGeg/index.html',
+          'priority': 'u=3, i',
+          'Cookie': cookieHeader
         },
         body: form
       }, function(error, response, data) {
