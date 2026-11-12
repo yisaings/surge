@@ -284,7 +284,8 @@ function SHA256(s){var chrsz=8;var hexcase=0;function safe_add(x,y){var lsw=(x&0
   var gcLngV = read('JD_GCLNG');
   var lbsV = read('JD_LBS');
   var cookieHeader = (fullCookie && fullCookie !== '') ? fullCookie : ('pt_key=' + ptKey + ';pt_pin=' + ptPin + ';');
-  var JDAPP_UA = 'jdapp;iPhone;16.1.81;;;M/5.0;appBuild/171195;jdSupportDarkMode/0;lang/zh_CN;ctype/0;site/CN;ccy/CNY;elder/0;ef/1;Mozilla/5.0 (iPhone; CPU iPhone OS 27_0_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1;';
+  var epV = read('JD_EP') || '';
+  var JDAPP_UA = 'jdapp;iPhone;16.1.81;;;M/5.0;appBuild/171195;jdSupportDarkMode/0;lang/zh_CN;ctype/0;site/CN;ccy/CNY;elder/0;ef/1;' + (epV ? ('ep=' + epV + ';') : '') + 'Mozilla/5.0 (iPhone; CPU iPhone OS 27_0_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1;';
   function lbsParam() {
     var d = parseJson(lbsV || '');
     if (d && typeof d === 'object') return d;
