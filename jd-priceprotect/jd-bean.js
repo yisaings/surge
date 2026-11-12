@@ -220,11 +220,18 @@ function SHA256(s){var chrsz=8;var hexcase=0;function safe_add(x,y){var lsw=(x&0
   function savePlan(key, p) {
     write(key, JSON.stringify(p));
   }
+  function randomRunAt(now) {
+    var end = new Date();
+    end.setHours(10, 45, 0, 0);
+    var span = end.getTime() - now;
+    if (span < 60000) span = 60000;
+    return now + 1 + Math.floor(Math.random() * span);
+  }
   function randomGate(key) {
     var now = Date.now();
     var plan = loadPlan(key);
     if (!plan || plan.date !== todayStr()) {
-      plan = { date: todayStr(), runAt: now + Math.floor(Math.random() * 26) * 60000, done: false, warned: false };
+      plan = { date: todayStr(), runAt: randomRunAt(now), done: false, warned: false };
       savePlan(key, plan);
     }
     if (plan.done) return 'done';
