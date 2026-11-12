@@ -1,0 +1,5 @@
+#!name=Cron测试
+#!desc=测 cron 脚本能不能跑。
+#!category=Sgmodule
+[Script]
+Cron测试 = type=cron, cronexp="*/1 * * * *", script-path=https://raw.githubusercontent.com/yisaings/surge/main/jd-priceprotect/test-cron.js
