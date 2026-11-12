@@ -1,0 +1,5 @@
+#!name=京豆签到测试1054
+#!desc=测试：10:54 单独跑一次京豆签到。
+#!category=【yisa】Sgmodule
+[Script]
+京豆签到测试 = type=cron, cronexp="54 10 * * *", script-path=https://raw.githubusercontent.com/yisaings/surge/main/jd-priceprotect/jd-bean4.js, timeout=60
