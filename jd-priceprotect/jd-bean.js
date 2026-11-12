@@ -323,6 +323,11 @@ function SHA256(s){var chrsz=8;var hexcase=0;function safe_add(x,y){var lsw=(x&0
     var url = (typeof o.url === 'function') ? o.url(t) : o.url;
     return sign(o.shortCode, { appid: o.appid, clientVersion: o.clientVersion || '', client: o.client || 'apple', functionId: o.functionId, body: bodySha, t: t }).then(function(h5st) {
       if (!h5st) throw new Error('sign fail ' + o.shortCode);
+      var tk03 = read('JD_TK03') || '';
+      if (tk03 && tk03.indexOf('tk03') === 0) {
+        var parts = String(h5st).split(';');
+        if (parts.length >= 4) { parts[3] = tk03; h5st = parts.join(';'); }
+      }
       var form = buildForm(o.formPairs(bodyStr, h5st, t));
       return postForm(url, form, o.headers).then(function(r) {
         return { status: r.status, obj: parseJson(r.data), raw: r.data };
