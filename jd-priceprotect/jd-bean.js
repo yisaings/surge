@@ -321,7 +321,7 @@ function SHA256(s){var chrsz=8;var hexcase=0;function safe_add(x,y){var lsw=(x&0
     var bodySha = SHA256(bodyStr);
     var url = (typeof o.url === 'function') ? o.url(t) : o.url;
     return sign(o.shortCode, { appid: o.appid, clientVersion: o.clientVersion || '', client: o.client || 'apple', functionId: o.functionId, body: bodySha, t: t }).then(function(h5st) {
-      if (!h5st) throw new Error('sign fail');
+      if (!h5st) throw new Error('sign fail ' + o.shortCode);
       var form = buildForm(o.formPairs(bodyStr, h5st, t));
       return postForm(url, form, o.headers).then(function(r) {
         return { status: r.status, obj: parseJson(r.data), raw: r.data };
@@ -343,12 +343,15 @@ function SHA256(s){var chrsz=8;var hexcase=0;function safe_add(x,y){var lsw=(x&0
   }
   function badResp(r) {
     var o = (r && r.obj) || {};
-    var code = (o.code !== undefined && o.code !== null) ? o.code : ((r && r.status !== undefined) ? ('http' + r.status) : '?');
+    var parts = ['bad resp'];
+    if (r && r.status !== undefined && r.status !== null) parts.push('http=' + r.status);
+    if (o.code !== undefined && o.code !== null && o.code !== '') parts.push('code=' + o.code);
     var msg = o.msg || o.message || '';
+    if (msg) parts.push('msg=' + String(msg).slice(0, 50));
     var raw = (r && typeof r.raw === 'string') ? r.raw : '';
-    var snip = '';
-    if (!o.code && raw) snip = ' raw=' + raw.slice(0, 60).replace(/\s+/g, ' ');
-    return 'bad resp code=' + code + (msg ? ' msg=' + String(msg).slice(0, 40) : '') + snip;
+    if (raw && (o.code === undefined || o.code === null || o.code === '')) parts.push('raw=' + raw.slice(0, 80).replace(/\s+/g, ' '));
+    if (!raw && !(o.code !== undefined && o.code !== null && o.code !== '')) parts.push('empty');
+    return parts.join(' ');
   }
   var results = [];
   function rec(name, status, beans, note) {
