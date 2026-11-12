@@ -7,70 +7,65 @@ function formValue(text, name) {
   var m = text.match(re);
   return m ? decodeURIComponent(m[1]) : null;
 }
+var changedKeys = [];
 function storeIfChanged(key, val) {
   if (!val) return false;
   if ($persistentStore.read(key) !== val) {
     $persistentStore.write(val, key);
+    changedKeys.push(key);
     return true;
   }
   return false;
 }
 var isMlpro = reqBody.indexOf('functionId=mlproprice_') !== -1 || reqUrl.indexOf('mlproprice_') !== -1;
-var changed = false;
 if (isMlpro) {
   var eid = formValue(reqBody, 'x-api-eid-token');
-  if (eid) changed = storeIfChanged('JD_EID', eid) || changed;
-  if (cookie) changed = storeIfChanged('JD_FULL_COOKIE', cookie) || changed;
+  if (eid) storeIfChanged('JD_EID', eid);
+  if (cookie) storeIfChanged('JD_FULL_COOKIE', cookie);
 }
 if (cookie) {
   var keyMatch = cookie.match(/(?:^|;\s*)pt_key=([^;]+)/);
   var pinMatch = cookie.match(/(?:^|;\s*)pt_pin=([^;]+)/);
   if (keyMatch && pinMatch) {
-    var newKey = keyMatch[1].trim();
-    var newPin = pinMatch[1].trim();
-    changed = storeIfChanged('JD_PT_KEY', newKey) || changed;
-    changed = storeIfChanged('JD_PT_PIN', newPin) || changed;
+    storeIfChanged('JD_PT_KEY', keyMatch[1].trim());
+    storeIfChanged('JD_PT_PIN', pinMatch[1].trim());
   }
 }
 var isApiM = reqUrl.indexOf('api.m.jd.com') !== -1;
 if (isApiM) {
   var beanEid = formValue(reqBody, 'x-api-eid-token');
-  if (beanEid) changed = storeIfChanged('JD_BEAN_EID', beanEid) || changed;
+  if (beanEid) storeIfChanged('JD_BEAN_EID', beanEid);
   var devEid = formValue(reqBody, 'eid');
-  if (devEid && devEid.length === 90) changed = storeIfChanged('JD_DEVICE_EID', devEid) || changed;
+  if (devEid && devEid.length === 90) storeIfChanged('JD_DEVICE_EID', devEid);
   var oudid = formValue(reqBody, 'openudid') || formValue(reqBody, 'uuid');
-  if (oudid && oudid.length === 40) changed = storeIfChanged('JD_OPENUDID', oudid) || changed;
+  if (oudid && oudid.length === 40) storeIfChanged('JD_OPENUDID', oudid);
   var wgTok = formValue(reqBody, 'wg-sdk-token');
-  if (wgTok) changed = storeIfChanged('JD_WG_TOKEN', wgTok) || changed;
+  if (wgTok) storeIfChanged('JD_WG_TOKEN', wgTok);
   var areaV = formValue(reqBody, 'area');
   if (!areaV) {
     var areaM = reqUrl.match(/[?&]area=([^&]+)/);
     if (areaM) areaV = decodeURIComponent(areaM[1]);
   }
-  if (areaV) changed = storeIfChanged('JD_AREA', areaV) || changed;
+  if (areaV) storeIfChanged('JD_AREA', areaV);
   var bodyRaw = formValue(reqBody, 'body');
   if (bodyRaw) {
     try {
       var bodyObj = JSON.parse(bodyRaw);
       if (bodyObj.lng !== undefined && bodyObj.lat !== undefined) {
-        changed = storeIfChanged('JD_LNG', String(bodyObj.lng)) || changed;
-        changed = storeIfChanged('JD_LAT', String(bodyObj.lat)) || changed;
+        storeIfChanged('JD_LNG', String(bodyObj.lng));
+        storeIfChanged('JD_LAT', String(bodyObj.lat));
       }
       if (bodyObj.gcLat !== undefined && bodyObj.gcLng !== undefined) {
-        changed = storeIfChanged('JD_GCLAT', String(bodyObj.gcLat)) || changed;
-        changed = storeIfChanged('JD_GCLNG', String(bodyObj.gcLng)) || changed;
+        storeIfChanged('JD_GCLAT', String(bodyObj.gcLat));
+        storeIfChanged('JD_GCLNG', String(bodyObj.gcLng));
       }
       if (bodyObj.lbsParamMap) {
-        changed = storeIfChanged('JD_LBS', JSON.stringify(bodyObj.lbsParamMap)) || changed;
+        storeIfChanged('JD_LBS', JSON.stringify(bodyObj.lbsParamMap));
       }
     } catch (e) {}
   }
 }
-if (changed) {
-  var lastNotify = parseInt($persistentStore.read('JD_NOTIFY_TS') || '0', 10) || 0;
-  if (Date.now() - lastNotify > 3600000) {
-    $persistentStore.write(String(Date.now()), 'JD_NOTIFY_TS');
-    $notification.post('京东一键价保', '', '京东凭证已抓取，定时价保与签到已就绪');
-  }
+if (changedKeys.length > 0 && typeof console !== 'undefined' && console.log) {
+  console.log('[京东凭证] 已更新：' + changedKeys.join('、'));
 }
 $done({});
