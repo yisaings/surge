@@ -4,7 +4,7 @@
 #!arguments-desc=定时价保：Cron 表达式，默认每 5 分钟触发一次（09:00-10:59），脚本每天只在触发后随机 0-25 分钟内跑一次，不是固定时间；改时段直接改表达式，例如每天 08:00-09:59 写 */5 8-9 * * *。\n\n定时签到：同上，默认每 5 分钟触发一次（09:00-10:59），每天随机一个时间跑一次京豆签到。\n\n禁用脚本：禁用获取 Cookie 的脚本，输入 # 表示禁用。\n\n禁用MITM：禁用 MITM 主机名，输入 # 表示禁用。\n\n抓到 Cookie 后把后两项填 # 禁用，只留定时任务跑；Cookie 失效时把两项改回默认值，打开价保页重抓。
 #!category=【yisa】Sgmodule
 [Script]
-{{{禁用脚本}}} = type=http-request, pattern=^https://api\.m\.jd\.com/, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/jd-priceprotect/jd-cookie2.js
+{{{禁用脚本}}} = type=http-request, pattern=^https://api\.m\.jd\.com/, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/jd-priceprotect/jd-cookie3.js
 京东一键价保 = type=cron, cronexp="{{{定时价保}}}", script-path=https://raw.githubusercontent.com/yisaings/surge/main/jd-priceprotect/jd-priceprotect.js
 京豆签到 = type=cron, cronexp="{{{定时签到}}}", script-path=https://raw.githubusercontent.com/yisaings/surge/main/jd-priceprotect/jd-bean.js, timeout=60
 [MITM]
