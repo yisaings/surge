@@ -37,9 +37,9 @@ if (isApiM) {
   var beanEid = formValue(reqBody, 'x-api-eid-token');
   if (beanEid) changed = storeIfChanged('JD_BEAN_EID', beanEid) || changed;
   var devEid = formValue(reqBody, 'eid');
-  if (devEid && devEid.length >= 60) changed = storeIfChanged('JD_DEVICE_EID', devEid) || changed;
+  if (devEid && devEid.length === 90) changed = storeIfChanged('JD_DEVICE_EID', devEid) || changed;
   var oudid = formValue(reqBody, 'openudid') || formValue(reqBody, 'uuid');
-  if (oudid && oudid.length >= 32) changed = storeIfChanged('JD_OPENUDID', oudid) || changed;
+  if (oudid && oudid.length === 40) changed = storeIfChanged('JD_OPENUDID', oudid) || changed;
   var wgTok = formValue(reqBody, 'wg-sdk-token');
   if (wgTok) changed = storeIfChanged('JD_WG_TOKEN', wgTok) || changed;
   var areaV = formValue(reqBody, 'area');
