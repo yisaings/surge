@@ -6,6 +6,6 @@
 [Script]
 {{{禁用脚本}}} = type=http-request, pattern=^https://api\.m\.jd\.com/, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/jd-priceprotect/jd-cookie3.js
 京东一键价保 = type=cron, cronexp="{{{定时价保}}}", script-path=https://raw.githubusercontent.com/yisaings/surge/main/jd-priceprotect/jd-priceprotect6.js
-京豆签到 = type=cron, cronexp="{{{定时签到}}}", script-path=https://raw.githubusercontent.com/yisaings/surge/main/jd-priceprotect/jd-bean9.js, timeout=60
+京豆签到 = type=cron, cronexp="{{{定时签到}}}", script-path=https://raw.githubusercontent.com/yisaings/surge/main/jd-priceprotect/jd-bean10.js, timeout=60
 [MITM]
 {{{禁用MITM}}} = %APPEND% api.m.jd.com
