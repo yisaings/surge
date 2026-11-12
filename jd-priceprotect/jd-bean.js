@@ -761,10 +761,6 @@ function SHA256(s){var chrsz=8;var hexcase=0;function safe_add(x,y){var lsw=(x&0
     }).catch(function(e) { rec('抽奖', 'fail', 0, String(e && e.message || e)); });
   }
   try {
-    if (randomGate('JD_BEAN_PLAN') !== 'run') {
-      finish();
-      return;
-    }
     if (!ptKey || !ptPin) {
       if (!planWarned('JD_BEAN_PLAN')) {
         notify('未抓到 Cookie，请先打开京东 App 任意签到页一次');
