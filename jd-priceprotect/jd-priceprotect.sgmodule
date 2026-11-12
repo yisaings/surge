@@ -1,11 +1,11 @@
 #!name=京东一键价保
 #!desc=每天自动跑一次一键价保，有差价就通知返款金额。
-#!arguments=定时价保:*/5 9-10 * * *,定时签到:*/5 9-10 * * *,禁用脚本:获取京东Cookie,禁用MITM:hostname
-#!arguments-desc=定时价保：Cron 表达式，默认每 5 分钟触发一次（09:00-10:59），脚本每天只在触发后随机 0-25 分钟内跑一次，不是固定时间；改时段直接改表达式，例如每天 08:00-09:59 写 */5 8-9 * * *。\n\n定时签到：同上，默认每 5 分钟触发一次（09:00-10:59），每天随机一个时间跑一次京豆签到。\n\n禁用脚本：禁用获取 Cookie 的脚本，输入 # 表示禁用。\n\n禁用MITM：禁用 MITM 主机名，输入 # 表示禁用。\n\n抓到 Cookie 后把后两项填 # 禁用，只留定时任务跑；Cookie 失效时把两项改回默认值，打开价保页重抓。
+#!arguments=定时价保:*/15 9-10 * * *,定时签到:*/15 9-10 * * *,禁用脚本:获取京东Cookie,禁用MITM:hostname
+#!arguments-desc=定时价保：Cron 表达式，默认每 15 分钟触发一次（09:00-10:59），脚本每天只在 09:00-10:45 之间随机一个时间跑一次，不是固定时间；改时段直接改表达式，例如每天 08:00-09:59 写 */15 8-9 * * *。\n\n定时签到：同上，默认每 15 分钟触发一次（09:00-10:59），每天随机一个时间跑一次京豆签到。\n\n禁用脚本：禁用获取 Cookie 的脚本，输入 # 表示禁用。\n\n禁用MITM：禁用 MITM 主机名，输入 # 表示禁用。\n\n抓到 Cookie 后把后两项填 # 禁用，只留定时任务跑；Cookie 失效时把两项改回默认值，打开价保页重抓。
 #!category=【yisa】Sgmodule
 [Script]
 {{{禁用脚本}}} = type=http-request, pattern=^https://api\.m\.jd\.com/, requires-body=true, script-path=https://raw.githubusercontent.com/yisaings/surge/main/jd-priceprotect/jd-cookie3.js
-京东一键价保 = type=cron, cronexp="{{{定时价保}}}", script-path=https://raw.githubusercontent.com/yisaings/surge/main/jd-priceprotect/jd-priceprotect.js
-京豆签到 = type=cron, cronexp="{{{定时签到}}}", script-path=https://raw.githubusercontent.com/yisaings/surge/main/jd-priceprotect/jd-bean2.js, timeout=60
+京东一键价保 = type=cron, cronexp="{{{定时价保}}}", script-path=https://raw.githubusercontent.com/yisaings/surge/main/jd-priceprotect/jd-priceprotect2.js
+京豆签到 = type=cron, cronexp="{{{定时签到}}}", script-path=https://raw.githubusercontent.com/yisaings/surge/main/jd-priceprotect/jd-bean3.js, timeout=60
 [MITM]
 {{{禁用MITM}}} = %APPEND% api.m.jd.com
