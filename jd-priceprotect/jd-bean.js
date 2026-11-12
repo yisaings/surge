@@ -341,6 +341,15 @@ function SHA256(s){var chrsz=8;var hexcase=0;function safe_add(x,y){var lsw=(x&0
   function okCode(v) {
     return v === 0 || v === '0' || v === '0000' || v === 11000 || v === '11000';
   }
+  function badResp(r) {
+    var o = (r && r.obj) || {};
+    var code = (o.code !== undefined && o.code !== null) ? o.code : ((r && r.status !== undefined) ? ('http' + r.status) : '?');
+    var msg = o.msg || o.message || '';
+    var raw = (r && typeof r.raw === 'string') ? r.raw : '';
+    var snip = '';
+    if (!o.code && raw) snip = ' raw=' + raw.slice(0, 60).replace(/\s+/g, ' ');
+    return 'bad resp code=' + code + (msg ? ' msg=' + String(msg).slice(0, 40) : '') + snip;
+  }
   var results = [];
   function rec(name, status, beans, note) {
     results.push({ name: name, status: status, beans: beans || 0, note: note || '' });
@@ -359,7 +368,7 @@ function SHA256(s){var chrsz=8;var hexcase=0;function safe_add(x,y){var lsw=(x&0
       }
     }).then(function(r) {
       var d = r.obj && r.obj.data;
-      if (!d) throw new Error('bad resp');
+      if (!d) throw new Error(badResp(r));
       if (num(d.todayBeanNum) === 0) { rec('秒杀', 'done', 0); return; }
       var arr = d.signComponentInfoResult || [];
       if (!arr.length || !arr[0].encryptAssignmentId) throw new Error('no assignmentId');
@@ -393,7 +402,7 @@ function SHA256(s){var chrsz=8;var hexcase=0;function safe_add(x,y){var lsw=(x&0
       }
     }).then(function(r) {
       var res = r.obj && r.obj.data && r.obj.data.result;
-      if (!res) throw new Error('bad resp');
+      if (!res) throw new Error(badResp(r));
       var bl = res.bubbleList || [];
       for (var i = 0; i < bl.length; i++) {
         if (bl[i].type === 1) {
@@ -430,7 +439,7 @@ function SHA256(s){var chrsz=8;var hexcase=0;function safe_add(x,y){var lsw=(x&0
       formPairs: function(bodyStr, h5st, t) { return formPairs('weGameHome', bodyStr, h5st, t); }
     }).then(function(r) {
       var sm = r.obj && r.obj.data && r.obj.data.signMainVo;
-      if (!sm) throw new Error('bad resp');
+      if (!sm) throw new Error(badResp(r));
       if (num(sm.currentStatus) === 3) { rec('种豆', 'done', 0); return; }
       return apiCall({
         url: 'https://api.m.jd.com/api?functionId=weGameLottery',
@@ -464,7 +473,7 @@ function SHA256(s){var chrsz=8;var hexcase=0;function safe_add(x,y){var lsw=(x&0
       }
     }).then(function(r) {
       var al = r.obj && r.obj.data && r.obj.data.assignmentList;
-      if (!al) throw new Error('bad resp');
+      if (!al) throw new Error(badResp(r));
       var target = null;
       for (var i = 0; i < al.length; i++) {
         if (al[i].assignmentType === 5) { target = al[i]; break; }
@@ -525,7 +534,7 @@ function SHA256(s){var chrsz=8;var hexcase=0;function safe_add(x,y){var lsw=(x&0
       formPairs: function(bodyStr, h5st, t) { return formPairs('checkInTaskList', bodyStr, h5st, t); }
     }).then(function(r) {
       var list = r.obj && r.obj.checkInTaskList;
-      if (!list || !list.length) throw new Error('bad resp');
+      if (!list || !list.length) throw new Error(badResp(r));
       var task = list[0];
       if (task.completionFlag === true || num(task.completionCnt) >= 1) { rec(name, 'done', 0); return; }
       var poolId = null;
@@ -561,7 +570,7 @@ function SHA256(s){var chrsz=8;var hexcase=0;function safe_add(x,y){var lsw=(x&0
       }
     }).then(function(r) {
       var tl = r.obj && r.obj.data && r.obj.data.result && r.obj.data.result.taskInfo && r.obj.data.result.taskInfo.taskList;
-      if (!tl || !tl.length) throw new Error('bad resp');
+      if (!tl || !tl.length) throw new Error(badResp(r));
       var task = tl[0];
       var st = task.ext && task.ext.sign && task.ext.sign.status;
       if (num(st) === 2) { rec('连签', 'done', 0); return; }
@@ -592,7 +601,7 @@ function SHA256(s){var chrsz=8;var hexcase=0;function safe_add(x,y){var lsw=(x&0
       }
     }).then(function(r) {
       var m = r.obj && r.obj.data && r.obj.data.signBeanModule;
-      if (!m) throw new Error('bad resp');
+      if (!m) throw new Error(badResp(r));
       if (num(m.todaySignStatus) === 2) { rec('校园', 'done', 0); return; }
       return noSignCall({
         url: 'https://api.m.jd.com/client.action?functionId=campusTask_interact_invoke',
@@ -621,7 +630,7 @@ function SHA256(s){var chrsz=8;var hexcase=0;function safe_add(x,y){var lsw=(x&0
       formPairs: function(bodyStr, h5st, t) { return formPairs('bff_rightsCenter_jdInteractTask', bodyStr, h5st, t); }
     }).then(function(r) {
       var tl = r.obj && r.obj.rs && r.obj.rs.beanTask && r.obj.rs.beanTask.taskList;
-      if (!tl) throw new Error('bad resp');
+      if (!tl) throw new Error(badResp(r));
       var target = null;
       for (var i = 0; i < tl.length; i++) {
         if (tl[i].assignmentType === 5) { target = tl[i]; break; }
@@ -658,7 +667,7 @@ function SHA256(s){var chrsz=8;var hexcase=0;function safe_add(x,y){var lsw=(x&0
       }
     }).then(function(r) {
       var tl = r.obj && r.obj.data && r.obj.data.result && r.obj.data.result.taskInfo && r.obj.data.result.taskInfo.taskList;
-      if (!tl || !tl.length) throw new Error('bad resp');
+      if (!tl || !tl.length) throw new Error(badResp(r));
       var target = null;
       for (var i = 0; i < tl.length; i++) {
         if (tl[i].assignmentType === 5) { target = tl[i]; break; }
@@ -694,7 +703,7 @@ function SHA256(s){var chrsz=8;var hexcase=0;function safe_add(x,y){var lsw=(x&0
       formPairs: formPairs
     }).then(function(r) {
       var sl = r.obj && r.obj.data && r.obj.data.dailySignInfo && r.obj.data.dailySignInfo.signList;
-      if (!sl || !sl.length) throw new Error('bad resp');
+      if (!sl || !sl.length) throw new Error(badResp(r));
       var today = null;
       for (var i = 0; i < sl.length; i++) {
         if (sl[i].todayFlag === true) { today = sl[i]; break; }
@@ -736,7 +745,7 @@ function SHA256(s){var chrsz=8;var hexcase=0;function safe_add(x,y){var lsw=(x&0
       formPairs: function(bodyStr, h5st, t) { return basePairs('lotteryMachineHome', bodyStr, h5st, t, false); }
     }).then(function(r) {
       var d = r.obj && r.obj.data;
-      if (!d) throw new Error('bad resp');
+      if (!d) throw new Error(badResp(r));
       if (num(d.remainTimes) < 1) { rec('抽奖', 'done', 0); return; }
       return apiCall({
         url: 'https://api.m.jd.com/api?functionId=apsDoTask',
