@@ -3,10 +3,12 @@
 #!category=Sgmodule
 
 [Script]
-去推广 = type=http-response,pattern=^https://tiance\.wps\.cn/dce/exec/api/(market/activity|resource/display|precise/activity),script-path=https://raw.githubusercontent.com/yisaings/surge/main/wps/wps-promo.js,requires-body=true
-会员显示 = type=http-response,pattern=^https://account\.wps\.cn/api/v3/mine/vips,script-path=https://raw.githubusercontent.com/yisaings/surge/main/wps/wps-vip2.js,requires-body=true
-会员显示2 = type=http-response,pattern=^https://drive\.wps\.cn/api/v3/userinfo,script-path=https://raw.githubusercontent.com/yisaings/surge/main/wps/wps-vip2.js,requires-body=true
-会员特权 = type=http-response,pattern=^https://vip\.wps\.cn/v2/vip_center/my/privilege,script-path=https://raw.githubusercontent.com/yisaings/surge/main/wps/wps-vip2.js,requires-body=true
+去推广 = type=http-response,pattern=^https://tiance\.wps\.cn/dce/exec/api/(market/activity|resource/display|precise/activity),script-path=https://raw.githubusercontent.com/yisaings/surge/main/wps/wps-promo2.js,requires-body=true
+去推广2 = type=http-response,pattern=^https://docer-api\.wps\.cn/deliver/(topic/v1/rec|meta/v1/rec|meta/v2/rec),script-path=https://raw.githubusercontent.com/yisaings/surge/main/wps/wps-promo2.js,requires-body=true
+会员显示 = type=http-response,pattern=^https://account\.wps\.cn/api/v3/mine/vips,script-path=https://raw.githubusercontent.com/yisaings/surge/main/wps/wps-vip3.js,requires-body=true
+会员显示2 = type=http-response,pattern=^https://drive\.wps\.cn/api/v3/userinfo,script-path=https://raw.githubusercontent.com/yisaings/surge/main/wps/wps-vip3.js,requires-body=true
+会员特权 = type=http-response,pattern=^https://vip\.wps\.cn/v2/vip_center/my/privilege,script-path=https://raw.githubusercontent.com/yisaings/surge/main/wps/wps-vip3.js,requires-body=true
+会员购买 = type=http-response,pattern=^https://vas\.wps\.cn/query/api/v1/list_purchase_info,script-path=https://raw.githubusercontent.com/yisaings/surge/main/wps/wps-vip3.js,requires-body=true
 
 [MITM]
-hostname = %APPEND% tiance.wps.cn, account.wps.cn, drive.wps.cn, vip.wps.cn
+hostname = %APPEND% tiance.wps.cn, account.wps.cn, drive.wps.cn, vip.wps.cn, docer-api.wps.cn, vas.wps.cn
