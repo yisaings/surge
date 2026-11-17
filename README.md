@@ -61,6 +61,7 @@ RULE-SET,https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/release/
 | `loopback/` | Local Device Loopback（10.7.0.1 回环） |
 | `xcurrency/` | 极简汇率 VIP Mock |
 | `netease/` | 网易云畅听 |
+| `wps/` | WPS 去推广 |
 | `CSL-Monitor.js` | 中超比赛监控 Scriptable 小组件 |
 | `CDT-Monitor-scriptable.js` / `CDT-Monitor-scripting.tsx` | CDT Monitor 配套文件 |
 
@@ -302,3 +303,11 @@ App Store：`https://apps.apple.com/tr/app/currency-converter-xcurrency/id851033
 通过 Cloudflare Worker 网关畅听 VIP 歌曲，支持口令鉴权与设备绑定，附带页面净化。
 
 测试版本：9.6.20（已验证）。
+
+### 30. WPS 去推广
+
+🔗 `https://raw.githubusercontent.com/yisaings/surge/refs/heads/main/wps/wps.sgmodule`
+
+去推广，前端显示会员。
+
+测试版本：—（未验证）。
