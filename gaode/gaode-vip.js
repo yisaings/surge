@@ -25,6 +25,13 @@ try {
       u.vipStatusText = 'VIP会员';
       u.validEndTime = 4102444800;
     }
+  } else if (url.indexOf('/ws/user/shopping_mall/member/memberIndex') !== -1) {
+    var v = obj.data && obj.data.vipInfo;
+    if (v) {
+      v.vipStatus = 1;
+      v.vipStatusText = 'VIP会员';
+      v.buttonText = '已开通';
+    }
   }
   $done({ body: JSON.stringify(obj) });
 } catch (e) {
