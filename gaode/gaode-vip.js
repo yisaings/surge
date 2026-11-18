@@ -32,15 +32,6 @@ try {
       v.vipStatusText = 'VIP会员';
       v.buttonText = '已开通';
     }
-  } else if (url.indexOf('/ws/aos/user/theme/skin/check') !== -1) {
-    var s = obj.data && obj.data.skin;
-    if (s) {
-      s.userBeginTime = 1700000000000;
-      s.userEndTime = 4102415999000;
-      s.endTime = 4102415999000;
-      s.status = 4;
-      s.isUsing = true;
-    }
   }
   $done({ body: JSON.stringify(obj) });
 } catch (e) {
