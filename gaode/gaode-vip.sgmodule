@@ -7,7 +7,6 @@
 高德VIP状态 = type=http-response,pattern=^https://m5\.amap\.com/ws/user/vassets/myEntrance,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/gaode/gaode-vip.js
 高德VIP收银台 = type=http-response,pattern=^https://m5\.amap\.com/ws/user/shopping_mall/member/cashdesk,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/gaode/gaode-vip.js
 高德VIP会员页 = type=http-response,pattern=^https://m5\.amap\.com/ws/user/shopping_mall/member/memberIndex,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/gaode/gaode-vip.js
-高德皮肤有效期 = type=http-response,pattern=^https://m5\.amap\.com/ws/aos/user/theme/skin/check,requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/gaode/gaode-vip.js
 
 
 [MITM]
