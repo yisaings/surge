@@ -1,6 +1,6 @@
 #!name=WPS去推广
 #!desc=去推广，前端显示会员。
-#!category=Sgmodule
+#!category=【yisa】Sgmodule
 
 [Script]
 去推广 = type=http-response,pattern=^https://tiance\.wps\.cn/dce/exec/api/(market/activity|resource/display|precise/activity),script-path=https://raw.githubusercontent.com/yisaings/surge/main/wps/wps-promo2.js,requires-body=true
