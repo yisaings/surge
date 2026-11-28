@@ -1,0 +1,11 @@
+#!name=大麦精简
+#!desc=去开屏广告
+#!category=Sgmodule
+
+
+[URL Rewrite]
+^https://youku-crm-product\.youku\.com/adm-creative-manage/ _ reject
+
+
+[MITM]
+hostname = %APPEND% youku-crm-product.youku.com
