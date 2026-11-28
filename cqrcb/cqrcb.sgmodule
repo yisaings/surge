@@ -1,0 +1,12 @@
+#!name=重庆农商行精简
+#!desc=去首页推广轮播
+#!category=Sgmodule
+
+
+[URL Rewrite]
+^https://oss\.cqrcb\.com/public/marketing/ _ reject
+^https://oss\.cqrcb\.com/public/culTourHot/ _ reject
+
+
+[MITM]
+hostname = %APPEND% oss.cqrcb.com
